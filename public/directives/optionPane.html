@@ -1,0 +1,28 @@
+<div class="optionPane">
+  <!-- Row 1 -->
+  <div class="row">
+    <img src="../img/nl-logo.png" alt="company logo">
+  </div>
+
+  <!-- Row2 -->
+  <div class="row">
+    <div class="col">
+      <img src="../img/userPic.png" alt="Profile Picture">
+      <span>spenc84@gmail.com</span>
+    </div>
+  </div>
+
+  <!-- Row 3 -->
+  <div class="row">
+    <div class="col">
+      <div ui-sref="agenda"><i class="material-icons md-36 md-dark">view_agenda</i><span>Agenda</span></div>
+      <div ui-sref="day"><i class="material-icons md-36 md-dark">view_day</i><span>Day</span></div>
+      <div ui-sref="week"><i class="material-icons md-36 md-dark">view_week</i><span>Week</span></div>
+      <div ui-sref="month"><i class="material-icons md-36 md-dark">apps</i><span>Month</span></div>
+      <div ui-sref="list"><i class="material-icons md-36 md-dark">storage</i><span>List View</span></div>
+    </div>
+  </div>
+  <hr>
+  <calendar month="month"></calendar>
+</div>
+<aside ng-click="toggle()" class="optionPane"></aside>

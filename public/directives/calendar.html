@@ -1,0 +1,19 @@
+<div class="calendar">
+  <div class="calendarHead">
+      <i class="material-icons md-dark" ng-click="previousMonth()">chevron_left</i>
+      <b>{{ month.name }}</b>
+      <i class="material-icons md-dark" ng-click="nextMonth()">chevron_right</i>
+  </div>
+  <div class="row">
+      <span class="col7">S</span>
+      <span class="col7">M</span>
+      <span class="col7">T</span>
+      <span class="col7">W</span>
+      <span class="col7">T</span>
+      <span class="col7">F</span>
+      <span class="col7">S</span>
+  </div>
+  <div class="week" ng-repeat="week in weeks">
+      <span class="day" ng-class="{ today: day.isToday, 'different-month': !day.isCurrentMonth, selected: day.date.isSame(selected) }" ng-click="select(day)" ng-repeat="day in week.days">{{day.number}}</span>
+  </div>
+</div>

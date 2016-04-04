@@ -1,0 +1,165 @@
+//VARIABLES
+// colors
+$newLeaf = 0, 128, 0
+$dark = 0, 0, 0
+$light = 255, 255, 255
+$shadow = 0 1px 10px #515151
+// lengths
+
+//MIXINS
+center(n, n1 = false)
+  if n1
+    display flex
+    align-items center
+    justify-content space-around
+  else if n == vert
+    display flex
+    align-items center
+  else if n == h
+    display flex
+    justify-content space-around
+
+
+//FUNCTIONS
+// colors
+newLeaf(alpha = 1)
+  rgba($newLeaf, alpha)
+icons(color = $dark, alpha = 1)
+  rgba(color, alpha)
+
+//RESET
+html, body
+  margin 0
+  padding 0
+  position relative
+  width 100vw
+
+//NG-CLOAK
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+// CALHEADER DIRECTIVE
+nav.calHeader
+  font-size 30px
+  box-shadow $shadow
+  padding .5em .3em
+  display flex
+  justify-content space-between
+  width 100%
+  div
+    width 33%
+    margin 0 .5em
+    display inline-flex
+    align-items center
+    &.right
+      justify-content flex-end
+    &.left
+      justify-content flex-start
+    span
+      center vert
+      padding-left .7em
+    i
+      padding-right .3em
+
+// OPTIONPANE DIRECTIVE
+.optionPane
+  position absolute
+div.optionPane
+  background-color white
+  height 100vh
+  width 320px
+  box-shadow 1px 0 10px #515151
+  .row
+    center(vert, h)
+    &:first-child
+      background-color newLeaf(0.2)
+      border-bottom 1px solid #333
+      img
+        padding 5px
+        height 56px
+    &:nth-child(2) .col
+      center(vert)
+      padding 1em .5em .5em .5em
+      img
+        height 3em
+        padding 0 .5em
+      span
+        font-size 24px
+        margin-right 10px
+    &:nth-child(3)
+      div.col
+        display block
+        div
+          center(vert)
+          padding 10px
+          span
+            font-size 18px
+            margin-left 1em
+            margin-right 5em
+
+aside.optionPane
+  background-color rgba($dark,0.3)
+  left 0
+  right 0
+  height 100vh
+  z-index -1
+
+//CALENDAR DIRECTIVE
+div.calendarHead
+  box-shadow $shadow
+  center(vert)
+  justify-content space-between
+  background-color red
+  b
+    font-size 24px
+div.calendar
+  .row
+    .col7
+      center(h)
+
+//POSITIONING
+// Columns
+.col12 { width: (100% / 12); }
+.col11 { width: (100% / 11); }
+.col10 { width: 10%; }
+.col9 { width: (100% / 9); }
+.col8 { width: (100% / 8); }
+.col7 { width: (100% / 7); }
+.col6 { width: (100% / 6); }
+.col5 { width: 20%;}
+.col4 { width: 25%; }
+.col3 { width: (100% / 3); }
+.col2 { width: 50%; }
+.col1 { width: 100%; }
+.col { width: auto; }
+// Rows
+.row12 { height: (100% / 12); }
+.row11 { height: (100% / 11); }
+.row10 { height: 10%; }
+.row9 { height: (100% / 9); }
+.row8 { height: (100% / 8); }
+.row7 { height: (100% / 7); }
+.row6 { height: (100% / 6); }
+.row5 { height: 20%; }
+.row4 { height: 25%; }
+.row3 { height: (100% / 3); }
+.row2 { height: 50%; }
+.row1 { height: 100%; }
+.row { height: auto; }
+
+
+// MATERIAL DESIGN ICONS
+// Rules for sizing the icon.
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; }
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
+
+// Rules for using icons as black on a light background.
+.material-icons.md-dark { color: icons($dark, .54); }
+.material-icons.md-dark.md-inactive { color: icons($dark, .28); }
+
+// Rules for using icons as white on a dark background.
+.material-icons.md-light { color: icons($light, 1); }
+.material-icons.md-light.md-inactive { color: icons($light, .3); }
