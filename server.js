@@ -9,7 +9,7 @@ var express = require('express'),
      corsOptions = {
        origin: 'http://localhost:8030'
      },
-     port = 8030;
+     port = process.env.PORT || 8030;
 
 // app.use(express.static(__dirname + '/public'));
 // app.use(session(sessionConfig));
