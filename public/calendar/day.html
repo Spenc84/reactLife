@@ -1,2 +1,49 @@
-<cal-header icon="list" month="month"></cal-header>
-day.html
+<!-- Header -->
+<cal-header icon="list" month="month" flag1="optionFlag" flag2="monthFlag"></cal-header>
+<!-- Body -->
+<div class="day container" ng-class="{noScroll: optionFlag}">
+  <!-- Spacers -->
+  <div class="spacer1"></div>
+  <div class="spacer2" ng-if="monthFlag"></div>
+  <!-- Date icon in the top left corner -->
+  <div id="date" ng-class="{inactive: month.moment.isBefore(moment(), 'day'), selected: month.moment.isSame(moment(), 'day'), spacer: monthFlag}">
+    <div>{{ month.moment.format("ddd") }}</div>
+    <div>{{ month.moment.date() }}</div>
+  </div>
+  <!-- Left column containing the hours of the day -->
+  <div class="hour column">
+    <div ng-repeat="hour in month.hours track by $index" ng-class="{inactive: !month.hours[$index]}">{{month.moment.hour($index).format("h A")}}</div>
+  </div>
+  <!-- Right Column containing the events  -->
+  <div class="event column">
+    <svg height="8" width="105%" style="top: {{currentMinute}}" ng-if="now.isSame(month.moment, 'day')" class="currentTime">
+      <circle cx="4" cy="4" r="2.5"/>
+      <line x1="4" y1="4" x2="100%" y2="4" style="stroke-width:1"/>
+    </svg>
+    <hr>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+    <div><div></div></div>
+  </div>
+</div>

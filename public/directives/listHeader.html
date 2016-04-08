@@ -1,0 +1,26 @@
+<div class="list header">
+  <!-- 1ST ROW - BOTTOM LAYER: Icons -->
+  <div class="icon row"></div>
+  <!-- 1ST ROW - TOP LAYER: Title -->
+  <div class="title row">
+    <div class="title column">
+      <div ui-sref="calendar.day">
+        <i class="material-icons">close</i>
+      </div>
+      <div>{{title}}</div>
+    </div>
+    <div class="title column">
+      <i class="material-icons">search</i>
+    </div>
+  </div>
+  <!-- 2ND ROW: Tabs -->
+  <div class="row tabs">
+      <div ui-sref="list.star" class="tab column">
+        <i class="material-icons md-24 md-dark">star_border</i>
+      </div>
+      <div ui-sref="list.active" class="tab column">Active</div>
+      <div ui-sref="list.pending" class="tab column">Pending</div>
+      <div ui-sref="list.inactive" class="tab column">Inactive</div>
+      <div ui-sref="list.completed" class="tab column">Completed</div>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 /* jshint esversion: 6 */
 
 angular.module('lifeApp')
+//****************  CALENDAR DIRECTIVES  ****************
 .directive('calHeader', () => {
   return {
     restrict: 'E',
@@ -8,7 +9,9 @@ angular.module('lifeApp')
     scope: {
       icon: '@',
       view: '@',
-      month: '='
+      month: '=',
+      optionFlag: '=flag1',
+      monthFlag: '=flag2'
     },
     link(scope, element, attrs, ctrl) {
       scope.eyeFlag = true;
@@ -23,30 +26,32 @@ angular.module('lifeApp')
       scope.toggleEye = function() {
         scope.eyeFlag = !scope.eyeFlag;
       };
+      scope.clear = () => {
+        scope.optionFlag = false;
+        scope.monthFlag = false;
+      };
+      scope.clearOption = () => {
+        scope.optionFlag = false;
+      };
     },
   };
 })
 .directive('optionPane', () => {
   return {
     restrict: 'E',
-    templateUrl: './directives/optionPane.html',
-    scope: {
-      toggle: '=',
-      month: '='
-    },
-    link(scope, element, attrs, ctrl) {
-
-    },
+    templateUrl: './directives/optionPane.html'
   };
 })
 .directive('calendar', () => {
   return {
     restrict: 'E',
-    templateUrl: './directives/calendar.html',
-    scope: {
-      month: '='
-    },
-    link(scope, element, attrs, ctrl) {
-    },
+    templateUrl: './directives/calendar.html'
+  };
+})
+//****************  LIST DIRECTIVES  ****************
+.directive('listHeader', () => {
+  return {
+    restrict: 'E',
+    templateUrl: './directives/listHeader.html'
   };
 });

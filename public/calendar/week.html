@@ -1,2 +1,34 @@
-<cal-header icon="list" month="month"></cal-header>
-week.html
+<!-- Header -->
+<cal-header icon="list" month="month" flag1="optionFlag" flag2="monthFlag"></cal-header>
+<!-- Body -->
+<div class="week container" ng-class="{noScroll: optionFlag}">
+  <!-- Spacers -->
+  <div class="weekViewSpacer"></div>
+  <div class="spacer2" ng-if="monthFlag"></div>
+  <!-- 1ST ROW - Day titles and number -->
+  <div id="date" ng-class="{spacer: monthFlag}">
+    <div class="col8"></div>
+    <div class="col8" ng-repeat="day in month.currentWeek" ng-click="month.rebuild(day)" ui-sref="calendar.day" ng-class="{inactive: day.isBefore(moment(), 'day'), selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}">
+      <div>{{ day.format("ddd") }}</div>
+      <div>{{ day.date() }}</div>
+    </div>
+  </div>
+  <!-- Left column containing the hours of the day -->
+  <div class="hour column">
+    <div ng-repeat="hour in month.hours track by $index" ng-class="{inactive: !month.hours[$index]}">{{month.moment.hour($index).format("h A")}}</div>
+  </div>
+  <!-- Horizontal HR dividers -->
+  <div class="dividers column"><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr></div>
+
+  <!-- Right Column containing the events  -->
+  <div class="event column">
+    <!-- Current time marker -->
+    <svg height="8" width="105%" style="top: {{currentMinute}}" ng-if="now.isSame(month.moment, 'day')" class="currentTime">
+      <circle cx="4" cy="4" r="2.5"/>
+      <line x1="4" y1="4" x2="100%" y2="4" style="stroke-width:1"/>
+    </svg>
+    <!-- Seven Day columns -->
+    <div class="col7" ng-repeat="day in month.currentWeek">
+    </div>
+  </div>
+</div>

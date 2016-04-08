@@ -1,13 +1,15 @@
-<option-pane ng-if="optionFlag" toggle="toggleOption" month="month"></option-pane>
+<fade ng-if="optionFlag" ng-click="clear()"></fade>
+<option-pane ng-if="optionFlag"></option-pane>
 
+<!-- <div class="spacer1" ng-if="monthFlag"></div> test-->
 <nav class="calHeader">
   <div class="left">
     <i ng-click="toggleOption()" class="material-icons md-dark md-36">menu</i>
-    <span ng-if="view !== 'month'" ng-click="toggleMonth()">
+    <span ng-if="view !== 'month'" ui-sref="calendar.month">
       {{month.name}}
-      <i ng-if="!monthFlag" class="material-icons md-dark md-36">arrow_drop_down</i>
-      <i ng-if="monthFlag" class="material-icons md-dark md-36">arrow_drop_up</i>
     </span>
+    <i ng-if="!monthFlag" ng-click="toggleMonth()" class="material-icons md-dark md-36">arrow_drop_down</i>
+    <i ng-if="monthFlag" ng-click="toggleMonth()" class="material-icons md-dark md-36">arrow_drop_up</i>
     <span ng-if="view === 'month'">{{month.name}}</span>
   </div>
   <div class="right">
@@ -15,8 +17,9 @@
     <i ng-if="icon === 'eye' && !eyeFlag" ng-click="toggleEye()" class="material-icons md-dark md-24" style="border-right: 2px solid black">visibility_off</i>
     <i ng-if="icon === 'list'" class="material-icons md-dark md-24" style="border-right: 2px solid black">list</i>
     <i class="material-icons md-dark md-24"></i>
-    <i class="material-icons md-dark md-24">today</i>
+    <i ng-click="month.rebuild()" class="material-icons md-dark md-24">today</i>
   </div>
 </nav>
 
-<calendar ng-if="monthFlag" month="month"></calendar>
+<!-- <div class="spacer2" ng-if="monthFlag"></div> test -->
+<calendar class="header" ng-if="monthFlag"></calendar>

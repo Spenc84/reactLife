@@ -3,31 +3,63 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
     $urlRouterProvider.otherwise('/');
 
     $stateProvider
+      //SPLASH SCREEN
       .state('home', {
         url: '/',
         templateUrl: 'splash.html'
       })
-      .state('agenda', {
+      //CALENDAR VIEWS
+      .state('calendar', {
+        controller: 'calendarCtrl',
+        template: '<ui-view>',
+        abstract: true
+      })
+      .state('calendar.agenda', {
         url: '/calendar/agenda',
-        templateUrl: '/calendar/agenda.html',
-        controller: 'calendarCtrl'
+        templateUrl: '/calendar/agenda.html'
       })
-      .state('day', {
-        url: '/calendar/day',
-        templateUrl: '/calendar/day.html',
-        controller: 'calendarCtrl'
+      .state('calendar.day', {
+        url: '/calendar/day:id',
+        templateUrl: '/calendar/day.html'
       })
-      .state('week', {
+      .state('calendar.week', {
         url: '/calendar/week',
-        templateUrl: '/calendar/week.html',
-        controller: 'calendarCtrl'
+        templateUrl: '/calendar/week.html'
       })
-      .state('month', {
+      .state('calendar.month', {
         url: '/calendar/month',
-        templateUrl: '/calendar/month.html',
-        controller: 'calendarCtrl'
+        templateUrl: '/calendar/month.html'
       })
-      .state('list', {})
+      //LIST VIEWS
+      .state('list', {
+        controller: 'listCtrl',
+        template: '<list-header></list-header><ui-view>',
+        abstract: true
+      })
+      .state('list.search', {
+        url: '/list/search',
+        templateUrl: '/list/search.html'
+      })
+      .state('list.star', {
+        url: '/list/star',
+        templateUrl: '/list/star.html'
+      })
+      .state('list.active', {
+        url: '/list/active',
+        templateUrl: '/list/active.html'
+      })
+      .state('list.pending', {
+        url: '/list/pending',
+        templateUrl: '/list/pending.html'
+      })
+      .state('list.inactive', {
+        url: '/list/inactive',
+        templateUrl: '/list/inactive.html'
+      })
+      .state('list.completed', {
+        url: '/list/completed',
+        templateUrl: '/list/completed.html'
+      })
       .state('project', {})
       .state('user', {});
   });
