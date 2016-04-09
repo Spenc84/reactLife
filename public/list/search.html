@@ -1,1 +1,37 @@
-search.html
+<div class="list search view">
+  <!-- Search Icon fixed to the top right corner -->
+  <div class="search icon">
+    <i class="material-icons" ui-sref="list.star">search</i>
+  </div>
+  <!-- Primary search box -->
+  <div class="search box">
+    <!-- 1ST ROW (w/ filters) -->
+    <div class="search row">
+      <div class="col2">
+        <i class="irow2 material-icons" ng-class="{selected: query.revers}" ng-click="toggleAll()">find_replace</i>
+        <div class="irow2" ng-class="{selected: query.and}" ng-click="toggle(query, 'and')">&&</div>
+      </div>
+      <div class="col2">
+        <div class="icol3">
+          <div class="irow3" ng-class="{selected: query.active}" ng-click="toggle(query, 'active')">Active</div>
+          <div class="irow3" ng-class="{selected: query.pending}" ng-click="toggle(query, 'pending')">Pending</div>
+          <div class="irow3" ng-class="{selected: query.inactive}" ng-click="toggle(query, 'inactive')">Inactive</div>
+        </div>
+        <div class="icol3">
+          <div class="irow3" ng-class="{selected: query.scheduled}" ng-click="toggle(query, 'scheduled')">Scheduled</div>
+          <div class="irow3" ng-class="{selected: query.highPriority}" ng-click="toggle(query, 'highPriority')">High Priority</div>
+          <div class="irow3" ng-class="{selected: query.completed}" ng-click="toggle(query, 'completed')">Completed</div>
+        </div>
+        <div class="icol3">
+          <div class="irow3" ng-class="{selected: query.unscheduled}" ng-click="toggle(query, 'unscheduled')">Unscheduled</div>
+          <div class="irow3" ng-class="{selected: query.lowPriority}" ng-click="toggle(query, 'lowPriority')">Low Priority</div>
+          <div class="irow3" ng-class="{selected: query.reoccuring}" ng-click="toggle(query, 'reoccuring')">Reoccuring</div>
+        </div>
+      </div>
+    </div>
+    <!-- 2ND ROW (w/ input field) -->
+    <div class="search row">
+      <input type="text" ng-model="searchQuery" placeholder="Search...">
+    </div>
+  </div>
+</div>

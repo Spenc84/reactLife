@@ -1,3 +1,5 @@
+/* jshint esversion: 6 */
+
 angular.module('lifeApp', ['ui.router', 'angularMoment'])
   .config(($stateProvider, $urlRouterProvider) => {
     $urlRouterProvider.otherwise('/');
@@ -15,26 +17,36 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
         abstract: true
       })
       .state('calendar.agenda', {
-        url: '/calendar/agenda',
+        url: '/calendar/agenda::optionFlag',
         templateUrl: '/calendar/agenda.html'
       })
       .state('calendar.day', {
-        url: '/calendar/day:id',
+        url: '/calendar/day:optionFlag',
         templateUrl: '/calendar/day.html'
       })
       .state('calendar.week', {
-        url: '/calendar/week',
+        url: '/calendar/week:optionFlag',
         templateUrl: '/calendar/week.html'
       })
       .state('calendar.month', {
-        url: '/calendar/month',
+        url: '/calendar/month:optionFlag',
         templateUrl: '/calendar/month.html'
       })
       //LIST VIEWS
       .state('list', {
         controller: 'listCtrl',
         template: '<list-header></list-header><ui-view>',
-        abstract: true
+        abstract: true,
+        resolve: {
+          PriorState($state){
+            var currentStateData = {
+                Name: $state.current.name,
+                Params: $state.params,
+                URL: $state.href($state.current.name, $state.params)
+            };
+            return currentStateData;
+          }
+        }
       })
       .state('list.search', {
         url: '/list/search',

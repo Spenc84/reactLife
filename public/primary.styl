@@ -9,12 +9,15 @@ selected(alpha = 1)
 $inactive = inactive()
 inactive(alpha = 0.5)
   rgba(0, 0, 0, alpha)
-$dark = 0, 0, 0
-$light = 255, 255, 255
+$dark = darkish()
+darkish(alpha = 0.5)
+  rgba(0, 0, 0, alpha)
+$light = lightish()
+lightish(alpha = 1)
+  rgba(255, 255, 255, alpha)
 $shadow = 0 1px 10px #515151
-
-icons(color = $dark, alpha = 1)
-  rgba(color, alpha)
+$star = rgb(241, 196, 15)
+$sky = rgb(102,204,255)
 
 //POSITIONING
 center(n, n1 = false)
@@ -79,10 +82,10 @@ div.week.container
       margin 0
       border none
       margin-bottom 29px
-      border-bottom 1px solid rgba($dark, 0.3)
+      border-bottom 1px solid darkish(0.3)
       width 100vw
       &:nth-child(even)
-        border-bottom 1px dashed rgba($dark, 0.3)
+        border-bottom 1px dashed darkish(0.3)
   div.event.column
     padding-top 6px
     svg
@@ -91,7 +94,7 @@ div.week.container
       display inline-flex
       height 1440px
       box-sizing border-box
-      border-left 1px solid rgba($dark, .3)
+      border-left 1px solid darkish(.3)
 
 // Day
 div.day.container
@@ -105,17 +108,17 @@ div.day.container
       margin-left -7px
     hr
       margin 3px 0
-      border-color rgba($dark, .3)
+      border-color darkish(0.3)
     & > div
       height 60px
       width 100%
       box-sizing border-box
-      border-bottom 1px solid rgba($dark, .3)
+      border-bottom 1px solid darkish(0.3)
       div
         height 30px
         width 100%
         box-sizing border-box
-        border-bottom 1px dashed rgba($dark, .3)
+        border-bottom 1px dashed darkish(0.3)
 
 //Week & Day
 div.day.container, div.week.container
@@ -126,8 +129,8 @@ div.day.container, div.week.container
     top 70px
     height 60px
     font-size 24px
-    background-color rgba($light, 1)
-    box-shadow 0 5px 15px rgba($light, 1)
+    background-color $light
+    box-shadow 0 5px 15px $light
     center(vert)
     justify-content center
     &.spacer
@@ -203,7 +206,7 @@ fade
   left 0
   right 0
   z-index 20
-  background-color rgba($dark,0.3)
+  background-color darkish(0.3)
 .noScroll
   overflow hidden
 
@@ -256,7 +259,7 @@ calendar.header
   width 100%
   z-index 15
   top 70px
-  background-color rgba($light, 1)
+  background-color $light
 div.calendar
   box-shadow $shadow
   div.row
@@ -284,10 +287,10 @@ div.calendar
       font-size 90%
     .today
       background-color rgba(0, 120, 255, 0.3)
-      color rgba($light, 1)
+      color $light
     .selected
       background-color $selected
-      color rgba($light, 1)
+      color $light
 
 div.calendarHead
   box-shadow $shadow
@@ -308,8 +311,152 @@ section.calendar
 
 //********************  LIST  ********************
 //----------------VIEWS---------------
+// General
+div.list.view
+  div.view.body
+    position relative
+    z-index 1
+  div.tab
+    position absolute
+    top 3.8em
+    height 2.2em
+    center(vert, h)
+    border 1px solid inactive(.8)
+    border-bottom none
+    background-color $light
+    color lightish(.9)
+    font-weight bold
+    text-shadow 1px 1px 20px selected(.3), -1px -1px 20px selected(.3), -1px 1px 20px selected(.3), 1px -1px 20px selected(.3), 1px 2px 1px black, -1px -.5px 1px black, -1px 2px 1px black, 1px -.5px 1px black
+    z-index 100
+div.list.spacer
+  height 6em
+div.item.row
+  height 3em
+  div.item.col:first-child
+    width 12vw
+    height 100%
+    display flex
+    center(vert, h)
+    svg
+      stroke darkish(.53)
+      stroke-width 1.5px
+
+
+// star
+div.list.star.view
+  div.star.tab
+    width 10vw*1.1
+    border-left none
+    i
+      font-size 27px
+      color $star
+      text-shadow 1px 1px 20px selected(.3), -1px -1px 20px selected(.3), -1px 1px 20px selected(.3), 1px -1px 20px selected(.3), 1px 2px 1px black, -1px -.5px 1px black, -1px 2px 1px black, 1px -.5px 1px black
+  // div.star.body
+
+// active
+div.list.active.view
+  div.active.tab
+    width 19vw*1.1
+    left 10.3vw
+
+// pending
+div.list.pending.view
+  div.pending.tab
+    width 22vw*1.1
+    left 29.3vw
+
+// inactive
+div.list.inactive.view
+  div.inactive.tab
+    width 22vw*1.1
+    left 51.3vw
+
+// completed
+div.list.completed.view
+  div.completed.tab
+    width 27vw
+    left 73.3vw
+
+// search
+div.list.search.view
+  div.search.icon
+    position fixed
+    width 12vw
+    right 0
+    height 4em
+    display flex
+    z-index 150
+    i
+      font-size 2em
+      color $sky
+      text-shadow 0 3px 6px rgb(0,0,255)
+      margin auto
+      background-color $selected
+  div.search.box
+    position fixed
+    width 100vw
+    top 6em
+    padding .3em 0
+    background-color $light
+    border 1px solid $dark
+    box-sizing border-box
+    box-shadow $shadow
+    div.row
+      display flex
+      //1ST ROW (w/ all the search filters)
+      div.col2
+        color darkish(0.4)
+        .selected
+          color darkish(0.8)
+          font-weight bold
+          text-shadow 0 3px 6px rgba(0,64,128,1)
+        //1ROW/1ST COLUMN (icons)
+        &:first-child
+          width 15vw
+          flex-grow 0
+          center(h)
+          flex-direction column
+          font-weight bold
+          text-align center
+          i:active
+            color darkish(0.8)
+            text-shadow 0 3px 6px rgba(0,64,128,1)
+        //1ROW/2ND COLUMN (filter terms)
+        &:last-child
+          flex-grow 1
+          display flex
+          justify-content space-around
+          div.icol3
+            display flex
+            flex 0 1 auto
+            flex-direction column
+            align-items center
+            &:first-child
+              width 32%
+            div.irow3
+              margin .4em
+      //2ND ROW (w/ with the search input box)
+      input
+        font-size 1em
+        margin .5em 1em
+        flex-grow 1
+
+
 
 //----------------DIRECTIVES---------------
+// addItem row
+div.row.add.item
+  display flex
+  div.col.add.item
+    &:nth-child(2)
+      flex-grow 1
+      display flex
+      padding 0.5em
+      input
+        color darkish(0.8)
+        flex-grow 1
+        font-size 1.2em
+        border none
 // listHeader
 div.list.header
   width 100vw
@@ -318,30 +465,35 @@ div.list.header
     justify-content space-between
     height 2em
     background-color $selected
-    color rgba($light, 1)
+    color $light
     font-size 2em
     div.title.column
       center(h)
       i
         width 12vw
         text-align center
-      // &:first-child
-      //   // width 50vw
-      // &:last-child
-      //   width 12vw
 
 
   div.tabs.row
     display flex
     height 2em
+    border-bottom 1px solid inactive(.8)
     div.tab.column
-      flex-grow 1
       center(vert, h)
       color $inactive
       border 1px solid $inactive
-      &:first-child
-        flex-grow 0
+      border-bottom none
+      box-sizing border-box
+      &.star
         width 10vw
+      &.active
+        width 19vw
+      &.pending
+        width 22vw
+      &.inactive
+        width 22vw
+      &.completed
+        width 27vw
 
 
 //********************  ADDITIONAL STYLING  ********************
@@ -384,9 +536,9 @@ div.list.header
 .material-icons.md-48 { font-size: 48px; }
 
 // Rules for using icons as black on a light background.
-.material-icons.md-dark { color: icons($dark, .54); }
-.material-icons.md-dark.md-inactive { color: icons($dark, .28); }
+.material-icons.md-dark { color: darkish(0.54); }
+.material-icons.md-dark.md-inactive { color: darkish(0.28); }
 
 // Rules for using icons as white on a dark background.
-.material-icons.md-light { color: icons($light, 1); }
-.material-icons.md-light.md-inactive { color: icons($light, .3); }
+.material-icons.md-light { color: $light; }
+.material-icons.md-light.md-inactive { color: $light(0.3); }

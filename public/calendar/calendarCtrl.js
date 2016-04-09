@@ -1,7 +1,7 @@
 /* jshint esversion: 6 */
 
 angular.module('lifeApp')
-.controller('calendarCtrl', function($scope, calendarSvc, moment, $interval){
+.controller('calendarCtrl', function($scope, $rootScope, $state, calendarSvc, moment, $interval){
   $scope.now = moment();
   $scope.currentMinute = 5 + ($scope.now.hour()*60) + ($scope.now.minute()) + 'px';
   $scope.month = buildMonth();
@@ -98,5 +98,4 @@ angular.module('lifeApp')
     console.log(hours);
     return hours;
   }
-
 });

@@ -2,7 +2,7 @@
 
 angular.module('lifeApp')
 //****************  CALENDAR DIRECTIVES  ****************
-.directive('calHeader', () => {
+.directive('calHeader', ($state) => {
   return {
     restrict: 'E',
     templateUrl: './directives/calHeader.html',
@@ -16,7 +16,10 @@ angular.module('lifeApp')
     link(scope, element, attrs, ctrl) {
       scope.eyeFlag = true;
       scope.monthFlag = false;
-      scope.optionFlag = false;
+      if($state.params.optionFlag) scope.optionFlag = $state.params.optionFlag;
+      else scope.optionFlag = false;
+      console.log($state.params);
+
       scope.toggleOption = function() {
         scope.optionFlag = !scope.optionFlag;
       };
@@ -53,5 +56,11 @@ angular.module('lifeApp')
   return {
     restrict: 'E',
     templateUrl: './directives/listHeader.html'
+  };
+})
+.directive('addItem', () => {
+  return {
+    restrict: 'E',
+    templateUrl: './directives/addItem.html'
   };
 });
