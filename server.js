@@ -1,12 +1,13 @@
 var express = require('express'),
      app = express(),
      mongoose = require('mongoose'),
-    //  mongoUri = 'mongodb://spencer:heroku_15b50tfp@ds015700.mlab.com:15700/heroku_15b50tfp',
-     mongoUri = 'mongodb://localhost:27017/life',
+     mongoUri = 'mongodb://spencer:longhorsestickmonkey@ds023000.mlab.com:23000/spencer',
+    //  mongoUri = 'mongodb://localhost:27017/life',
      bodyParser = require('body-parser'),
      cors = require('cors'),
      corsOptions = {
-       origin: 'http://localhost:8030'
+       origin: 'https://projectlifeapp.herokuapp.com/'
+      //  origin: 'http://localhost:8030'
      },
      port = process.env.PORT || 8030;
 
