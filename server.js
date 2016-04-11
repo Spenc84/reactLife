@@ -11,6 +11,12 @@ var express = require('express'),
      },
      port = process.env.PORT || 8030;
 
+if (process.env.NODE_ENV === 'production') {
+  SESSION_SECRET= process.env.SESSION_SECRET;
+} else {
+  SESSION_SECRET = require('./config/session.js').secret;
+}
+
 //TEMP///////////
 // var  session = require('express-session'),
 //      sessionConfig = require('./config/session');
