@@ -70,6 +70,15 @@ angular.module('lifeApp')
   // ----------  Data Transfers ----------
   $scope.newItem = {};
   let modified = {};
+  $scope.getTasks = function(){
+    listSvc.getTasks().then(function( res, err ){
+      if(err) console.log(err);
+      else {
+        console.log("tasks retrieved", res.data);
+        $scope.tasks = res.data;
+      }
+    });
+  };
   $scope.saveNew = () => {
     listSvc.saveNewTask($scope.newItem).then(function( res, err ){
       if(err) console.log(err);
@@ -86,15 +95,6 @@ angular.module('lifeApp')
       else {
         console.log("saved", res);
         $scope.tasks[index] = res.data;
-      }
-    });
-  };
-  $scope.getTasks = function(){
-    listSvc.getTasks().then(function( res, err ){
-      if(err) console.log(err);
-      else {
-        console.log("tasks retrieved", res.data);
-        $scope.tasks = res.data;
       }
     });
   };
