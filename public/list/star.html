@@ -7,7 +7,24 @@
   <div class="list spacer"></div>
   <!-- Container for the list of projects -->
   <div class="star view body">
-    <div></div>
+    <!-- ***** DATA ROWS ***** -->
+    <div ng-repeat="task in tasks" class="row item"  ng-if="task.status.starred && !task.status.completed">
+      <div class="col item" ng-click="toggleEdit($index)">
+        <svg width="3em" height="3em">
+          <circle cx="1.5em" cy="1.5em" r=".75em" fill="white"/>
+          <circle cx="1.5em" cy="1.5em" r=".5em" fill="rgba(0,120,255,1)" ng-if="task.status.editable" />
+        </svg>
+      </div>
+      <div class="col item">
+        <form ng-submit="saveTask($index)">
+          <input type="text" ng-model="tasks[$index].name">
+        </form>
+      </div>
+      <div class="col item" ng-if="task.status.starred">
+        <i style="color:rgb(241,196,15)" class="material-icons" ng-click="toggleStarred()">star</i>
+      </div>
+    </div>
+    <!-- <task-items></task-items> -->
     <add-item></add-item>
   </div>
 </div>

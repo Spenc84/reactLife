@@ -20,11 +20,11 @@
       <!-- Each Column represents one day -->
       <div class="col7" ng-class="{disabled: day.format('MMMM') !== month.name}" ng-repeat="day in week">
         <div class="cal" ng-click="month.rebuild(day)" ui-sref="calendar.day" ng-class="{selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}">{{day.date()}}</div>
-        <span>hi</span>
-        <span>hi</span>
-        <span>hi</span>
-        <span>hi</span>
-        <span>hi</span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
   </div>
 </div>

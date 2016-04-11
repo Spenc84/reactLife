@@ -54,24 +54,39 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
       })
       .state('list.star', {
         url: '/list/star',
-        templateUrl: '/list/star.html'
+        templateUrl: '/list/star.html',
       })
       .state('list.active', {
         url: '/list/active',
-        templateUrl: '/list/active.html'
+        templateUrl: '/list/active.html',
       })
       .state('list.pending', {
         url: '/list/pending',
-        templateUrl: '/list/pending.html'
+        templateUrl: '/list/pending.html',
       })
       .state('list.inactive', {
         url: '/list/inactive',
-        templateUrl: '/list/inactive.html'
+        templateUrl: '/list/inactive.html',
       })
       .state('list.completed', {
         url: '/list/completed',
-        templateUrl: '/list/completed.html'
+        templateUrl: '/list/completed.html',
       })
-      .state('project', {})
+      .state('project', {
+        controller: 'projectCtrl',
+        url: '/project/:id',
+        templateUrl: '/project/project.html',
+        parent: 'list',
+        resolve: {
+          PriorState($state){
+            var currentStateData = {
+                Name: $state.current.name,
+                Params: $state.params,
+                URL: $state.href($state.current.name, $state.params)
+            };
+            return currentStateData;
+          }
+        }
+      })
       .state('user', {});
   });

@@ -63,4 +63,10 @@ angular.module('lifeApp')
     restrict: 'E',
     templateUrl: './directives/addItem.html'
   };
+})
+.directive('taskItems', () => {
+  return {
+    restrict: 'E',
+    templateUrl: './directives/taskItems.html'
+  };
 });

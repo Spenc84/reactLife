@@ -31,7 +31,11 @@ div.calendar.view .row:first-child {
   margin: 5px;
 }
 div.calendar.view .row:nth-child(2) {
+  flex-grow: 1;
   color: #000;
+}
+div.calendar.view .row span {
+  min-height: 1em;
 }
 div.week.container #date {
   width: 100vw;
@@ -335,11 +339,15 @@ section.calendar {
   opacity: 0.3;
 }
 div.list.view div.view.body {
-  position: relative;
+  position: fixed;
   z-index: 1;
+  top: 6.1em;
+  bottom: 0;
+  overflow: scroll;
+  width: 100vw;
 }
 div.list.view div.tab {
-  position: absolute;
+  position: fixed;
   top: 3.8em;
   height: 2.2em;
   display: flex;
@@ -358,6 +366,7 @@ div.list.spacer {
 }
 div.item.row {
   height: 3em;
+  display: flex;
 }
 div.item.row div.item.col:first-child {
   width: 12vw;
@@ -399,7 +408,7 @@ div.list.completed.view div.completed.tab {
 div.list.search.view div.search.icon {
   position: fixed;
   width: 12vw;
-  right: 0;
+  right: 0.7em;
   height: 4em;
   display: flex;
   z-index: 150;
@@ -429,7 +438,6 @@ div.list.search.view div.search.box div.row div.col2 {
 }
 div.list.search.view div.search.box div.row div.col2 .selected {
   color: rgba(0,0,0,0.8);
-  font-weight: bold;
   text-shadow: 0 3px 6px #004080;
 }
 div.list.search.view div.search.box div.row div.col2:first-child {
@@ -467,46 +475,123 @@ div.list.search.view div.search.box div.row input {
   margin: 0.5em 1em;
   flex-grow: 1;
 }
-div.row.add.item {
+div.project.container div.project.header div.title.row div.title.column {
+  font-size: 26px;
+}
+div.project.container div.project.header div.title.row div.title.column div {
   display: flex;
 }
-div.row.add.item div.col.add.item:nth-child(2) {
-  flex-grow: 1;
+div.project.container div.project.header div.title.row div.title.column:last-child button {
+  background: none;
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+div.project.container div.project.header div.title.row div.title.column:last-child button:disabled {
+  color: rgba(255,255,255,0.3);
+}
+div.project.container div.project.body {
+  z-index: 100;
+  position: absolute;
+  width: 100vw;
+  top: 4em;
+  bottom: 0;
+  padding: 1.5em;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+div.project.container div.project.body form {
+  font-size: 1.5em;
+}
+div.project.container div.project.body form div.form.row {
   display: flex;
+}
+div.project.container div.project.body form div.form.row input {
+  flex-grow: 1;
+  margin: 0 1em;
+  border: none;
+  font-size: 20px;
+}
+div.project.container div.project.body form div.form.row input:focus {
+  outline: none;
+}
+div.item.row div.item.col {
+  display: flex;
+}
+div.item.row div.item.col:nth-child(2) {
+  flex-grow: 1;
   padding: 0.5em;
 }
-div.row.add.item div.col.add.item:nth-child(2) input {
+div.item.row div.item.col:nth-child(2) form {
+  display: flex;
+  flex-grow: 1;
+}
+div.item.row div.item.col:nth-child(2) form input {
   color: rgba(0,0,0,0.8);
   flex-grow: 1;
   font-size: 1.2em;
   border: none;
 }
-div.list.header {
+div.item.row div.item.col:last-child {
+  margin: auto;
+}
+div.list.header,
+div.project.header {
   width: 100vw;
 }
-div.list.header div.title.row {
+div.list.header div.title.row,
+div.project.header div.title.row,
+div.list.header div.icon.row,
+div.project.header div.icon.row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 2em;
-  background-color: #0078ff;
-  color: #fff;
+  padding: 0.3em;
+  box-sizing: border-box;
   font-size: 2em;
 }
-div.list.header div.title.row div.title.column {
+div.list.header div.title.row div.title.column,
+div.project.header div.title.row div.title.column,
+div.list.header div.icon.row div.title.column,
+div.project.header div.icon.row div.title.column,
+div.list.header div.title.row div.icon.column,
+div.project.header div.title.row div.icon.column,
+div.list.header div.icon.row div.icon.column,
+div.project.header div.icon.row div.icon.column {
   display: flex;
+  align-items: center;
   justify-content: space-around;
 }
-div.list.header div.title.row div.title.column i {
-  width: 12vw;
+div.list.header div.title.row div.title.column i,
+div.project.header div.title.row div.title.column i,
+div.list.header div.icon.row div.title.column i,
+div.project.header div.icon.row div.title.column i,
+div.list.header div.title.row div.icon.column i,
+div.project.header div.title.row div.icon.column i,
+div.list.header div.icon.row div.icon.column i,
+div.project.header div.icon.row div.icon.column i {
   text-align: center;
+  margin-right: 0.5em;
 }
-div.list.header div.tabs.row {
+div.list.header div.title.row,
+div.project.header div.title.row {
+  background-color: #0078ff;
+  color: #fff;
+}
+div.list.header div.icon.row,
+div.project.header div.icon.row {
+  background-color: #fff;
+  color: rgba(0,0,0,0.5);
+}
+div.list.header div.tabs.row,
+div.project.header div.tabs.row {
   display: flex;
   height: 2em;
   border-bottom: 1px solid rgba(0,0,0,0.8);
 }
-div.list.header div.tabs.row div.tab.column {
+div.list.header div.tabs.row div.tab.column,
+div.project.header div.tabs.row div.tab.column {
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -515,19 +600,24 @@ div.list.header div.tabs.row div.tab.column {
   border-bottom: none;
   box-sizing: border-box;
 }
-div.list.header div.tabs.row div.tab.column.star {
+div.list.header div.tabs.row div.tab.column.star,
+div.project.header div.tabs.row div.tab.column.star {
   width: 10vw;
 }
-div.list.header div.tabs.row div.tab.column.active {
+div.list.header div.tabs.row div.tab.column.active,
+div.project.header div.tabs.row div.tab.column.active {
   width: 19vw;
 }
-div.list.header div.tabs.row div.tab.column.pending {
+div.list.header div.tabs.row div.tab.column.pending,
+div.project.header div.tabs.row div.tab.column.pending {
   width: 22vw;
 }
-div.list.header div.tabs.row div.tab.column.inactive {
+div.list.header div.tabs.row div.tab.column.inactive,
+div.project.header div.tabs.row div.tab.column.inactive {
   width: 22vw;
 }
-div.list.header div.tabs.row div.tab.column.completed {
+div.list.header div.tabs.row div.tab.column.completed,
+div.project.header div.tabs.row div.tab.column.completed {
   width: 27vw;
 }
 .col12 {

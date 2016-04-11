@@ -1,10 +1,8 @@
 var express = require('express'),
      app = express(),
-//     session = require('express-session'),
-//     sessionConfig = require('./config/session'),
      mongoose = require('mongoose'),
-     mongoUri = 'mongodb://spencer:heroku_15b50tfp@ds015700.mlab.com:15700/heroku_15b50tfp',
-//     mongoUri = 'mongodb://localhost:27017/database',
+    //  mongoUri = 'mongodb://spencer:heroku_15b50tfp@ds015700.mlab.com:15700/heroku_15b50tfp',
+     mongoUri = 'mongodb://localhost:27017/life',
      bodyParser = require('body-parser'),
      cors = require('cors'),
      corsOptions = {
@@ -12,8 +10,13 @@ var express = require('express'),
      },
      port = process.env.PORT || 8030;
 
-// app.use(express.static(__dirname + '/public'));
+//TEMP///////////
+// var  session = require('express-session'),
+//      sessionConfig = require('./config/session');
 // app.use(session(sessionConfig));
+/////////////////
+app.use(express.static(__dirname + '/public'));
+
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
 

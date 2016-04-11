@@ -1,11 +1,13 @@
 <div class="row add item">
-  <div class="col add item">
-    <svg width="12vw" height="3em">
-      <line x1="6vw" x2="6vw" y1="0.75em" y2="2.25em" />
-      <line x1="3vw" x2="9vw" y1="1.5em" y2="1.5em" />
+  <div class="col add item" ui-sref="project({ id: $scope.newItem.name})">
+    <svg width="3em" height="3em">
+      <line x1="1.5em" x2="1.5em" y1="0.75em" y2="2.25em" />
+      <line x1="0.75em" x2="2.25em" y1="1.5em" y2="1.5em" />
     </svg>
   </div>
   <div class="col add item">
-      <input type="text">
+    <form ng-submit="saveNew()">
+      <input type="text" ng-model="newItem.name">
+    </form>
   </div>
 </div>

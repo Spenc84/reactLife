@@ -65,7 +65,10 @@ div.calendar.view
       color $inactive
       margin 5px
     &:nth-child(2)
+      flex-grow 1
       color black
+    span
+      min-height 1em
 
 // Week
 div.week.container
@@ -314,10 +317,14 @@ section.calendar
 // General
 div.list.view
   div.view.body
-    position relative
+    position fixed
     z-index 1
+    top 6.1em
+    bottom 0
+    overflow scroll
+    width 100vw
   div.tab
-    position absolute
+    position fixed
     top 3.8em
     height 2.2em
     center(vert, h)
@@ -332,6 +339,7 @@ div.list.spacer
   height 6em
 div.item.row
   height 3em
+  display flex
   div.item.col:first-child
     width 12vw
     height 100%
@@ -382,7 +390,7 @@ div.list.search.view
   div.search.icon
     position fixed
     width 12vw
-    right 0
+    right .7em
     height 4em
     display flex
     z-index 150
@@ -408,7 +416,6 @@ div.list.search.view
         color darkish(0.4)
         .selected
           color darkish(0.8)
-          font-weight bold
           text-shadow 0 3px 6px rgba(0,64,128,1)
         //1ROW/1ST COLUMN (icons)
         &:first-child
@@ -441,37 +448,83 @@ div.list.search.view
         margin .5em 1em
         flex-grow 1
 
+div.project.container
+  div.project.header
+    div.title.row
+      div.title.column
+        font-size 26px
+        div
+          display flex
+        &:last-child
+          button
+            background none
+            color $light
+            border 1px solid transparent
+            border-radius 4px
+            &:disabled
+              color lightish(0.3)
+  div.project.body
+    z-index 100
+    position absolute
+    width 100vw
+    top 4em
+    bottom 0
+    padding 1.5em
+    box-sizing border-box
+    background-color $light
+    form
+      font-size 1.5em
+      div.form.row
+        display flex
+        input
+          flex-grow 1
+          margin 0 1em
+          border none
+          font-size: 20px
+          &:focus
+            outline none
 
 
 //----------------DIRECTIVES---------------
 // addItem row
-div.row.add.item
-  display flex
-  div.col.add.item
+div.item.row
+  // display flex
+  div.item.col
+    display flex
     &:nth-child(2)
       flex-grow 1
-      display flex
       padding 0.5em
-      input
-        color darkish(0.8)
+      form
+        display flex
         flex-grow 1
-        font-size 1.2em
-        border none
+        input
+          color darkish(0.8)
+          flex-grow 1
+          font-size 1.2em
+          border none
+    &:last-child
+      margin auto
 // listHeader
-div.list.header
+div.list.header, div.project.header
   width 100vw
-  div.title.row
+  div.title.row, div.icon.row
     center(vert)
     justify-content space-between
     height 2em
+    padding .3em
+    box-sizing border-box
+    font-size 2em
+    div.title.column, div.icon.column
+      center(vert, h)
+      i
+        text-align center
+        margin-right .5em
+  div.title.row
     background-color $selected
     color $light
-    font-size 2em
-    div.title.column
-      center(h)
-      i
-        width 12vw
-        text-align center
+  div.icon.row
+    background-color $light
+    color $dark
 
 
   div.tabs.row

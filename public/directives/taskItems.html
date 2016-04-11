@@ -1,0 +1,13 @@
+<div ng-repeat="task in tasks" class="row item">
+  <div class="col item" ng-click="toggleEdit($index)">
+    <svg width="3em" height="3em">
+      <circle cx="1.5em" cy="1.5em" r=".75em" fill="white"/>
+      <circle cx="1.5em" cy="1.5em" r=".5em" fill="rgba(0,120,255,1)" ng-if="task.status.editable" />
+    </svg>
+  </div>
+  <div class="col item">
+    <form ng-submit="saveNew()">
+      <input type="text" ng-model="tasks[$index].name">
+    </form>
+  </div>
+</div>

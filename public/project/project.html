@@ -1,0 +1,31 @@
+<div class="project container">
+  <!-- ***** HEADER ***** -->
+    <div class="project header">
+      <!-- 1ST ROW - TOP LAYER: Title -->
+      <div class="title row">
+        <!-- Column 1 of 2 - 'close icon' and 'title' -->
+        <div class="title column">
+          <!-- close icon -->
+          <div ui-sref="{{priorView}}">
+            <i class="material-icons">close</i>
+          </div>
+          <!-- title -->
+          <div>{{newItem.name}}</div>
+        </div>
+        <!-- Column 2 of 2 - save link -->
+        <div class="title column">
+          <button ui-sref="{{priorView}}" ng-click="saveNew()" ng-disabled="projectForm.$invalid" form="projectForm">SAVE</button>
+        </div>
+      </div>
+    </div>
+
+  <!-- ***** BODY ***** -->
+    <div class="project body">
+      <form id="projectForm" name="projectForm" novalidate>
+        <div class="form row">
+          <label for="name">Name:</label>
+          <input id="name" name="name" type="text" ng-model="newItem.name" autocomplete="off" autofocus required />
+        </div>
+      </form>
+    </div>
+</div>
