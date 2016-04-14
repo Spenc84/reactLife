@@ -27,13 +27,14 @@ angular.module('lifeApp')
     object[key] = !object[key];
   };
   $scope.toggleAll = () => {
-    for(var key in $scope.query){
+    for(let key in $scope.query){
       if(key !== 'and') $scope.query[key] = !$scope.query[key];
     }
   };
 
 
-  //  ----------  Edit Toggles  ----------
+  //---------------------------  Edit Toggles  ---------------------------------
+  // toggles whether or not individual item rows are editable
   $scope.editableItems = 0;
   $scope.toggleEdit = (task) => {
     $scope.tasks[task].status.editable = !$scope.tasks[task].status.editable;
@@ -42,22 +43,63 @@ angular.module('lifeApp')
   };
   $scope.toggleEditOff = () => {
     $scope.editableItems = 0;
-    for (var i = 0; i < $scope.tasks.length; i++) {
+    for (let i = 0; i < $scope.tasks.length; i++) {
       $scope.tasks[i].status.editable = false;
     }
   };
+  // toggles the main edit pane
+  $scope.editItemPaneFlag = false;
+  $scope.editPaneIndx = null;
+  $scope.newItemPaneFlag = false;
+  $scope.newItem = {};
+  $scope.toggleEditItemPane = (indx) => {
+    if(indx || indx === 0){
+      $scope.editItemPaneFlag = true;
+      $scope.editPaneIndx = indx;
+    }
+    else {
+      $scope.editItemPaneFlag = false;
+      $scope.editPaneIndx = null;
+    }
+  };
+  $scope.toggleNewItemPane = () => {
+      $scope.newItemPaneFlag = !$scope.newItemPaneFlag;
+  };
+  // toggle individual statuses
   $scope.toggleCompleted = () => {
-    for (var i = 0; i < $scope.tasks.length; i++) {
-      if($scope.tasks[i].status.editable)
+    let completedFlag = true;
+    for (let i = 0; i < $scope.tasks.length; i++) {
+      if($scope.tasks[i].status.editable){
+        if($scope.tasks[i].status.completed) completedFlag = false;
         $scope.tasks[i].status.completed = !$scope.tasks[i].status.completed;
+      }
+    }
+    $scope.editTasks('status.completed', completedFlag);
+    $scope.toggleEditOff();
+  };
+  $scope.toggleActive = () => {
+    for (let i = 0; i < $scope.tasks.length; i++) {
+      if($scope.tasks[i].status.editable){
+        $scope.tasks[i].status.active = !$scope.tasks[i].status.active;
+        $scope.tasks[i].status.inactive = !$scope.tasks[i].status.inactive;
+        $scope.tasks[i].status.pending = false;
+      }
     }
     $scope.toggleEditOff();
   };
   $scope.toggleStarred = () => {
-    for (var i = 0; i < $scope.tasks.length; i++) {
-      if($scope.tasks[i].status.editable)
-        $scope.tasks[i].status.starred = !$scope.tasks[i].status.starred;
+    let starFlag = false;
+    for (let i = 0; i < $scope.tasks.length; i++) {
+      if($scope.tasks[i].status.editable && !$scope.tasks[i].status.starred){
+          starFlag = true;
+      }
     }
+    for (let i = 0; i < $scope.tasks.length; i++) {
+      if($scope.tasks[i].status.editable)
+        $scope.tasks[i].status.starred = starFlag;
+    }
+    $scope.editTasks('status.starred', starFlag);
+    $scope.toggleEditOff();
   };
   $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
     $scope.toggleEditOff();
@@ -67,9 +109,11 @@ angular.module('lifeApp')
 
 
 
-  // ----------  Data Transfers ----------
-  $scope.newItem = {};
+  // ----------  DATA TRANSFERS ----------
+  // Data transfer variables
   let modified = {};
+
+  // GET Methods
   $scope.getTasks = function(){
     listSvc.getTasks().then(function( res, err ){
       if(err) console.log(err);
@@ -79,6 +123,8 @@ angular.module('lifeApp')
       }
     });
   };
+  $scope.getTasks();
+  // POST Methods
   $scope.saveNew = () => {
     listSvc.saveNewTask($scope.newItem).then(function( res, err ){
       if(err) console.log(err);
@@ -89,6 +135,7 @@ angular.module('lifeApp')
       }
     });
   };
+  // PUT methods
   $scope.saveTask = (index) => {
     listSvc.saveTask($scope.tasks[index]).then(function( res, err ){
       if(err) console.log(err);
@@ -98,31 +145,46 @@ angular.module('lifeApp')
       }
     });
   };
-  $scope.getTasks();
+  $scope.editTasks = (requestedChange, reqValue) => {
+    modified.itemsToBeChanged = [];
+    // modified.deletedIndx = [];
+    for (let i = 0; i < $scope.tasks.length; i++) {
+      if($scope.tasks[i].status.editable){
+        modified.itemsToBeChanged.push($scope.tasks[i]._id);
+        // modified.deletedIndx.push(i);
+      }
+    }
+    listSvc.editTasks(modified.itemsToBeChanged, requestedChange, reqValue).then(function( res, err ){
+      if(err) console.log(err);
+      else {
+        console.log("item(s) saved", res);
+      }
+    });
+  };
+
 
   //DELETE METHODS
   $scope.deleteTask = function(){
-    modified.deleted = [];
-    for (var i = 0; i < $scope.tasks.length; i++) {
+    modified.deletedId = [];
+    modified.deletedIndx = [];
+    for (let i = 0; i < $scope.tasks.length; i++) {
       if($scope.tasks[i].status.editable){
-        modified.deleted.push($scope.tasks[i]._id);
+        modified.deletedId.push($scope.tasks[i]._id);
+        modified.deletedIndx.push(i);
       }
     }
-    console.log(modified);
-    listSvc.deleteTasks(modified.deleted).then(function( res, err ){
+    listSvc.deleteTasks(modified.deletedId).then(function( res, err ){
       if(err) console.log(err);
       else {
         console.log("task(s) deleted");
         console.log(res.data);
-        // $scope.getTasks();
+        for (let i = modified.deletedIndx.length; i > 0; i--) {
+          $scope.tasks.splice(modified.deletedIndx[i-1], 1);
+        }
+        modified.deletedId = [];
+        modified.deletedIndx = [];
+        $scope.editableItems = 0;
       }
     });
-    modified = {};
-  };
-  this.getTask = function(index){
-    return $http.get("/api/task/"+id);
-  };
-  this.saveTask = function(id){
-    return $http.put('/api/task/'+id);
   };
 });

@@ -49,8 +49,7 @@ var taskSchema = new mongoose.Schema({
     needsAttention: {type: Boolean, default: false},
     multiday: {type: Boolean, default: false},
     carryOver: {type: Boolean, default: false},
-    carriedOver: {type: Number, default: 0},
-    editable: {type: Boolean, default: false}
+    carriedOver: {type: Number, default: 0}
   }
 });
 

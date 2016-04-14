@@ -1,0 +1,31 @@
+<div class="edit-item-pane container">
+  <!-- ***** HEADER ***** -->
+    <div class="edit-item-pane header">
+      <!-- 1ST ROW - TOP LAYER: Title -->
+      <div class="title row">
+        <!-- Column 1 of 2 - 'close icon' and 'title' -->
+        <div class="title column">
+          <!-- close icon -->
+          <div ng-click="toggleEditItemPane()">
+            <i class="material-icons">close</i>
+          </div>
+          <!-- title -->
+          <div>{{tasks[editPaneIndx].name}}</div>
+        </div>
+        <!-- Column 2 of 2 - save link -->
+        <div class="title column">
+          <button ng-click="saveTask(editPaneIndx); toggleEditItemPane()" ng-disabled="editItemForm.$invalid" form="editItemForm">SAVE</button>
+        </div>
+      </div>
+    </div>
+
+  <!-- ***** BODY ***** -->
+    <div class="edit-item-pane body">
+      <form id="editItemForm" name="editItemForm" novalidate>
+        <div class="form row">
+          <label for="name">Name:</label>
+          <input id="name" name="name" type="text" ng-model="tasks[editPaneIndx].name" autocomplete="off" autofocus required />
+        </div>
+      </form>
+    </div>
+</div>

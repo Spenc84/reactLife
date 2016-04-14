@@ -359,7 +359,6 @@ div.list.star.view
       font-size 27px
       color $star
       text-shadow 1px 1px 20px selected(.3), -1px -1px 20px selected(.3), -1px 1px 20px selected(.3), 1px -1px 20px selected(.3), 1px 2px 1px black, -1px -.5px 1px black, -1px 2px 1px black, 1px -.5px 1px black
-  // div.star.body
 
 // active
 div.list.active.view
@@ -448,8 +447,14 @@ div.list.search.view
         margin .5em 1em
         flex-grow 1
 
-div.project.container
-  div.project.header
+
+
+//----------------DIRECTIVES---------------
+div.edit-item-pane.container, div.new-item-pane.container
+  top 0
+  left 0
+  z-index 500
+  div.edit-item-pane.header, div.new-item-pane.header
     div.title.row
       div.title.column
         font-size 26px
@@ -463,7 +468,7 @@ div.project.container
             border-radius 4px
             &:disabled
               color lightish(0.3)
-  div.project.body
+  div.edit-item-pane.body, div.new-item-pane.body
     z-index 100
     position absolute
     width 100vw
@@ -483,14 +488,11 @@ div.project.container
           font-size: 20px
           &:focus
             outline none
-
-
-//----------------DIRECTIVES---------------
 // addItem row
 div.item.row
-  // display flex
   div.item.col
     display flex
+    margin auto
     &:nth-child(2)
       flex-grow 1
       padding 0.5em
@@ -502,10 +504,12 @@ div.item.row
           flex-grow 1
           font-size 1.2em
           border none
+    &.icon
+      color darkish(.53)
     &:last-child
-      margin auto
+      padding-right .3em
 // listHeader
-div.list.header, div.project.header
+div.list.header, div.new-item-pane.header, div.edit-item-pane.header
   width 100vw
   div.title.row, div.icon.row
     center(vert)

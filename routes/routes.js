@@ -18,6 +18,8 @@ module.exports = function( app ){
      .get(ctrl.getTask)
      .put(ctrl.editTask)
      .delete(ctrl.deleteTasks);
+  app.route('/api/tasks/:ids/:key/:value')
+     .put(ctrl.editTasks);
 
      // --- DATES ---
   // app.route('/api/dates')

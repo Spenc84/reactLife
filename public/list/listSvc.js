@@ -14,6 +14,10 @@ angular.module('lifeApp')
   this.saveTask = function(task){
     return $http.put('/api/task/'+task._id, task);
   };
+  this.editTasks = function(itemsToBeChanged, keyToChange, newValue){
+    console.log(itemsToBeChanged, keyToChange, newValue);
+    return $http.put('/api/tasks/'+itemsToBeChanged+"/"+keyToChange+"/"+newValue);
+  };
   this.deleteTasks = function(id){
     return $http.delete('/api/task/'+id);
   };

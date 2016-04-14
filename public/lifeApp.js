@@ -30,12 +30,12 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
       })
       .state('calendar.month', {
         url: '/calendar/month:optionFlag',
-        templateUrl: '/calendar/month.html'
+        templateUrl: '/calendar/month.html',
       })
       //LIST VIEWS
       .state('list', {
         controller: 'listCtrl',
-        template: '<list-header></list-header><ui-view>',
+        template: '<list-header></list-header><ui-view></ui-view><edit-item-pane ng-if="editItemPaneFlag"></edit-item-pane><new-item-pane ng-if="newItemPaneFlag"></new-item-pane>',
         abstract: true,
         resolve: {
           PriorState($state){
@@ -71,22 +71,6 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
       .state('list.completed', {
         url: '/list/completed',
         templateUrl: '/list/completed.html',
-      })
-      .state('project', {
-        controller: 'projectCtrl',
-        url: '/project/:id',
-        templateUrl: '/project/project.html',
-        parent: 'list',
-        resolve: {
-          PriorState($state){
-            var currentStateData = {
-                Name: $state.current.name,
-                Params: $state.params,
-                URL: $state.href($state.current.name, $state.params)
-            };
-            return currentStateData;
-          }
-        }
       })
       .state('user', {});
   });

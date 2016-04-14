@@ -58,15 +58,27 @@ angular.module('lifeApp')
     templateUrl: './directives/listHeader.html'
   };
 })
+.directive('taskItems', () => {
+  return {
+    restrict: 'E',
+    templateUrl: './directives/taskItems.html'
+  };
+})
 .directive('addItem', () => {
   return {
     restrict: 'E',
     templateUrl: './directives/addItem.html'
   };
 })
-.directive('taskItems', () => {
+.directive('editItemPane', () => {
   return {
     restrict: 'E',
-    templateUrl: './directives/taskItems.html'
+    templateUrl: './directives/editItemPane.html'
+  };
+})
+.directive('newItemPane', () => {
+  return {
+    restrict: 'E',
+    templateUrl: './directives/newItemPane.html'
   };
 });

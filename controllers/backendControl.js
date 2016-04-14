@@ -43,11 +43,12 @@ module.exports = {
   editTask: function( req, res ){
     Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
   },
-  /////
   editTasks: function( req, res ){
-    Task.findByIdAndUpdate({ _id: mongo.ObjectId(req.params.id) }, req.body, cb(res));
+    var set = {},
+        items = req.params.ids.split(',');
+    set[req.params.key] = req.params.value;
+    Task.update({ _id: { $in: items } }, {$set: set}, {multi: true}, cb(res));
   },
-  /////
   deleteTasks: function( req, res ){
     console.log(req.params.id);
     var items = req.params.id.split(',');
