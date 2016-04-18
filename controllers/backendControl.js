@@ -44,10 +44,19 @@ module.exports = {
     Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
   },
   editTasks: function( req, res ){
+    console.log(req.params);
     var set = {},
-        items = req.params.ids.split(',');
-    set[req.params.key] = req.params.value;
-    Task.update({ _id: { $in: items } }, {$set: set}, {multi: true}, cb(res));
+        items = req.params.ids.split(','),
+        key = req.params.key.split(','),
+        value = req.params.value.split(',');
+    console.log(items);
+    console.log(key);
+    console.log(value);
+    for (var i = 0; i < key.length; i++) {
+      set[key[i]] = value[i];
+    }
+    console.log(set);
+    Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
   },
   deleteTasks: function( req, res ){
     console.log(req.params.id);

@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 angular.module('lifeApp')
-.controller('listCtrl', function($rootScope, $scope, listSvc, PriorState){
+.controller('listCtrl', function($rootScope, $scope, listSvc, PriorState, moment){
   //record the name of the view that the user came to this view from
   if(PriorState.Name) $scope.priorView = PriorState.Name + "({ optionFlag: 's' })";
   else $scope.priorView = "calendar.agenda";
@@ -47,11 +47,10 @@ angular.module('lifeApp')
       $scope.tasks[i].status.editable = false;
     }
   };
-  // toggles the main edit pane
+  // toggle the main edit panes
+      // existing item
   $scope.editItemPaneFlag = false;
   $scope.editPaneIndx = null;
-  $scope.newItemPaneFlag = false;
-  $scope.newItem = {};
   $scope.toggleEditItemPane = (indx) => {
     if(indx || indx === 0){
       $scope.editItemPaneFlag = true;
@@ -62,9 +61,64 @@ angular.module('lifeApp')
       $scope.editPaneIndx = null;
     }
   };
+      // new item
+  $scope.newItemPaneFlag = false;
+  $scope.newItem = {};
   $scope.toggleNewItemPane = () => {
       $scope.newItemPaneFlag = !$scope.newItemPaneFlag;
   };
+
+  // quickScheduler flags
+  // main modal
+  $scope.toggleQuickScheduler = () => {
+      $scope.quickSchedulerFlag = !$scope.quickSchedulerFlag;
+  };
+      // header (for selecting the duration)
+      $scope.duration = {
+        instant: true,
+        min30: false,
+        hr1: false,
+        hr4: false,
+        hr8: false,
+        hr24: false,
+        hidden: true,
+        length: 0
+      };
+      $scope.toggleDuration = key => {
+        if($scope.duration.hidden) {
+          for (let keys in $scope.duration) {
+            $scope.duration[keys] = true;
+          }
+          $scope.duration.hidden = false;
+        } else {
+          for (let keys in $scope.duration) {
+            $scope.duration[keys] = false;
+          }
+          $scope.duration[key] = true;
+          $scope.duration.hidden = true;
+          switch (key) {
+            case 'instant':
+                $scope.duration.length = 0;
+                break;
+            case 'min30':
+                $scope.duration.length = 30;
+                break;
+            case 'hr1':
+                $scope.duration.length = 60;
+                break;
+            case 'hr4':
+                $scope.duration.length = 240;
+                break;
+            case 'hr8':
+                $scope.duration.length = 480;
+                break;
+            case 'hr24':
+                $scope.duration.length = 1440;
+                break;
+          }
+        }
+      };
+
   // toggle individual statuses
   $scope.toggleCompleted = () => {
     let completedFlag = true;
@@ -109,7 +163,7 @@ angular.module('lifeApp')
 
 
 
-  // ----------  DATA TRANSFERS ----------
+//------------------------------  DATA TRANSFERS ------------------------------
   // Data transfer variables
   let modified = {};
 
@@ -124,6 +178,7 @@ angular.module('lifeApp')
     });
   };
   $scope.getTasks();
+
   // POST Methods
   $scope.saveNew = () => {
     listSvc.saveNewTask($scope.newItem).then(function( res, err ){
@@ -135,6 +190,7 @@ angular.module('lifeApp')
       }
     });
   };
+
   // PUT methods
   $scope.saveTask = (index) => {
     listSvc.saveTask($scope.tasks[index]).then(function( res, err ){
@@ -147,21 +203,16 @@ angular.module('lifeApp')
   };
   $scope.editTasks = (requestedChange, reqValue) => {
     modified.itemsToBeChanged = [];
-    // modified.deletedIndx = [];
     for (let i = 0; i < $scope.tasks.length; i++) {
       if($scope.tasks[i].status.editable){
         modified.itemsToBeChanged.push($scope.tasks[i]._id);
-        // modified.deletedIndx.push(i);
       }
     }
     listSvc.editTasks(modified.itemsToBeChanged, requestedChange, reqValue).then(function( res, err ){
       if(err) console.log(err);
-      else {
-        console.log("item(s) saved", res);
-      }
+      else console.log("item(s) saved", res);
     });
   };
-
 
   //DELETE METHODS
   $scope.deleteTask = function(){

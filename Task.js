@@ -2,8 +2,11 @@ var mongoose = require('mongoose');
 
 var taskSchema = new mongoose.Schema({
   name: {type: String, required: true},
+  scheduled: {
+    startTime: String,
+    length: Number
+  },
   // desc: String,
-  // schedule: "",
   // color: String,
   // deadline: Date,
   // manHours: Number,

@@ -1,0 +1,27 @@
+<div class="directive quickScheduler container">
+  <fade ng-click="toggleQuickScheduler()"></fade>
+  <div class="quickScheduler body">
+    <div class="top row2">
+      <span>Duration</span>
+      <div class="duration item" ng-if="duration.instant" ng-click="toggleDuration('instant')">Instant</div>
+      <div class="duration item" ng-if="duration.min30" ng-click="toggleDuration('min30')">30 Min</div>
+      <div class="duration item" ng-if="duration.hr1" ng-click="toggleDuration('hr1')">1 Hour</div>
+      <div class="duration item" ng-if="duration.hr4" ng-click="toggleDuration('hr4')">4 Hours</div>
+      <div class="duration item" ng-if="duration.hr8" ng-click="toggleDuration('hr8')">Work Day</div>
+      <div class="duration item" ng-if="duration.hr24" ng-click="toggleDuration('hr24')">All Day</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="bottom row2">
+      <div class="item" ng-click="quickSchedule(moment())">Today</div>
+      <div class="item" ng-click="quickSchedule(moment().hour(18).startOf('hour'))" ng-if="hour < 17">Tonight</div>
+      <div class="item" ng-click="quickSchedule(moment().add(1, 'day').hour(8).startOf('hour'))">Tomorrow</div>
+      <div class="item" ng-click="quickSchedule(moment().add(1, 'day').hour(18).startOf('hour'))">Tomorrow Evening</div>
+      <div class="item" ng-click="quickSchedule(moment().day(6).hour(8).startOf('hour'))" ng-if="day < 5">This Weekend</div>
+      <div class="item" ng-click="quickSchedule(moment().add(1, 'week').day(1).hour(8).startOf('hour'))">Next Week</div>
+      <div class="item" ng-click="quickSchedule(moment().add(1, 'week').day(6).hour(8).startOf('hour'))">Next Weekend</div>
+      <div class="item" ng-click="quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))">Next Month</div>
+      <div class="item" ng-click="quickSchedule()">Someday</div>
+      <div class="item" ng-click="quickSchedule(moment())">Custom</div>
+    </div>
+  </div>
+</div>
