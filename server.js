@@ -1,15 +1,11 @@
 var express = require('express'),
      app = express(),
      mongoose = require('mongoose'),
-    //  mongoUri = 'mongodb://spencer:longhorsestickmonkey@ds023000.mlab.com:23000/spencer',
-     mongoUri = 'mongodb://localhost:27017/life',
+     mongoUri = require('./config/session').mongoUri,
      bodyParser = require('body-parser'),
      cors = require('cors'),
-     corsOptions = {
-      //  origin: 'https://projectlifeapp.herokuapp.com/'
-       origin: 'http://localhost:8030'
-     },
-     port = process.env.PORT || 8030;
+     corsOptions = require('./config/session').corsOptions,
+     port = require('./config/session').port;
 
 // if (process.env.NODE_ENV === 'production') {
 //   SESSION_SECRET= process.env.SESSION_SECRET;
