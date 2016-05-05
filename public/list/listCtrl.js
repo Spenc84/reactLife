@@ -2,7 +2,7 @@
 angular.module('lifeApp')
 .controller('listCtrl', function($rootScope, $scope, listSvc, PriorState, moment){
   //record the name of the view that the user came to this view from
-  if(PriorState.Name) $scope.priorView = PriorState.Name + "({ optionFlag: 's' })";
+  if(PriorState.Name) $scope.priorView = PriorState.Name; // + "({ optionFlag: 's' })";
   else $scope.priorView = "calendar.agenda";
 
   $scope.title = 'Projects';

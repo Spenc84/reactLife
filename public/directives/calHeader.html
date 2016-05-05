@@ -15,7 +15,7 @@
   <div class="right">
     <i ng-if="icon === 'eye' && eyeFlag" ng-click="toggleEye()" class="material-icons md-dark md-24" style="border-right: 2px solid black">visibility</i>
     <i ng-if="icon === 'eye' && !eyeFlag" ng-click="toggleEye()" class="material-icons md-dark md-24" style="border-right: 2px solid black">visibility_off</i>
-    <i ng-if="icon === 'list'" class="material-icons md-dark md-24" style="border-right: 2px solid black">list</i>
+    <i ui-sref="list.star" ng-if="icon === 'list'" class="material-icons md-dark md-24" style="border-right: 2px solid black">list</i>
     <i class="material-icons md-dark md-24"></i>
     <i ng-click="month.rebuild()" class="material-icons md-dark md-24">today</i>
   </div>

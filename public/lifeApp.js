@@ -13,7 +13,7 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
       //CALENDAR VIEWS
       .state('calendar', {
         controller: 'calendarCtrl',
-        template: '<ui-view>',
+        template: '<ui-view></ui-view>',
         abstract: true
       })
       .state('calendar.agenda', {

@@ -2,7 +2,7 @@
 
 angular.module('lifeApp')
 //****************  CALENDAR DIRECTIVES  ****************
-.directive('calHeader', ($state) => {
+.directive('calHeader', function($state) {
   return {
     restrict: 'E',
     templateUrl: './directives/calHeader.html',
@@ -39,7 +39,7 @@ angular.module('lifeApp')
     },
   };
 })
-.directive('optionPane', () => {
+.directive('optionPane', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/optionPane.html'
@@ -53,42 +53,42 @@ angular.module('lifeApp')
 })
 //****************  LIST DIRECTIVES  ****************
 //the header for each list view
-.directive('listHeader', () => {
+.directive('listHeader', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/listHeader.html'
   };
 })
 //this directive makes up the task rows that exist on each of the List Views
-.directive('taskItems', () => {
+.directive('taskItems', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/taskItems.html'
   };
 })
 //the last row on each view which allows you to quickly create a new item
-.directive('addItem', () => {
+.directive('addItem', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/addItem.html'
   };
 })
 //the form that allows you to fully edit an existing task
-.directive('editItemPane', () => {
+.directive('editItemPane', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/editItemPane.html'
   };
 })
 //the form that allows you to fully edit a new item
-.directive('newItemPane', () => {
+.directive('newItemPane', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/newItemPane.html'
   };
 })
 //the modal that allows you to quickly choose a time for your task
-.directive('quickScheduler', () => {
+.directive('quickScheduler', function() {
   return {
     restrict: 'E',
     templateUrl: './directives/quickScheduler.html',
