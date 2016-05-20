@@ -28,7 +28,7 @@ mongoose.connection.once('open', function(){
   console.log('Connected to mongo at ' + mongoUri);
 });
 
-require('./routes/routes')( app );
+require('./backend/routes')( app );
 
 app.listen(port, function(){
   console.log('listening on ' + port);
