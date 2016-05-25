@@ -1,4 +1,4 @@
-export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment) {
+export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment) {
   //record the name of the view that the user came to this view from
   if(PriorState.Name) $scope.priorView = PriorState.Name; // + "({ optionFlag: 's' })";
   else $scope.priorView = "calendar.agenda";
@@ -66,6 +66,11 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
       $scope.newItemPaneFlag = !$scope.newItemPaneFlag;
   };
 
+  // toggle the scheduler window on and off
+  $scope.toggleScheduler = () => {
+      $scope.schedulerFlag = !$scope.schedulerFlag;
+      console.log("schedulerFlag: ", $scope.schedulerFlag);
+  };
   // quickScheduler flags
   // main modal
   $scope.toggleQuickScheduler = () => {
@@ -164,10 +169,11 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
 //------------------------------  DATA TRANSFERS ------------------------------
   // Data transfer variables
   let modified = {};
+  $scope.tasks = dataSvc.tasks;
 
   // GET Methods
   $scope.getTasks = function(){
-    listSvc.getTasks().then(function( res, err ){
+    dataSvc.getTasks().then(function( res, err ){
       if(err) console.log(err);
       else {
         console.log("tasks retrieved", res.data);
@@ -179,7 +185,7 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
 
   // POST Methods
   $scope.saveNew = () => {
-    listSvc.saveNewTask($scope.newItem).then(function( res, err ){
+    dataSvc.saveNewTask($scope.newItem).then(function( res, err ){
       if(err) console.log(err);
       else {
         console.log("saved", res);
@@ -191,7 +197,7 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
 
   // PUT methods
   $scope.saveTask = (index) => {
-    listSvc.saveTask($scope.tasks[index]).then(function( res, err ){
+    dataSvc.saveTask($scope.tasks[index]).then(function( res, err ){
       if(err) console.log(err);
       else {
         console.log("saved", res);
@@ -206,7 +212,7 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
         modified.itemsToBeChanged.push($scope.tasks[i]._id);
       }
     }
-    listSvc.editTasks(modified.itemsToBeChanged, requestedChange, reqValue).then(function( res, err ){
+    dataSvc.editTasks(modified.itemsToBeChanged, requestedChange, reqValue).then(function( res, err ){
       if(err) console.log(err);
       else console.log("item(s) saved", res);
     });
@@ -222,7 +228,7 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
         modified.deletedIndx.push(i);
       }
     }
-    listSvc.deleteTasks(modified.deletedId).then(function( res, err ){
+    dataSvc.deleteTasks(modified.deletedId).then(function( res, err ){
       if(err) console.log(err);
       else {
         console.log("task(s) deleted");
@@ -238,4 +244,4 @@ export default function listCtrl($rootScope, $scope, listSvc, PriorState, moment
   };
 }
 
-listCtrl.$inject = [`$rootScope`, `$scope`, `listSvc`, `PriorState`, `moment`];
+listCtrl.$inject = [`$rootScope`, `$scope`, `dataSvc`, `PriorState`, `moment`];

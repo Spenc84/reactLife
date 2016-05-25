@@ -1,4 +1,4 @@
-export default function listSvc ($http) {
+export default function dataSvc ($http) {
 
   this.getTasks = function(){
     return $http.get("/api/tasks");
@@ -23,4 +23,4 @@ export default function listSvc ($http) {
 
 }
 
-listSvc.$inject = [`$http`];
+dataSvc.$inject = [`$http`];

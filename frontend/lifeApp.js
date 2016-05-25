@@ -10,13 +10,12 @@ import './primary.styl';
 // Import states and views
 import routes from './config';
 
-// Imports for Calendar feature
+// Imports controllers
 import calendarCtrl from './calendar/calendarCtrl';
-import calendarSvc from './calendar/calendarSvc';
-
-// Imports for List Feature
 import listCtrl from './list/listCtrl';
-import listSvc from './list/listSvc';
+
+// Import data services
+import dataSvc from './dataSvc';
 
 // Import directives
 import {calHeader, optionPane, calendar, listHeader, taskItems, addItem,
@@ -27,8 +26,7 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
   .config(routes)
   .controller(`calendarCtrl`, calendarCtrl)
   .controller(`listCtrl`, listCtrl)
-  .service(`calendarSvc`, calendarSvc)
-  .service(`listSvc`, listSvc)
+  .service(`dataSvc`, dataSvc)
   .directive(`calHeader`, calHeader)
   .directive(`optionPane`, optionPane)
   .directive(`calendar`, calendar)

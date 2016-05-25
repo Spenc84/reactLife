@@ -21,7 +21,7 @@
       <div class="item" ng-click="quickSchedule(moment().add(1, 'week').day(6).hour(8).startOf('hour'))">Next Weekend</div>
       <div class="item" ng-click="quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))">Next Month</div>
       <div class="item" ng-click="quickSchedule()">Someday</div>
-      <div class="item" ng-click="quickSchedule(moment())">Custom</div>
+      <div class="item" ng-click="toggleScheduler(); toggleQuickScheduler()">Custom</div>
     </div>
   </div>
 </div>

@@ -493,6 +493,56 @@ div.edit-item-pane.container, div.new-item-pane.container
             outline none
 
 // Quick Scheduler
+div.directive.scheduler.container
+  z-index 500
+  background-color darkish(.3)
+  div.scheduler.body
+    z-index 25
+    position absolute
+    top 10vh
+    left 10vw
+    right 10vw
+    padding 1em .5em
+    background-color $light
+    box-shadow $shadow
+    border-radius .3em
+    div.top
+      display flex
+      position absolute
+      align-items center
+      flex-direction column
+      height auto
+      left 0
+      right 0
+      background-color lightish(.85)
+      box-shadow 0 6px 6px -5px rgba(100,100,100,.5)
+      span
+        font-size small
+        margin-bottom -.6em
+      div.item
+        height 1.5em
+        font-size 2em
+        display flex
+        align-items center
+    div.spacer
+      height 4em
+    div.bottom
+      display inline-flex
+      flex-wrap wrap
+      justify-content space-around
+      div.item
+        center(vert, h)
+        height 2.5em
+        width 44%
+        box-sizing border-box
+        margin .5em
+        padding .3em
+        border-radius .5em
+        box-shadow $shadow
+        text-align center
+
+
+// Quick Scheduler
 div.directive.quickScheduler.container
   z-index 400
   background-color darkish(.3)

@@ -33,24 +33,24 @@ module.exports = {
         extensions: ['', '.js']
     },
     output: {
-        path: __dirname + '/public',
+        path: __dirname + '/public/assets',
         publicPath: '/',
         filename: 'bundle.js'
     },
     devServer: {
         contentBase: './public'
-    },
+    }
     /////  MINIFIES THE ENTIRE PROJECT  //////////
      /// COMMENT OUT TO RENDER UNMINIFIED ////////
-    plugins: [                                  //
-        new webpack.optimize.UglifyJsPlugin({   //
-            compress: {                         //
-                warnings: false,                //
-            },                                  //
-            output: {                           //
-                comments: false,                //
-            },                                  //
-        }),                                     //
-    ]                                           //
+    // , plugins: [                                  //
+    //     new webpack.optimize.UglifyJsPlugin({   //
+    //         compress: {                         //
+    //             warnings: false,                //
+    //         },                                  //
+    //         output: {                           //
+    //             comments: false,                //
+    //         },                                  //
+    //     }),                                     //
+    // ]                                           //
     //////////////////////////////////////////////
 };

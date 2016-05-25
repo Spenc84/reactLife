@@ -93,7 +93,7 @@ export function newItemPane() {
   };
 }
 //the modal that allows you to quickly choose a time for your task
-export function quickScheduler() {
+export function quickScheduler(moment) {
   return {
     restrict: 'E',
     template: require('./quickScheduler.html'),
@@ -134,4 +134,17 @@ export function quickScheduler() {
     }
   };
 }
+quickScheduler.$inject = [`moment`];
+
+export function scheduler(moment) {
+  return {
+    restrict: 'E',
+    template: require('./scheduler.html'),
+    link(scope, element, attrs, ctrl) {
+      
+    }
+  };
+}
+
+scheduler.$inject = [`moment`];
 ////////////////////////////////////////////////////////////////////////////////
