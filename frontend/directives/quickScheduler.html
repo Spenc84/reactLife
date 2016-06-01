@@ -1,17 +1,117 @@
 <div class="directive quickScheduler container">
   <fade ng-click="toggleQuickScheduler()"></fade>
   <div class="quickScheduler body">
-    <div class="top row2">
+
+    <!--__________________ ITEM MODALS __________________-->
+    <!-- Duration -->
+    <div class="duration modal" ng-if="durationModalFlag">
+      <div class="top row" ng-click="toggleDurationModal()">
+        <span>Duration</span>
+        <div class="duration item">{{scheduleNames.duration}}</div>
+      </div><div class="spacer"></div>
+      <div class="bottom row">
+        <div class="duration item" ng-click="setDuration(['None', 0])">None</div>
+        <div class="duration item" ng-click="setDuration(['30 Minutes', 30])">30 Minutes</div>
+        <div class="duration item" ng-click="setDuration(['1 Hour', 60])">1 Hour</div>
+        <!-- <div class="duration item" ng-click="setDuration(['2 Hours', 120])">2 Hours</div> -->
+        <div class="duration item" ng-click="setDuration(['4 Hours', 240])">4 Hours</div>
+        <div class="duration item" ng-click="setDuration(['Work Day', 480, 1])">Work Day</div>
+        <div class="duration item" ng-click="setDuration(['Evening', 240, 2])">Evening</div>
+        <div class="duration item" ng-click="setDuration(['All Day', 1440, 3])">All Day</div>
+        <div class="duration item" ng-click="toggleDurationModal()">Custom</div>
+      </div>
+    </div>
+    <!-- Start Time -->
+    <div class="startTime modal" ng-if="startTimeModalFlag">
+      <div class="top row" ng-click="toggleStartTimeModal()">
+          <span>Start Time</span>
+          <div class="startTime item">{{scheduleNames.startTime}}</div>
+      </div><div class="spacer"></div>
+      <div class="bottom row">
+          <div class="startTime item" ng-click="setStartTime(['Now', moment()])">Now</div>
+          <div class="startTime item" ng-if="hour < 17" ng-click="setStartTime(['Tonight', moment().hour(18).startOf('hour')])">Tonight</div>
+          <div class="startTime item" ng-click="setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])">Tomorrow</div>
+          <div class="startTime item" ng-click="setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])">Tomorrow Evening</div>
+          <div class="startTime item" ng-if="day < 5" ng-click="setStartTime(['This Weekend', moment().day(6).hour(8).startOf('hour')])">This Weekend</div>
+          <div class="startTime item" ng-click="setStartTime(['Next Week', moment().add(1, 'week').day(1).hour(8).startOf('hour')])">Next Week</div>
+          <div class="startTime item" ng-click="setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])">Next Weekend</div>
+          <div class="startTime item" ng-click="setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])">Next Month</div>
+          <div class="startTime item" ng-click="setStartTime(['Someday', ''])">Someday</div>
+          <div class="startTime item" ng-click="toggleQuickScheduler()">Custom</div>
+      </div>
+    </div>
+    <!-- Deadline -->
+    <div class="deadline modal" ng-if="deadlineModalFlag">
+      <div class="top row" ng-click="toggleDeadlineModal()">
+          <span>Deadline is realative to start time</span>
+          <div class="deadline item" ng-if="deadlineType == 'softDeadline'">{{scheduleNames.softDeadline}}</div>
+          <div class="deadline item" ng-if="deadlineType == 'hardDeadline'">{{scheduleNames.hardDeadline}}</div>
+      </div><div class="spacer"></div>
+      <div class="bottom row">
+          <div class="deadline item" ng-click="setDeadline(['None', ''])">None</div>
+          <div class="deadline item" ng-if="schedule.duration && !durationTemplate" ng-click="setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])">{{scheduleNames.duration}}</div>
+          <div class="deadline item" ng-if="startToday && startingHour < 17" ng-click="setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])">5:00 PM Today</div>
+          <div class="deadline item" ng-if="startToday" ng-click="setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])">Midnight</div>
+          <div class="deadline item" ng-if="startToday" ng-click="setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])">Midnight Tomorrow</div>
+          <div class="deadline item" ng-if="!startToday && startingHour < 17" ng-click="setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])">End of Workday</div>
+          <div class="deadline item" ng-if="!startToday" ng-click="setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])">End of Day</div>
+          <div class="deadline item" ng-if="!startToday" ng-click="setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])">End of Following Day</div>
+          <div class="deadline item" ng-if="startingDay < 5 || (startingDay === 5 && startingHour < 17)" ng-click="setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])">End of Workweek</div>
+          <div class="deadline item" ng-click="setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])">End of Week</div>
+          <div class="deadline item" ng-click="setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])">End of Month</div>
+          <div class="deadline item" ng-click="toggleDeadlineModal()">Custom</div>
+      </div>
+    </div>
+    <!-- Availability -->
+    <div class="availability modal" ng-if="availabilityModalFlag">
+      <div class="top row" ng-click="toggleAvailabilityModal()">
+          <span>Availability</span>
+          <div class="availability item">{{scheduleNames.availability}}</div>
+      </div><div class="spacer"></div>
+      <div class="bottom row">
+          <div class="availability item" ng-click="setAvailability.anytime()">Anytime</div>
+          <div class="availability item" ng-click="setAvailability.earlyBird()">Early Bird</div>
+          <div class="availability item" ng-click="setAvailability.mornings()">Mornings</div>
+          <div class="availability item" ng-click="setAvailability.daytime()">Daytime</div>
+          <div class="availability item" ng-click="setAvailability.afternoon()">Afternoon</div>
+          <div class="availability item" ng-click="setAvailability.evenings()">Evenings</div>
+          <div class="availability item" ng-click="setAvailability._24x7()">24x7</div>
+          <div class="availability item" ng-click="toggleAvailabilityModal()">Custom</div>
+      </div>
+    </div>
+
+    <!--_________________________________________________-->
+
+    <!-- ITEM ROWS -->
+    <div class="top row" ng-click="toggleDurationModal()">
       <span>Duration</span>
-      <div class="duration item" ng-if="duration.instant" ng-click="toggleDuration('instant')">Instant</div>
-      <div class="duration item" ng-if="duration.min30" ng-click="toggleDuration('min30')">30 Min</div>
-      <div class="duration item" ng-if="duration.hr1" ng-click="toggleDuration('hr1')">1 Hour</div>
-      <div class="duration item" ng-if="duration.hr4" ng-click="toggleDuration('hr4')">4 Hours</div>
-      <div class="duration item" ng-if="duration.hr8" ng-click="toggleDuration('hr8')">Work Day</div>
-      <div class="duration item" ng-if="duration.hr24" ng-click="toggleDuration('hr24')">All Day</div>
+      <div class="duration item">{{scheduleNames.duration}}</div>
     </div>
     <div class="spacer"></div>
-    <div class="bottom row2">
+    <div class="top row" ng-click="toggleStartTimeModal()">
+      <span>Start Time</span>
+      <div class="startTime item">{{scheduleNames.startTime}}</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="top row" ng-class="{disabled: noStartTime}" ng-click="toggleDeadlineModal('softDeadline')">
+      <span>Soft Deadline</span>
+      <div class="softDeadline item">{{scheduleNames.softDeadline}}</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="top row" ng-class="{disabled: noStartTime}" ng-click="toggleDeadlineModal('hardDeadline')">
+      <span>Hard Deadline</span>
+      <div class="hardDeadline item">{{scheduleNames.hardDeadline}}</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="last top row" ng-click="toggleAvailabilityModal()">
+      <span>Availability</span>
+      <div class="availability item">{{scheduleNames.availability}}</div>
+    </div>
+    <div class="spacer"></div>
+    <div id="qsSaveButton">
+      <div class="item" ng-click="quickSchedule()">Save</div>
+    </div>
+    <!-- <div class="bottom row2">
       <div class="item" ng-click="quickSchedule(moment())">Today</div>
       <div class="item" ng-click="quickSchedule(moment().hour(18).startOf('hour'))" ng-if="hour < 17">Tonight</div>
       <div class="item" ng-click="quickSchedule(moment().add(1, 'day').hour(8).startOf('hour'))">Tomorrow</div>
@@ -22,6 +122,6 @@
       <div class="item" ng-click="quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))">Next Month</div>
       <div class="item" ng-click="quickSchedule()">Someday</div>
       <div class="item" ng-click="toggleScheduler(); toggleQuickScheduler()">Custom</div>
-    </div>
+    </div> -->
   </div>
 </div>

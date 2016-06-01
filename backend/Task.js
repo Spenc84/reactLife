@@ -2,14 +2,15 @@ var mongoose = require('mongoose');
 
 var taskSchema = new mongoose.Schema({
   name: {type: String, required: true},
-  scheduled: {
+  schedule: {
     startTime: String,
-    length: Number
+    duration: Number,
+    softDeadline: String,
+    hardDeadline: String,
+    availability: []
   },
   // desc: String,
   // color: String,
-  // deadline: Date,
-  // manHours: Number,
   // users: {},
   // history: [{}],
   // prereq: {},

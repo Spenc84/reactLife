@@ -76,51 +76,6 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
   $scope.toggleQuickScheduler = () => {
       $scope.quickSchedulerFlag = !$scope.quickSchedulerFlag;
   };
-      // header (for selecting the duration)
-      $scope.duration = {
-        instant: true,
-        min30: false,
-        hr1: false,
-        hr4: false,
-        hr8: false,
-        hr24: false,
-        hidden: true,
-        length: 0
-      };
-      $scope.toggleDuration = key => {
-        if($scope.duration.hidden) {
-          for (let keys in $scope.duration) {
-            $scope.duration[keys] = true;
-          }
-          $scope.duration.hidden = false;
-        } else {
-          for (let keys in $scope.duration) {
-            $scope.duration[keys] = false;
-          }
-          $scope.duration[key] = true;
-          $scope.duration.hidden = true;
-          switch (key) {
-            case 'instant':
-                $scope.duration.length = 0;
-                break;
-            case 'min30':
-                $scope.duration.length = 30;
-                break;
-            case 'hr1':
-                $scope.duration.length = 60;
-                break;
-            case 'hr4':
-                $scope.duration.length = 240;
-                break;
-            case 'hr8':
-                $scope.duration.length = 480;
-                break;
-            case 'hr24':
-                $scope.duration.length = 1440;
-                break;
-          }
-        }
-      };
 
   // toggle individual statuses
   $scope.toggleCompleted = () => {
