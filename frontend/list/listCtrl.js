@@ -77,7 +77,7 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
       $scope.quickSchedulerFlag = !$scope.quickSchedulerFlag;
   };
 
-  // toggle individual statuses
+  // toggle the individual statuses
   $scope.toggleCompleted = () => {
     let completedFlag = true;
     for (let i = 0; i < $scope.tasks.length; i++) {
@@ -86,19 +86,19 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
         $scope.tasks[i].status.completed = !$scope.tasks[i].status.completed;
       }
     }
-    $scope.editTasks('status.completed', completedFlag);
+    $scope.editTasks('status.completed', [completedFlag]);
     $scope.toggleEditOff();
   };
-  $scope.toggleActive = () => {
-    for (let i = 0; i < $scope.tasks.length; i++) {
-      if($scope.tasks[i].status.editable){
-        $scope.tasks[i].status.active = !$scope.tasks[i].status.active;
-        $scope.tasks[i].status.inactive = !$scope.tasks[i].status.inactive;
-        $scope.tasks[i].status.pending = false;
-      }
-    }
-    $scope.toggleEditOff();
-  };
+  // $scope.toggleActive = () => {
+  //   for (let i = 0; i < $scope.tasks.length; i++) {
+  //     if($scope.tasks[i].status.editable){
+  //       $scope.tasks[i].status.active = !$scope.tasks[i].status.active;
+  //       $scope.tasks[i].status.inactive = !$scope.tasks[i].status.inactive;
+  //       $scope.tasks[i].status.pending = false;
+  //     }
+  //   }
+  //   $scope.toggleEditOff();
+  // };
   $scope.toggleStarred = () => {
     let starFlag = false;
     for (let i = 0; i < $scope.tasks.length; i++) {
@@ -110,9 +110,11 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
       if($scope.tasks[i].status.editable)
         $scope.tasks[i].status.starred = starFlag;
     }
-    $scope.editTasks('status.starred', starFlag);
+    $scope.editTasks('status.starred', [starFlag]);
     $scope.toggleEditOff();
   };
+
+  // When you leave the current view, change any editable task items back to uneditable
   $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
     $scope.toggleEditOff();
   });
@@ -128,15 +130,11 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
 
   // GET Methods
   $scope.getTasks = function(){
-    dataSvc.getTasks().then(function( res, err ){
-      if(err) console.log(err);
-      else {
-        console.log("tasks retrieved", res.data);
-        $scope.tasks = res.data;
-      }
-    });
+    dataSvc.getTasks().then(
+          function(result){console.log('list retrieve'); $scope.tasks = dataSvc.tasks = result.data;},
+          function(error){console.log("Failed to get tasks.", error);}
+    );
   };
-  $scope.getTasks();
 
   // POST Methods
   $scope.saveNew = () => {
@@ -152,25 +150,24 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
 
   // PUT methods
   $scope.saveTask = (index) => {
-    dataSvc.saveTask($scope.tasks[index]).then(function( res, err ){
-      if(err) console.log(err);
-      else {
+    dataSvc.saveTask($scope.tasks[index]).then(
+      function(res){
         console.log("saved", res);
-        $scope.tasks[index] = res.data;
-      }
-    });
+        if($scope.tasks[index].status.editable) $scope.toggleEdit(index);
+      },
+      function(err){ console.log(err); }
+    );
   };
-  $scope.editTasks = (requestedChange, reqValue) => {
-    modified.itemsToBeChanged = [];
-    for (let i = 0; i < $scope.tasks.length; i++) {
-      if($scope.tasks[i].status.editable){
-        modified.itemsToBeChanged.push($scope.tasks[i]._id);
-      }
+  $scope.editTasks = (keysToChange, newValues) => {
+    let tasksToChange = [],
+        {tasks} = $scope;
+    for (let i = 0; i < tasks.length; i++) {
+      if(tasks[i].status.editable) tasksToChange.push(tasks[i]._id);
     }
-    dataSvc.editTasks(modified.itemsToBeChanged, requestedChange, reqValue).then(function( res, err ){
-      if(err) console.log(err);
-      else console.log("item(s) saved", res);
-    });
+    dataSvc.editTasks(tasksToChange, keysToChange, newValues).then(
+      function( res ){ console.log("item(s) saved", res); },
+      function( err ){ console.log("Error while saving: ", err); }
+    );
   };
 
   //DELETE METHODS

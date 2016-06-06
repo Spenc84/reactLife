@@ -19,7 +19,7 @@ module.exports = {
     User.create(req.body, cb(res));
   },
   getUsers: function( req, res ){
-    User.find(req.query, cb(res));
+    User.find({}, cb(res));
   },
   getUser: function( req, res ){
     User.findById(req.params.id, cb(res));
@@ -27,9 +27,25 @@ module.exports = {
   editUser: function( req, res ){
     User.findByIdAndUpdate(req.params.id, req.body, cb(res));
   },
+  editUsers: function( req, res ){
+    console.log(req.params);
+    var set = {},
+        items = req.params.ids.split(','),
+        keys = req.params.keys.split(','),
+        values = JSON.parse(req.params.values);
+    console.log(items);
+    console.log(keys);
+    console.log(values);
+    for (var i = 0; i < keys.length; i++) {
+      set[keys[i]] = values[i];
+    }
+    console.log(set);
+    User.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
+  },
   deleteUser: function( req, res ){
     User.findByIdAndRemove(req.params.id, cb(res));
   },
+
   // ----- TASKS -----
   postTask: function( req, res ){
     Task.create(req.body, cb(res));
@@ -47,13 +63,13 @@ module.exports = {
     console.log(req.params);
     var set = {},
         items = req.params.ids.split(','),
-        key = req.params.key.split(','),
-        value = req.params.value.split(',');
+        keys = req.params.keys.split(','),
+        values = JSON.parse(req.params.values);
     console.log(items);
-    console.log(key);
-    console.log(value);
-    for (var i = 0; i < key.length; i++) {
-      set[key[i]] = value[i];
+    console.log(keys);
+    console.log(values);
+    for (var i = 0; i < keys.length; i++) {
+      set[keys[i]] = values[i];
     }
     console.log(set);
     Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
@@ -66,5 +82,22 @@ module.exports = {
   },
   deleteTask: function( req, res ){
     Task.findByIdAndRemove(req.params.id, cb(res));
+  },
+
+  // ----- AGENDA -----
+  getAgenda: function( req, res ){
+    // User.findById(req.params.id, function(error, response){
+    //   if(error) res.status(500).json(error);
+    //   else res.status(200).json(response.agenda);
+    // });
+    res.status(200).send();  // REMOVE ME
+  },
+  updateAgenda: function( req, res ){
+    // Task.create(req.body, cb(res));
+    res.status(200).send();   // REMOVE ME
+  },
+  updateCron: function( req, res ){
+    // Task.create(req.body, cb(res));
+    res.status(200).send();   // REMOVE ME
   }
 };

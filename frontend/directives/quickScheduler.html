@@ -50,13 +50,13 @@
       <div class="bottom row">
           <div class="deadline item" ng-click="setDeadline(['None', ''])">None</div>
           <div class="deadline item" ng-if="schedule.duration && !durationTemplate" ng-click="setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])">{{scheduleNames.duration}}</div>
-          <div class="deadline item" ng-if="startToday && startingHour < 17" ng-click="setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])">5:00 PM Today</div>
+          <div class="deadline item" ng-if="startToday && schedule.startTime.hour < 17" ng-click="setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])">5:00 PM Today</div>
           <div class="deadline item" ng-if="startToday" ng-click="setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])">Midnight</div>
           <div class="deadline item" ng-if="startToday" ng-click="setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])">Midnight Tomorrow</div>
-          <div class="deadline item" ng-if="!startToday && startingHour < 17" ng-click="setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])">End of Workday</div>
+          <div class="deadline item" ng-if="!startToday && schedule.startTime.hour < 17" ng-click="setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])">End of Workday</div>
           <div class="deadline item" ng-if="!startToday" ng-click="setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])">End of Day</div>
           <div class="deadline item" ng-if="!startToday" ng-click="setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])">End of Following Day</div>
-          <div class="deadline item" ng-if="startingDay < 5 || (startingDay === 5 && startingHour < 17)" ng-click="setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])">End of Workweek</div>
+          <div class="deadline item" ng-if="schedule.startTime.moment.day() < 5 || (schedule.startTime.moment.day() === 5 && schedule.startTime.hour < 17)" ng-click="setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])">End of Workweek</div>
           <div class="deadline item" ng-click="setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])">End of Week</div>
           <div class="deadline item" ng-click="setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])">End of Month</div>
           <div class="deadline item" ng-click="toggleDeadlineModal()">Custom</div>
@@ -93,12 +93,12 @@
       <div class="startTime item">{{scheduleNames.startTime}}</div>
     </div>
     <div class="spacer"></div>
-    <div class="top row" ng-class="{disabled: noStartTime}" ng-click="toggleDeadlineModal('softDeadline')">
+    <div class="top row" ng-class="{disabled: !schedule.startTime.moment}" ng-click="toggleDeadlineModal('softDeadline')">
       <span>Soft Deadline</span>
       <div class="softDeadline item">{{scheduleNames.softDeadline}}</div>
     </div>
     <div class="spacer"></div>
-    <div class="top row" ng-class="{disabled: noStartTime}" ng-click="toggleDeadlineModal('hardDeadline')">
+    <div class="top row" ng-class="{disabled: !schedule.startTime.moment}" ng-click="toggleDeadlineModal('hardDeadline')">
       <span>Hard Deadline</span>
       <div class="hardDeadline item">{{scheduleNames.hardDeadline}}</div>
     </div>

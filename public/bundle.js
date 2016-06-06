@@ -50463,8 +50463,8 @@
 	});
 	exports.default = routes;
 	function routes($stateProvider, $urlRouterProvider) {
-	  $urlRouterProvider.otherwise('/');
 
+	  $urlRouterProvider.otherwise('/list/star');
 	  $stateProvider
 	  //SPLASH SCREEN
 	  .state('home', {
@@ -50475,7 +50475,8 @@
 	  .state('calendar', {
 	    controller: 'calendarCtrl',
 	    template: '<ui-view></ui-view>',
-	    abstract: true
+	    abstract: true,
+	    resolve: { Tasks: getTasks, User: getUser }
 	  }).state('calendar.agenda', {
 	    url: '/calendar/agenda::optionFlag',
 	    template: __webpack_require__(115)
@@ -50502,7 +50503,9 @@
 	          URL: $state.href($state.current.name, $state.params)
 	        };
 	        return currentStateData;
-	      }]
+	      }],
+	      Tasks: getTasks,
+	      User: getUser
 	    }
 	  }).state('list.search', {
 	    url: '/list/search',
@@ -50523,6 +50526,33 @@
 	    url: '/list/completed',
 	    template: __webpack_require__(124)
 	  }).state('user', {});
+
+	  /// Aquire task data before loading views ///
+	  function getTasks($state, $q, dataSvc) {
+	    var deferred = $q.defer();
+	    if (dataSvc.tasks) deferred.resolve('Tasks already loaded');else dataSvc.getTasks().then(function (tasks) {
+	      dataSvc.tasks = tasks.data;
+	      deferred.resolve("Tasks aquired");
+	    }, function (rejected) {
+	      alert("Failed to aquire tasks");deferred.reject("Failed to aquire tasks");$state.go("home");
+	    });
+	    return deferred.promise;
+	  }
+	  getTasks.$inject = ['$state', '$q', 'dataSvc'];
+
+	  /////////////////////////////  TEMPORARY  //////////////////////////////////////
+	  function getUser($state, $q, dataSvc) {
+	    var deferred = $q.defer();
+	    if (dataSvc.user) deferred.resolve('User already loaded');else dataSvc.getUser().then(function (user) {
+	      dataSvc.user = user.data;console.log('User aquired: ' + user.data);
+	      deferred.resolve("User aquired");
+	    }, function (rejected) {
+	      alert("Failed to aquire user");deferred.reject("Failed to aquire user");$state.go("home");
+	    });
+	    return deferred.promise;
+	  }
+	  getUser.$inject = ['$state', '$q', 'dataSvc'];
+	  ////////////////////////////////////////////////////////////////////////////////
 	}
 
 	routes.$inject = ['$stateProvider', '$urlRouterProvider'];
@@ -50603,12 +50633,76 @@
 	  value: true
 	});
 	exports.default = calendarCtrl;
-	function calendarCtrl($scope, calendarSvc, moment, $interval) {
+	function calendarCtrl($scope, dataSvc, moment, $interval) {
+	  $scope.tasks = dataSvc.tasks;
+	  console.log('Tasks: ', $scope.tasks);
+	  console.log('User: ', dataSvc.user);
+	  // let agenda = buildAgenda();
+	  //
+	  // function buildAgenda(){
+	  //   let active = [],
+	  //       pending = [],
+	  //       now = moment();
+	  //   for (let i = 0; i < $scope.tasks.length; i++) {
+	  //     let status = $scope.tasks[i].status;
+	  //     if(!status.completed){
+	  //       if(status.active) active.push($scope.tasks[i]);
+	  //       if(status.pending) pending.push($scope.tasks[i]);
+	  //     }
+	  //   }
+	  //   // Update any active tasks
+	  //   for (let i = 0; i < active.length; i++) {
+	  //     let schedule = active[i].schedule;
+	  //     if(schedule.softDeadline.moment && moment(schedule.softDeadline.moment).isSameOrBefore(now)){
+	  //       active[i].status.pastDue = true;
+	  //       active[i].status.needsAttention = true;
+	  //       if(schedule.hardDeadline.moment) active[i].status.highPriority = true;
+	  //     }
+	  //     if(schedule.hardDeadline.moment && moment(schedule.hardDeadline.moment).isSameOrBefore(now)){
+	  //       active[i].status.active = false;
+	  //       active[i].status.scheduled = false;
+	  //       active[i].status.incomplete = true;
+	  //     }
+	  //   }
+	  //   // Update any pending tasks
+	  //   for (let i = 0; i < pending.length; i++) {
+	  //     let schedule = pending[i].schedule,
+	  //         status = pending[i].status;
+	  //     if(status.scheduled && moment(schedule.startTime.moment).isSameOrBefore(now)){
+	  //       status.active = true;
+	  //       status.pending = false;
+	  //     }
+	  //     if(!status.scheduled){
+	  //       // Check to see if all of the prerequisits have been met, and if so, schedule the task
+	  //     }
+	  //   }
+	  //   let scheduled = [];
+	  //   for (var i = 0; i < $scope.tasks.length; i++) {
+	  //     if($scope.tasks[i].status.scheduled) scheduled.push($scope.tasks[i]);
+	  //   }
+	  //   return scheduled;
+	  // }
+	  //
+	  // console.log('Tasks: ', $scope.tasks);
+
 	  $scope.now = moment();
 	  $scope.currentMinute = 5 + $scope.now.hour() * 60 + $scope.now.minute() + 'px';
 	  $scope.month = buildMonth();
 	  console.log($scope.now);
 	  console.log($scope.currentMinute);
+
+	  //------------------------------  DATA TRANSFERS -----------------------------//
+	  // GET Methods
+	  // $scope.getTasks = function(){
+	  //   dataSvc.getTasks().then(
+	  //         function(result){console.log('calendar retrieve'); $scope.tasks = dataSvc.tasks = result.data;
+	  //         console.log(result.data[0].schedule);},
+	  //         function(error){console.log("Failed to get tasks.", error);}
+	  //   );
+	  // };
+	  // if(dataSvc.tasks) $scope.tasks = dataSvc.tasks;
+	  // else $scope.getTasks();
+	  //----------------------------------------------------------------------------//
 
 	  //Update $scope.now with the current time once every 60 seconds
 	  var minuteIteration = $interval(function () {
@@ -50619,21 +50713,24 @@
 	    $scope.currentMinute = 5 + hour * 60 + minute + 'px';
 	    //Check for new hour or day and update the DOM accordingly
 	    if (hour === 0 && minute === 0) $scope.month.rebuild($scope.now);else if ($scope.month.moment.isSame($scope.now, 'day')) {
-	      for (var i = 0; i < 24; i++) {
-	        if (i <= hour) $scope.month.hours[i] = false;else $scope.month.hours[i] = true;
+	      for (var i = 0; i <= hour; i++) {
+	        $scope.month.hours[i] = false;
+	      }
+	      for (var _i = hour + 1; _i < 24; _i++) {
+	        $scope.month.hours[_i] = true;
 	      }
 	    }
 	    console.log($scope.now);
 	    console.log($scope.currentMinute);
 	  }, 60000);
 	  $scope.$on('$destroy', function () {
-	    console.log('DANGER WILL ROBINSON!!');$interval.cancel(minuteIteration);
+	    $interval.cancel(minuteIteration);
 	  });
 
 	  //Build the month object
-	  function buildMonth(format) {
+	  function buildMonth(selectedMoment) {
 	    var date = void 0;
-	    format ? date = moment(format) : date = moment();
+	    date = selectedMoment ? moment(selectedMoment) : moment();
 	    var month = {
 	      'moment': date,
 	      'name': date.format('MMMM'),
@@ -50641,10 +50738,11 @@
 	      'weeks': buildWeeks(date.clone().startOf('month')),
 	      'currentWeek': buildWeek(date),
 	      'hours': buildHours(date),
-	      rebuild: function rebuild(format) {
-	        $scope.month = buildMonth(format);
+	      rebuild: function rebuild(newMoment) {
+	        $scope.month = buildMonth(newMoment);
 	      }
 	    };
+	    console.log('Month: ', month);
 	    return month;
 	  }
 
@@ -50679,29 +50777,28 @@
 	  //Update each hour with the 'invalid' property if appropriate
 	  function buildHours(date) {
 	    var hours = [];
-	    console.log(hours);
 	    if (date.isBefore($scope.now, 'day')) {
 	      for (var i = 0; i < 24; i++) {
 	        hours[i] = false;
 	      }
-	      console.log('Hidy');
 	    } else if (date.isAfter($scope.now, 'day')) {
-	      for (var _i = 0; _i < 24; _i++) {
-	        hours[_i] = true;
-	      }
-	      console.log('ho');
-	    } else {
 	      for (var _i2 = 0; _i2 < 24; _i2++) {
-	        if (_i2 <= $scope.now.hour()) hours[_i2] = false;else hours[_i2] = true;
+	        hours[_i2] = true;
 	      }
-	      console.log('neighbor');
+	    } else {
+	      var hour = $scope.now.hour();
+	      for (var _i3 = 0; _i3 <= hour; _i3++) {
+	        hours[_i3] = false;
+	      }
+	      for (var _i4 = hour + 1; _i4 < 24; _i4++) {
+	        hours[_i4] = true;
+	      }
 	    }
-	    console.log(hours);
 	    return hours;
 	  }
 	}
 
-	calendarCtrl.$inject = ['$scope', 'calendarSvc', 'moment', '$interval'];
+	calendarCtrl.$inject = ['$scope', 'dataSvc', 'moment', '$interval'];
 
 /***/ },
 /* 126 */
@@ -50789,7 +50886,7 @@
 	    $scope.quickSchedulerFlag = !$scope.quickSchedulerFlag;
 	  };
 
-	  // toggle individual statuses
+	  // toggle the individual statuses
 	  $scope.toggleCompleted = function () {
 	    var completedFlag = true;
 	    for (var i = 0; i < $scope.tasks.length; i++) {
@@ -50798,19 +50895,19 @@
 	        $scope.tasks[i].status.completed = !$scope.tasks[i].status.completed;
 	      }
 	    }
-	    $scope.editTasks('status.completed', completedFlag);
+	    $scope.editTasks('status.completed', [completedFlag]);
 	    $scope.toggleEditOff();
 	  };
-	  $scope.toggleActive = function () {
-	    for (var i = 0; i < $scope.tasks.length; i++) {
-	      if ($scope.tasks[i].status.editable) {
-	        $scope.tasks[i].status.active = !$scope.tasks[i].status.active;
-	        $scope.tasks[i].status.inactive = !$scope.tasks[i].status.inactive;
-	        $scope.tasks[i].status.pending = false;
-	      }
-	    }
-	    $scope.toggleEditOff();
-	  };
+	  // $scope.toggleActive = () => {
+	  //   for (let i = 0; i < $scope.tasks.length; i++) {
+	  //     if($scope.tasks[i].status.editable){
+	  //       $scope.tasks[i].status.active = !$scope.tasks[i].status.active;
+	  //       $scope.tasks[i].status.inactive = !$scope.tasks[i].status.inactive;
+	  //       $scope.tasks[i].status.pending = false;
+	  //     }
+	  //   }
+	  //   $scope.toggleEditOff();
+	  // };
 	  $scope.toggleStarred = function () {
 	    var starFlag = false;
 	    for (var i = 0; i < $scope.tasks.length; i++) {
@@ -50821,9 +50918,11 @@
 	    for (var _i = 0; _i < $scope.tasks.length; _i++) {
 	      if ($scope.tasks[_i].status.editable) $scope.tasks[_i].status.starred = starFlag;
 	    }
-	    $scope.editTasks('status.starred', starFlag);
+	    $scope.editTasks('status.starred', [starFlag]);
 	    $scope.toggleEditOff();
 	  };
+
+	  // When you leave the current view, change any editable task items back to uneditable
 	  $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
 	    $scope.toggleEditOff();
 	  });
@@ -50835,14 +50934,12 @@
 
 	  // GET Methods
 	  $scope.getTasks = function () {
-	    dataSvc.getTasks().then(function (res, err) {
-	      if (err) console.log(err);else {
-	        console.log("tasks retrieved", res.data);
-	        $scope.tasks = res.data;
-	      }
+	    dataSvc.getTasks().then(function (result) {
+	      console.log('list retrieve');$scope.tasks = dataSvc.tasks = result.data;
+	    }, function (error) {
+	      console.log("Failed to get tasks.", error);
 	    });
 	  };
-	  $scope.getTasks();
 
 	  // POST Methods
 	  $scope.saveNew = function () {
@@ -50857,22 +50954,24 @@
 
 	  // PUT methods
 	  $scope.saveTask = function (index) {
-	    dataSvc.saveTask($scope.tasks[index]).then(function (res, err) {
-	      if (err) console.log(err);else {
-	        console.log("saved", res);
-	        $scope.tasks[index] = res.data;
-	      }
+	    dataSvc.saveTask($scope.tasks[index]).then(function (res) {
+	      console.log("saved", res);
+	      if ($scope.tasks[index].status.editable) $scope.toggleEdit(index);
+	    }, function (err) {
+	      console.log(err);
 	    });
 	  };
-	  $scope.editTasks = function (requestedChange, reqValue) {
-	    modified.itemsToBeChanged = [];
-	    for (var i = 0; i < $scope.tasks.length; i++) {
-	      if ($scope.tasks[i].status.editable) {
-	        modified.itemsToBeChanged.push($scope.tasks[i]._id);
-	      }
+	  $scope.editTasks = function (keysToChange, newValues) {
+	    var tasksToChange = [];
+	    var tasks = $scope.tasks;
+
+	    for (var i = 0; i < tasks.length; i++) {
+	      if (tasks[i].status.editable) tasksToChange.push(tasks[i]._id);
 	    }
-	    dataSvc.editTasks(modified.itemsToBeChanged, requestedChange, reqValue).then(function (res, err) {
-	      if (err) console.log(err);else console.log("item(s) saved", res);
+	    dataSvc.editTasks(tasksToChange, keysToChange, newValues).then(function (res) {
+	      console.log("item(s) saved", res);
+	    }, function (err) {
+	      console.log("Error while saving: ", err);
 	    });
 	  };
 
@@ -50915,6 +51014,16 @@
 	exports.default = dataSvc;
 	function dataSvc($http) {
 
+	  var self = this;
+	  ///// VARIABLES THAT WILL BE ADDED TO dataSvc LATER //////////////
+	  //  self.user = {The User currently logged in}
+	  //          .tasks = [All tasks belonging to this user]
+	  //          .agenda = [All scheduled tasks organized by date]
+	  //  self.schedule
+	  //  self.scheduleNames
+	  //////////////////////////////////////////////////////////////////
+
+	  /////////////////////////////////  TASKS  //////////////////////////////////////
 	  this.getTasks = function () {
 	    return $http.get("/api/tasks");
 	  };
@@ -50928,13 +51037,48 @@
 	  this.saveTask = function (task) {
 	    return $http.put('/api/task/' + task._id, task);
 	  };
-	  this.editTasks = function (itemsToBeChanged, keyToChange, newValue) {
-	    console.log(itemsToBeChanged, keyToChange, newValue);
-	    return $http.put('/api/tasks/' + itemsToBeChanged + "/" + keyToChange + "/" + newValue);
+	  this.editTasks = function (itemsToBeChanged, keysToChange, newValues) {
+	    console.log(itemsToBeChanged, keysToChange, newValues);
+	    return $http.put('/api/tasks/' + itemsToBeChanged + "/" + keysToChange + "/" + JSON.stringify(newValues));
 	  };
 	  this.deleteTasks = function (id) {
 	    return $http.delete('/api/task/' + id);
 	  };
+	  //----------------------------------------------------------------------------//
+
+	  ////////////////////////////////  AGENDA  //////////////////////////////////////
+	  this.getAgenda = function () {
+	    return $http.get("/api/user/" + self.user._id + "/agenda");
+	  };
+	  this.updateAgenda = function (yr, mo, day, hr, min, key, ids) {
+	    $http.put("/api/cron/" + yr + "/" + mo + "/" + day + "/" + hr + "/" + min + "/" + key + "/" + ids);
+	    return $http.put("/api/user/" + self.user._id + "/agenda/" + yr + "/" + mo + "/" + day + "/" + hr + "/" + min + "/" + key + "/" + ids);
+	  };
+	  //----------------------------------------------------------------------------//
+
+	  /////////////////////////////////  USERS  //////////////////////////////////////
+	  this.getUsers = function () {
+	    return $http.get("/api/users");
+	  };
+	  this.getUser = function (id) {
+	    // return $http.get("/api/user/"+id);
+	    return $http.get("/api/user/575350c7b8833bf5125225a5"); // TEMP
+	  };
+	  this.saveNewUser = function (user) {
+	    console.log("sending " + user);
+	    return $http.post('/api/users', user);
+	  };
+	  this.saveUser = function (user) {
+	    return $http.put('/api/user/' + user._id, user);
+	  };
+	  this.editUsers = function (itemsToBeChanged, keysToChange, newValues) {
+	    console.log(itemsToBeChanged, keysToChange, newValues);
+	    return $http.put('/api/users/' + itemsToBeChanged + "/" + keysToChange + "/" + JSON.stringify(newValues));
+	  };
+	  this.deleteUsers = function (id) {
+	    return $http.delete('/api/user/' + id);
+	  };
+	  //----------------------------------------------------------------------------//
 	}
 
 	dataSvc.$inject = ["$http"];
@@ -50958,6 +51102,9 @@
 	exports.newItemPane = newItemPane;
 	exports.quickScheduler = quickScheduler;
 	exports.scheduler = scheduler;
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	//////////////   CALENDAR DIRECTIVES   /////////////////////////////////////////
 	// The header on the Calendar side
 	function calHeader($state) {
@@ -51068,13 +51215,28 @@
 	        scope.schedule = dataSvc.schedule;
 	        scope.scheduleNames = dataSvc.scheduleNames;
 	      } else {
+	        scope.scheduleNames = {
+	          startTime: 'Now',
+	          duration: 'None',
+	          softDeadline: 'None',
+	          hardDeadline: 'None',
+	          availability: 'Anytime'
+	        };
+	        var now = moment();
 	        scope.schedule = {
-	          startTime: moment(),
+	          startTime: {
+	            moment: now,
+	            year: now.year(),
+	            month: now.month(),
+	            day: now.date(),
+	            hour: now.hour(),
+	            minute: now.minute() },
 	          duration: 0,
-	          softDeadline: undefined,
-	          hardDeadline: undefined,
+	          softDeadline: { moment: '' },
+	          hardDeadline: { moment: '' },
 	          availability: []
 	        };
+	        scope.startToday = true;
 	        // scope.schedule.availability is defined as an array of 7 elements which
 	        // represent days. Each day that is available to complete the task will
 	        // contain an array of 24 elements which represent hours, otherwise it will
@@ -51094,13 +51256,6 @@
 	          scope.schedule.availability.push(hourArray);
 	        }
 	        console.log('schedule obj intialized: ', scope.schedule);
-	        scope.scheduleNames = {
-	          startTime: 'Now',
-	          duration: 'None',
-	          softDeadline: 'None',
-	          hardDeadline: 'None',
-	          availability: 'Anytime'
-	        };
 	        dataSvc.schedule = scope.schedule;
 	        dataSvc.scheduleNames = scope.scheduleNames;
 	      }
@@ -51117,26 +51272,24 @@
 	        scope.durationTemplate = value[2] ? true : false; // Referenced in deadline options
 	        if (scope.durationTemplate) {
 	          scope.hour = moment().hour();
-	          scope.noStartTime = false; // If the deadline fields were disabled, reenable them
 	          // Reset the hard deadline option
 	          scope.scheduleNames.hardDeadline = 'None';
-	          scope.schedule.hardDeadline = '';
+	          scope.schedule.hardDeadline.moment = '';
 	          // Update startTime, softDeadline, and availability fields based on template
+	          scope.deadlineType = 'softDeadline';
 	          switch (value[2]) {
 	            case 1:
 	              // Duration: Daytime (9am to 5pm)
 	              if (scope.hour < 17) {
 	                // If it's before 5:00 pm
-	                scope.scheduleNames.startTime = scope.hour < 9 ? '9:00 AM' : 'Now';
-	                scope.schedule.startTime = scope.hour < 9 ? moment().hour(9).startOf('hour') : moment();
-	                scope.scheduleNames.softDeadline = '5:00 PM';
-	                scope.schedule.softDeadline = moment().hour(17).startOf('hour');
+	                var startName = scope.hour < 9 ? '9:00 AM' : 'Now',
+	                    startTime = scope.hour < 9 ? moment().hour(9).startOf('hour') : moment();
+	                scope.setStartTime([startName, startTime]);
+	                scope.setDeadline(['5:00 PM', moment().hour(17).startOf('hour')]);
 	              } else {
 	                // If it's after 5:00 pm
-	                scope.scheduleNames.startTime = '9:00 AM Tomorrow';
-	                scope.schedule.startTime = moment().add(1, 'day').hour(9).startOf('hour');
-	                scope.scheduleNames.softDeadline = '5:00 PM Tomorrow';
-	                scope.schedule.softDeadline = moment().add(1, 'day').hour(17).startOf('hour');
+	                scope.setStartTime(['9:00 AM Tomorrow', moment().add(1, 'day').hour(9).startOf('hour')]);
+	                scope.setDeadline(['5:00 PM Tomorrow', moment().add(1, 'day').hour(17).startOf('hour')]);
 	              }
 	              scope.setAvailability.daytime();
 	              break;
@@ -51144,16 +51297,14 @@
 	              // Duration: Evening (6pm to 10pm)
 	              if (scope.hour < 22) {
 	                // If it's before 10:00 pm
-	                scope.scheduleNames.startTime = scope.hour < 18 ? '6:00 PM' : 'Now';
-	                scope.schedule.startTime = scope.hour < 18 ? moment().hour(18).startOf('hour') : moment();
-	                scope.scheduleNames.softDeadline = '10:00 PM';
-	                scope.schedule.softDeadline = moment().hour(22).startOf('hour');
+	                var _startName = scope.hour < 18 ? '6:00 PM' : 'Now',
+	                    _startTime = scope.hour < 18 ? moment().hour(18).startOf('hour') : moment();
+	                scope.setStartTime([_startName, _startTime]);
+	                scope.setDeadline(['10:00 PM', moment().hour(22).startOf('hour')]);
 	              } else {
 	                // If it's after 10:00 pm
-	                scope.scheduleNames.startTime = '6:00 PM Tomorrow';
-	                scope.schedule.startTime = moment().add(1, 'day').hour(18).startOf('hour');
-	                scope.scheduleNames.softDeadline = '10:00 PM Tomorrow';
-	                scope.schedule.softDeadline = moment().add(1, 'day').hour(22).startOf('hour');
+	                scope.setStartTime(['6:00 PM Tomorrow', moment().add(1, 'day').hour(18).startOf('hour')]);
+	                scope.setDeadline(['10:00 PM Tomorrow', moment().add(1, 'day').hour(22).startOf('hour')]);
 	              }
 	              scope.setAvailability.evenings();
 	              break;
@@ -51161,79 +51312,88 @@
 	              // Duration: All Day (8am - 10pm)
 	              if (scope.hour < 22) {
 	                // If it's before 10:00 pm
-	                scope.scheduleNames.startTime = scope.hour < 8 ? '8:00 AM' : 'Now';
-	                scope.schedule.startTime = scope.hour < 8 ? moment().hour(8).startOf('hour') : moment();
-	                scope.scheduleNames.softDeadline = '10:00 PM';
-	                scope.schedule.softDeadline = moment().hour(22).startOf('hour');
+	                var _startName2 = scope.hour < 8 ? '8:00 AM' : 'Now',
+	                    _startTime2 = scope.hour < 8 ? moment().hour(8).startOf('hour') : moment();
+	                scope.setStartTime([_startName2, _startTime2]);
+	                scope.setDeadline(['10:00 PM', moment().hour(22).startOf('hour')]);
 	              } else {
 	                // If it's after 10:00 pm
-	                scope.scheduleNames.startTime = '8:00 AM Tomorrow';
-	                scope.schedule.startTime = moment().add(1, 'day').hour(8).startOf('hour');
-	                scope.scheduleNames.softDeadline = '10:00 PM Tomorrow';
-	                scope.schedule.softDeadline = moment().add(1, 'day').hour(22).startOf('hour');
+	                scope.setStartTime(['8:00 AM Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')]);
+	                scope.setDeadline(['10:00 PM Tomorrow', moment().add(1, 'day').hour(22).startOf('hour')]);
 	              }
 	              scope.setAvailability.anytime();
 	              break;
 	          }
 	        }
-	        console.log('schedule obj updated: ', scope.schedule);
+	        console.log('duration updated: ', scope.schedule);
 	        scope.toggleDurationModal();
 	      };
 	      ////////////////////////////////////////////////////////////////////////////////
 
 	      ////////////////////////////////////////////////////////////////////////////////
 	      ///////////////////////////////  START TIME  ///////////////////////////////////
+	      scope.closeStartTimeModal = function () {
+	        scope.startTimeModalFlag = false;
+	      };
 	      scope.toggleStartTimeModal = function () {
 	        scope.startTimeModalFlag = !scope.startTimeModalFlag;
 	      };
 
 	      scope.setStartTime = function (value) {
+	        var starting = scope.schedule.startTime;
 	        scope.scheduleNames.startTime = value[0]; //Start Time's name value in string form (eg. 'Tomorrow')
-	        scope.schedule.startTime = value[1]; //Start Time's actual value (It should be a momentJS date object)
-	        scope.noStartTime = value[1] ? false : true;
+	        starting.moment = value[1]; //Start Time's actual value (It should be a momentJS date object)
 	        // If the user chooses 'Someday' as the start time then disable the deadline options and reset them
-	        if (scope.noStartTime) {
+	        if (!starting.moment) {
 	          scope.scheduleNames.softDeadline = 'None';
 	          scope.scheduleNames.hardDeadline = 'None';
-	          scope.schedule.softDeadline = '';
-	          scope.schedule.hardDeadline = '';
+	          scope.schedule.softDeadline.moment = '';
+	          scope.schedule.hardDeadline.moment = '';
 	        }
 	        // Else if the user chooses a valid start time, then set some variables for the deadline modal to use
 	        else {
-	            scope.startToday = scope.schedule.startTime.isSame(moment(), 'day') ? true : false;
-	            scope.startingDay = scope.schedule.startTime.day();
-	            scope.startingHour = scope.schedule.startTime.hour();
+	            scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
+	            starting.year = starting.moment.year();
+	            starting.month = starting.moment.month();
+	            starting.day = starting.moment.date();
+	            starting.hour = starting.moment.hour();
+	            starting.minute = starting.moment.minute();
 	            // ...and reset the deadline values if they've already been chosen and they're prior to the new start time
-	            if (scope.schedule.softDeadline && scope.schedule.softDeadline.isBefore(scope.schedule.startTime)) {
+	            if (scope.schedule.softDeadline.moment && scope.schedule.softDeadline.moment.isBefore(starting.moment)) {
 	              scope.scheduleNames.softDeadline = 'None';
-	              scope.schedule.softDeadline = '';
+	              scope.schedule.softDeadline.moment = '';
 	            }
-	            if (scope.schedule.hardDeadline && scope.schedule.hardDeadline.isBefore(scope.schedule.startTime)) {
+	            if (scope.schedule.hardDeadline.moment && scope.schedule.hardDeadline.moment.isBefore(starting.moment)) {
 	              scope.scheduleNames.hardDeadline = 'None';
-	              scope.schedule.hardDeadline = '';
+	              scope.schedule.hardDeadline.moment = '';
 	            }
 	          }
-	        console.log('schedule obj updated: ', scope.schedule);
-	        scope.toggleStartTimeModal(); // Close the startTime modal
+	        console.log('startTime updated: ', scope.schedule);
+	        scope.closeStartTimeModal(); // Close the startTime modal
 	      };
 	      ////////////////////////////////////////////////////////////////////////////////
 
 	      ////////////////////////////////////////////////////////////////////////////////
 	      ////////////////////////////////  DEADLINE  ////////////////////////////////////
 	      scope.toggleDeadlineModal = function (type) {
-	        if (type && !scope.noStartTime) {
+	        var starting = scope.schedule.startTime;
+	        if (type && starting.moment) {
 	          scope.deadlineType = type; // softDeadline or hardDeadline
-	          scope.startToday = scope.schedule.startTime.isSame(moment(), 'day') ? true : false;
-	          scope.startingDay = scope.schedule.startTime.day();
-	          scope.startingHour = scope.schedule.startTime.hour();
-	          scope.tempDeadline = scope.schedule.startTime.clone();
+	          scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
+	          scope.tempDeadline = starting.moment.clone();
 	          scope.deadlineModalFlag = true;
 	        } else scope.deadlineModalFlag = false;
 	      };
 	      scope.setDeadline = function (value) {
+	        var deadline = scope.schedule[scope.deadlineType];
 	        scope.scheduleNames[scope.deadlineType] = value[0];
-	        scope.schedule[scope.deadlineType] = value[1];
-	        console.log('schedule obj updated: ', scope.schedule);
+	        deadline.moment = value[1];
+	        deadline.year = deadline.moment ? deadline.moment.year() : undefined;
+	        deadline.month = deadline.moment ? deadline.moment.month() : undefined;
+	        deadline.day = deadline.moment ? deadline.moment.date() : undefined;
+	        deadline.hour = deadline.moment ? deadline.moment.hour() : undefined;
+	        deadline.minute = deadline.moment ? deadline.moment.minute() : undefined;
+	        console.log(scope.deadlineType + ' updated: ' + scope.schedule);
 	        scope.toggleDeadlineModal();
 	      };
 	      ////////////////////////////////////////////////////////////////////////////////
@@ -51385,17 +51545,68 @@
 	      ////////////////////////////////////////////////////////////////////////////////
 	      /////////////////////////////////  SUBMIT  /////////////////////////////////////
 	      scope.quickSchedule = function () {
-	        var scheduled = scope.schedule.startTime ? true : false;
-	        console.log(scope.startTime, scheduled);
+	        var _scope$schedule = scope.schedule;
+	        var startTime = _scope$schedule.startTime;
+	        var softDeadline = _scope$schedule.softDeadline;
+	        var hardDeadline = _scope$schedule.hardDeadline;
+	        var scheduled = startTime.moment ? true : false;
+	        var startsNow = scheduled ? startTime.moment.isSameOrBefore(moment()) : false;
+	        var active = scheduled ? startsNow : false;
+	        var pending = scheduled ? !startsNow : false;
+	        var inactive = !scheduled;
+	        var tasksToChange = [];
+	        var keysToChange = 'schedule,status.active,status.pending,status.scheduled,status.inactive';
+	        var newValues = [scope.schedule, active, pending, scheduled, inactive];
+
 	        for (var _i8 = 0; _i8 < scope.tasks.length; _i8++) {
 	          if (scope.tasks[_i8].status.editable) {
 	            scope.tasks[_i8].schedule = scope.schedule;
-	            scope.tasks[_i8].status.active = scheduled;
-	            scope.tasks[_i8].status.inactive = !scheduled;
+	            scope.tasks[_i8].status.active = active;
+	            scope.tasks[_i8].status.pending = pending;
+	            scope.tasks[_i8].status.scheduled = scheduled;
+	            scope.tasks[_i8].status.inactive = inactive;
+	            tasksToChange.push(scope.tasks[_i8]._id);
 	          }
 	        }
-	        scope.editTasks('schedule,status.active,status.inactive', [scope.schedule, scheduled, !scheduled]);
-	        console.log(scope.tasks);
+
+	        console.log("-----Sent to Backend-----");
+	        console.log("tasksToChange: ", tasksToChange);
+	        console.log("keysToChange: ", keysToChange);
+	        console.log("newValues: ", newValues);
+	        dataSvc.editTasks(tasksToChange, keysToChange, newValues).then(function (res) {
+	          console.log("item(s) saved", res);
+	        }, function (err) {
+	          console.log("Error while saving: ", err);
+	        });
+
+	        //// SET THE AGENDA VALUES ////
+	        function updateAgenda(yr, mo, day, hr, min, key, ids) {
+	          var _agenda$yr$mo$day$hr$;
+
+	          var agenda = dataSvc.user.agenda;
+
+	          agenda[yr] = agenda[yr] || [];
+	          agenda[yr][mo] = agenda[yr][mo] || [];
+	          agenda[yr][mo][day] = agenda[yr][mo][day] || [];
+	          agenda[yr][mo][day][hr] = agenda[yr][mo][day][hr] || [];
+	          agenda[yr][mo][day][hr][min] = agenda[yr][mo][day][hr][min] || {};
+	          agenda[yr][mo][day][hr][min][key] = agenda[yr][mo][day][hr][min][key] || [];
+	          (_agenda$yr$mo$day$hr$ = agenda[yr][mo][day][hr][min][key]).push.apply(_agenda$yr$mo$day$hr$, _toConsumableArray(ids));
+	          dataSvc.updateAgenda(yr, mo, day, hr, min, key, ids).then(function (res) {
+	            console.log('Agenda updated: ' + res.data);
+	          }, function (err) {
+	            console.log('Failed to update agenda: ' + err);
+	          });
+	        }
+	        var st = startTime,
+	            sd = softDeadline,
+	            hd = hardDeadline;
+	        if (st.moment) {
+	          updateAgenda(st.year, st.month, st.day, st.hour, st.minute, 'startTime', tasksToChange);
+	          if (sd.moment) updateAgenda(sd.year, sd.month, sd.day, sd.hour, sd.minute, 'softDeadline', tasksToChange);
+	          if (hd.moment) updateAgenda(hd.year, hd.month, hd.day, hd.hour, hd.minute, 'hardDeadline', tasksToChange);
+	        }
+
 	        scope.toggleQuickScheduler();
 	        scope.toggleEditOff();
 	      };
@@ -51477,7 +51688,7 @@
 /* 139 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"directive quickScheduler container\">\n  <fade ng-click=\"toggleQuickScheduler()\"></fade>\n  <div class=\"quickScheduler body\">\n\n    <!--__________________ ITEM MODALS __________________-->\n    <!-- Duration -->\n    <div class=\"duration modal\" ng-if=\"durationModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n        <span>Duration</span>\n        <div class=\"duration item\">{{scheduleNames.duration}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n        <div class=\"duration item\" ng-click=\"setDuration(['None', 0])\">None</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['30 Minutes', 30])\">30 Minutes</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['1 Hour', 60])\">1 Hour</div>\n        <!-- <div class=\"duration item\" ng-click=\"setDuration(['2 Hours', 120])\">2 Hours</div> -->\n        <div class=\"duration item\" ng-click=\"setDuration(['4 Hours', 240])\">4 Hours</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Work Day', 480, 1])\">Work Day</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Evening', 240, 2])\">Evening</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['All Day', 1440, 3])\">All Day</div>\n        <div class=\"duration item\" ng-click=\"toggleDurationModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Start Time -->\n    <div class=\"startTime modal\" ng-if=\"startTimeModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n          <span>Start Time</span>\n          <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Now', moment()])\">Now</div>\n          <div class=\"startTime item\" ng-if=\"hour < 17\" ng-click=\"setStartTime(['Tonight', moment().hour(18).startOf('hour')])\">Tonight</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])\">Tomorrow</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])\">Tomorrow Evening</div>\n          <div class=\"startTime item\" ng-if=\"day < 5\" ng-click=\"setStartTime(['This Weekend', moment().day(6).hour(8).startOf('hour')])\">This Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Week', moment().add(1, 'week').day(1).hour(8).startOf('hour')])\">Next Week</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])\">Next Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])\">Next Month</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Someday', ''])\">Someday</div>\n          <div class=\"startTime item\" ng-click=\"toggleQuickScheduler()\">Custom</div>\n      </div>\n    </div>\n    <!-- Deadline -->\n    <div class=\"deadline modal\" ng-if=\"deadlineModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDeadlineModal()\">\n          <span>Deadline is realative to start time</span>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'softDeadline'\">{{scheduleNames.softDeadline}}</div>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'hardDeadline'\">{{scheduleNames.hardDeadline}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"deadline item\" ng-click=\"setDeadline(['None', ''])\">None</div>\n          <div class=\"deadline item\" ng-if=\"schedule.duration && !durationTemplate\" ng-click=\"setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])\">{{scheduleNames.duration}}</div>\n          <div class=\"deadline item\" ng-if=\"startToday && startingHour < 17\" ng-click=\"setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])\">5:00 PM Today</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])\">Midnight</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])\">Midnight Tomorrow</div>\n          <div class=\"deadline item\" ng-if=\"!startToday && startingHour < 17\" ng-click=\"setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])\">End of Workday</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])\">End of Day</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])\">End of Following Day</div>\n          <div class=\"deadline item\" ng-if=\"startingDay < 5 || (startingDay === 5 && startingHour < 17)\" ng-click=\"setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])\">End of Workweek</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])\">End of Week</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])\">End of Month</div>\n          <div class=\"deadline item\" ng-click=\"toggleDeadlineModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Availability -->\n    <div class=\"availability modal\" ng-if=\"availabilityModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleAvailabilityModal()\">\n          <span>Availability</span>\n          <div class=\"availability item\">{{scheduleNames.availability}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"availability item\" ng-click=\"setAvailability.anytime()\">Anytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.earlyBird()\">Early Bird</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.mornings()\">Mornings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.daytime()\">Daytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.afternoon()\">Afternoon</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.evenings()\">Evenings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability._24x7()\">24x7</div>\n          <div class=\"availability item\" ng-click=\"toggleAvailabilityModal()\">Custom</div>\n      </div>\n    </div>\n\n    <!--_________________________________________________-->\n\n    <!-- ITEM ROWS -->\n    <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n      <span>Duration</span>\n      <div class=\"duration item\">{{scheduleNames.duration}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n      <span>Start Time</span>\n      <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: noStartTime}\" ng-click=\"toggleDeadlineModal('softDeadline')\">\n      <span>Soft Deadline</span>\n      <div class=\"softDeadline item\">{{scheduleNames.softDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: noStartTime}\" ng-click=\"toggleDeadlineModal('hardDeadline')\">\n      <span>Hard Deadline</span>\n      <div class=\"hardDeadline item\">{{scheduleNames.hardDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"last top row\" ng-click=\"toggleAvailabilityModal()\">\n      <span>Availability</span>\n      <div class=\"availability item\">{{scheduleNames.availability}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div id=\"qsSaveButton\">\n      <div class=\"item\" ng-click=\"quickSchedule()\">Save</div>\n    </div>\n    <!-- <div class=\"bottom row2\">\n      <div class=\"item\" ng-click=\"quickSchedule(moment())\">Today</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().hour(18).startOf('hour'))\" ng-if=\"hour < 17\">Tonight</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(8).startOf('hour'))\">Tomorrow</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(18).startOf('hour'))\">Tomorrow Evening</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().day(6).hour(8).startOf('hour'))\" ng-if=\"day < 5\">This Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(1).hour(8).startOf('hour'))\">Next Week</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(6).hour(8).startOf('hour'))\">Next Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))\">Next Month</div>\n      <div class=\"item\" ng-click=\"quickSchedule()\">Someday</div>\n      <div class=\"item\" ng-click=\"toggleScheduler(); toggleQuickScheduler()\">Custom</div>\n    </div> -->\n  </div>\n</div>\n";
+	module.exports = "<div class=\"directive quickScheduler container\">\n  <fade ng-click=\"toggleQuickScheduler()\"></fade>\n  <div class=\"quickScheduler body\">\n\n    <!--__________________ ITEM MODALS __________________-->\n    <!-- Duration -->\n    <div class=\"duration modal\" ng-if=\"durationModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n        <span>Duration</span>\n        <div class=\"duration item\">{{scheduleNames.duration}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n        <div class=\"duration item\" ng-click=\"setDuration(['None', 0])\">None</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['30 Minutes', 30])\">30 Minutes</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['1 Hour', 60])\">1 Hour</div>\n        <!-- <div class=\"duration item\" ng-click=\"setDuration(['2 Hours', 120])\">2 Hours</div> -->\n        <div class=\"duration item\" ng-click=\"setDuration(['4 Hours', 240])\">4 Hours</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Work Day', 480, 1])\">Work Day</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Evening', 240, 2])\">Evening</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['All Day', 1440, 3])\">All Day</div>\n        <div class=\"duration item\" ng-click=\"toggleDurationModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Start Time -->\n    <div class=\"startTime modal\" ng-if=\"startTimeModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n          <span>Start Time</span>\n          <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Now', moment()])\">Now</div>\n          <div class=\"startTime item\" ng-if=\"hour < 17\" ng-click=\"setStartTime(['Tonight', moment().hour(18).startOf('hour')])\">Tonight</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])\">Tomorrow</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])\">Tomorrow Evening</div>\n          <div class=\"startTime item\" ng-if=\"day < 5\" ng-click=\"setStartTime(['This Weekend', moment().day(6).hour(8).startOf('hour')])\">This Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Week', moment().add(1, 'week').day(1).hour(8).startOf('hour')])\">Next Week</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])\">Next Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])\">Next Month</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Someday', ''])\">Someday</div>\n          <div class=\"startTime item\" ng-click=\"toggleQuickScheduler()\">Custom</div>\n      </div>\n    </div>\n    <!-- Deadline -->\n    <div class=\"deadline modal\" ng-if=\"deadlineModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDeadlineModal()\">\n          <span>Deadline is realative to start time</span>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'softDeadline'\">{{scheduleNames.softDeadline}}</div>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'hardDeadline'\">{{scheduleNames.hardDeadline}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"deadline item\" ng-click=\"setDeadline(['None', ''])\">None</div>\n          <div class=\"deadline item\" ng-if=\"schedule.duration && !durationTemplate\" ng-click=\"setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])\">{{scheduleNames.duration}}</div>\n          <div class=\"deadline item\" ng-if=\"startToday && schedule.startTime.hour < 17\" ng-click=\"setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])\">5:00 PM Today</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])\">Midnight</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])\">Midnight Tomorrow</div>\n          <div class=\"deadline item\" ng-if=\"!startToday && schedule.startTime.hour < 17\" ng-click=\"setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])\">End of Workday</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])\">End of Day</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])\">End of Following Day</div>\n          <div class=\"deadline item\" ng-if=\"schedule.startTime.moment.day() < 5 || (schedule.startTime.moment.day() === 5 && schedule.startTime.hour < 17)\" ng-click=\"setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])\">End of Workweek</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])\">End of Week</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])\">End of Month</div>\n          <div class=\"deadline item\" ng-click=\"toggleDeadlineModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Availability -->\n    <div class=\"availability modal\" ng-if=\"availabilityModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleAvailabilityModal()\">\n          <span>Availability</span>\n          <div class=\"availability item\">{{scheduleNames.availability}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"availability item\" ng-click=\"setAvailability.anytime()\">Anytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.earlyBird()\">Early Bird</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.mornings()\">Mornings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.daytime()\">Daytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.afternoon()\">Afternoon</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.evenings()\">Evenings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability._24x7()\">24x7</div>\n          <div class=\"availability item\" ng-click=\"toggleAvailabilityModal()\">Custom</div>\n      </div>\n    </div>\n\n    <!--_________________________________________________-->\n\n    <!-- ITEM ROWS -->\n    <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n      <span>Duration</span>\n      <div class=\"duration item\">{{scheduleNames.duration}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n      <span>Start Time</span>\n      <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('softDeadline')\">\n      <span>Soft Deadline</span>\n      <div class=\"softDeadline item\">{{scheduleNames.softDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('hardDeadline')\">\n      <span>Hard Deadline</span>\n      <div class=\"hardDeadline item\">{{scheduleNames.hardDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"last top row\" ng-click=\"toggleAvailabilityModal()\">\n      <span>Availability</span>\n      <div class=\"availability item\">{{scheduleNames.availability}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div id=\"qsSaveButton\">\n      <div class=\"item\" ng-click=\"quickSchedule()\">Save</div>\n    </div>\n    <!-- <div class=\"bottom row2\">\n      <div class=\"item\" ng-click=\"quickSchedule(moment())\">Today</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().hour(18).startOf('hour'))\" ng-if=\"hour < 17\">Tonight</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(8).startOf('hour'))\">Tomorrow</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(18).startOf('hour'))\">Tomorrow Evening</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().day(6).hour(8).startOf('hour'))\" ng-if=\"day < 5\">This Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(1).hour(8).startOf('hour'))\">Next Week</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(6).hour(8).startOf('hour'))\">Next Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))\">Next Month</div>\n      <div class=\"item\" ng-click=\"quickSchedule()\">Someday</div>\n      <div class=\"item\" ng-click=\"toggleScheduler(); toggleQuickScheduler()\">Custom</div>\n    </div> -->\n  </div>\n</div>\n";
 
 /***/ },
 /* 140 */

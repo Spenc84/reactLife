@@ -23,7 +23,7 @@ module.exports = {
             {
                 test: /\.(jpe?g|png|gif|svg)$/i,
                 loaders: [
-                  'file?hash=sha512&digest=hex&name=[name].[ext]',
+                  'file?hash=sha512&prefix=img/&digest=hex&name=[name].[ext]',
                   'image-webpack?{progressive:true, optimizationLevel: 7, interlaced: false, pngquant:{quality: "65-90", speed: 4}}'
                 ]
             }
@@ -33,7 +33,7 @@ module.exports = {
         extensions: ['', '.js']
     },
     output: {
-        path: __dirname + '/public/assets',
+        path: __dirname + '/public',
         publicPath: '/',
         filename: 'bundle.js'
     },

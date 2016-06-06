@@ -110,13 +110,28 @@ export function quickScheduler(moment, dataSvc) {
         scope.scheduleNames = dataSvc.scheduleNames;
       }
       else {
+        scope.scheduleNames = {
+          startTime: 'Now',
+          duration: 'None',
+          softDeadline: 'None',
+          hardDeadline: 'None',
+          availability: 'Anytime'
+        };
+        let now = moment();
         scope.schedule = {
-          startTime: moment(),
+          startTime: {
+              moment: now,
+              year: now.year(),
+              month: now.month(),
+              day: now.date(),
+              hour: now.hour(),
+              minute: now.minute() },
           duration: 0,
-          softDeadline: undefined,
-          hardDeadline: undefined,
+          softDeadline: {moment: ''},
+          hardDeadline: {moment: ''},
           availability: []
         };
+        scope.startToday = true;
         // scope.schedule.availability is defined as an array of 7 elements which
         // represent days. Each day that is available to complete the task will
         // contain an array of 24 elements which represent hours, otherwise it will
@@ -130,13 +145,6 @@ export function quickScheduler(moment, dataSvc) {
           scope.schedule.availability.push(hourArray);
         }
         console.log('schedule obj intialized: ', scope.schedule);
-        scope.scheduleNames = {
-          startTime: 'Now',
-          duration: 'None',
-          softDeadline: 'None',
-          hardDeadline: 'None',
-          availability: 'Anytime'
-        };
         dataSvc.schedule = scope.schedule;
         dataSvc.scheduleNames = scope.scheduleNames;
       }
@@ -153,117 +161,120 @@ export function quickScheduler(moment, dataSvc) {
         scope.durationTemplate = value[2] ? true : false;  // Referenced in deadline options
         if(scope.durationTemplate){
           scope.hour = moment().hour();
-          scope.noStartTime = false;  // If the deadline fields were disabled, reenable them
           // Reset the hard deadline option
           scope.scheduleNames.hardDeadline = 'None';
-          scope.schedule.hardDeadline = '';
+          scope.schedule.hardDeadline.moment = '';
           // Update startTime, softDeadline, and availability fields based on template
+          scope.deadlineType = 'softDeadline';
           switch(value[2]){
             case 1: // Duration: Daytime (9am to 5pm)
                 if(scope.hour < 17) {  // If it's before 5:00 pm
-                  scope.scheduleNames.startTime = (scope.hour < 9) ? '9:00 AM' : 'Now';
-                  scope.schedule.startTime = (scope.hour < 9) ? moment().hour(9).startOf('hour') : moment();
-                  scope.scheduleNames.softDeadline = '5:00 PM';
-                  scope.schedule.softDeadline = moment().hour(17).startOf('hour');
+                  let startName = (scope.hour < 9) ? '9:00 AM' : 'Now',
+                      startTime = (scope.hour < 9) ? moment().hour(9).startOf('hour') : moment();
+                  scope.setStartTime([startName, startTime]);
+                  scope.setDeadline(['5:00 PM', moment().hour(17).startOf('hour')]);
                 }
                 else {  // If it's after 5:00 pm
-                  scope.scheduleNames.startTime = '9:00 AM Tomorrow';
-                  scope.schedule.startTime = moment().add(1, 'day').hour(9).startOf('hour');
-                  scope.scheduleNames.softDeadline = '5:00 PM Tomorrow';
-                  scope.schedule.softDeadline = moment().add(1, 'day').hour(17).startOf('hour');
+                  scope.setStartTime(['9:00 AM Tomorrow', moment().add(1, 'day').hour(9).startOf('hour')]);
+                  scope.setDeadline(['5:00 PM Tomorrow', moment().add(1, 'day').hour(17).startOf('hour')]);
                 }
                 scope.setAvailability.daytime();
             break;
             case 2: // Duration: Evening (6pm to 10pm)
                 if(scope.hour < 22) {  // If it's before 10:00 pm
-                  scope.scheduleNames.startTime = (scope.hour < 18) ? '6:00 PM' : 'Now';
-                  scope.schedule.startTime = (scope.hour < 18) ? moment().hour(18).startOf('hour') : moment();
-                  scope.scheduleNames.softDeadline = '10:00 PM';
-                  scope.schedule.softDeadline = moment().hour(22).startOf('hour');
+                  let startName = (scope.hour < 18) ? '6:00 PM' : 'Now',
+                      startTime = (scope.hour < 18) ? moment().hour(18).startOf('hour') : moment();
+                  scope.setStartTime([startName, startTime]);
+                  scope.setDeadline(['10:00 PM', moment().hour(22).startOf('hour')]);
                 }
                 else {  // If it's after 10:00 pm
-                  scope.scheduleNames.startTime = '6:00 PM Tomorrow';
-                  scope.schedule.startTime = moment().add(1, 'day').hour(18).startOf('hour');
-                  scope.scheduleNames.softDeadline = '10:00 PM Tomorrow';
-                  scope.schedule.softDeadline = moment().add(1, 'day').hour(22).startOf('hour');
+                  scope.setStartTime(['6:00 PM Tomorrow', moment().add(1, 'day').hour(18).startOf('hour')]);
+                  scope.setDeadline(['10:00 PM Tomorrow', moment().add(1, 'day').hour(22).startOf('hour')]);
                 }
                 scope.setAvailability.evenings();
             break;
             case 3: // Duration: All Day (8am - 10pm)
                 if(scope.hour < 22) {  // If it's before 10:00 pm
-                  scope.scheduleNames.startTime = (scope.hour < 8) ? '8:00 AM' : 'Now';
-                  scope.schedule.startTime = (scope.hour < 8) ? moment().hour(8).startOf('hour') : moment();
-                  scope.scheduleNames.softDeadline = '10:00 PM';
-                  scope.schedule.softDeadline = moment().hour(22).startOf('hour');
+                  let startName = (scope.hour < 8) ? '8:00 AM' : 'Now',
+                      startTime = (scope.hour < 8) ? moment().hour(8).startOf('hour') : moment();
+                  scope.setStartTime([startName, startTime]);
+                  scope.setDeadline(['10:00 PM', moment().hour(22).startOf('hour')]);
                 }
                 else {  // If it's after 10:00 pm
-                  scope.scheduleNames.startTime = '8:00 AM Tomorrow';
-                  scope.schedule.startTime = moment().add(1, 'day').hour(8).startOf('hour');
-                  scope.scheduleNames.softDeadline = '10:00 PM Tomorrow';
-                  scope.schedule.softDeadline = moment().add(1, 'day').hour(22).startOf('hour');
+                  scope.setStartTime(['8:00 AM Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')]);
+                  scope.setDeadline(['10:00 PM Tomorrow', moment().add(1, 'day').hour(22).startOf('hour')]);
                 }
                 scope.setAvailability.anytime();
             break;
           }
         }
-        console.log('schedule obj updated: ', scope.schedule);
+        console.log('duration updated: ', scope.schedule);
         scope.toggleDurationModal();
       };
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////  START TIME  ///////////////////////////////////
+      scope.closeStartTimeModal = () => { scope.startTimeModalFlag = false; };
       scope.toggleStartTimeModal = () => {
         scope.startTimeModalFlag = !scope.startTimeModalFlag;
       };
 
       scope.setStartTime = value => {
+        let starting = scope.schedule.startTime;
         scope.scheduleNames.startTime = value[0];  //Start Time's name value in string form (eg. 'Tomorrow')
-        scope.schedule.startTime = value[1];  //Start Time's actual value (It should be a momentJS date object)
-        scope.noStartTime = value[1] ? false : true;
+        starting.moment = value[1];  //Start Time's actual value (It should be a momentJS date object)
         // If the user chooses 'Someday' as the start time then disable the deadline options and reset them
-        if(scope.noStartTime){
+        if(!starting.moment){
           scope.scheduleNames.softDeadline = 'None';
           scope.scheduleNames.hardDeadline = 'None';
-          scope.schedule.softDeadline = '';
-          scope.schedule.hardDeadline = '';
+          scope.schedule.softDeadline.moment = '';
+          scope.schedule.hardDeadline.moment = '';
         }
         // Else if the user chooses a valid start time, then set some variables for the deadline modal to use
         else {
-          scope.startToday = scope.schedule.startTime.isSame(moment(), 'day') ? true : false;
-          scope.startingDay = scope.schedule.startTime.day();
-          scope.startingHour = scope.schedule.startTime.hour();
+          scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
+          starting.year = starting.moment.year();
+          starting.month = starting.moment.month();
+          starting.day = starting.moment.date();
+          starting.hour = starting.moment.hour();
+          starting.minute = starting.moment.minute();
           // ...and reset the deadline values if they've already been chosen and they're prior to the new start time
-          if(scope.schedule.softDeadline && scope.schedule.softDeadline.isBefore(scope.schedule.startTime)){
+          if(scope.schedule.softDeadline.moment && scope.schedule.softDeadline.moment.isBefore(starting.moment)){
             scope.scheduleNames.softDeadline = 'None';
-            scope.schedule.softDeadline = '';
+            scope.schedule.softDeadline.moment = '';
           }
-          if(scope.schedule.hardDeadline && scope.schedule.hardDeadline.isBefore(scope.schedule.startTime)){
+          if(scope.schedule.hardDeadline.moment && scope.schedule.hardDeadline.moment.isBefore(starting.moment)){
             scope.scheduleNames.hardDeadline = 'None';
-            scope.schedule.hardDeadline = '';
+            scope.schedule.hardDeadline.moment = '';
           }
         }
-        console.log('schedule obj updated: ', scope.schedule);
-        scope.toggleStartTimeModal();  // Close the startTime modal
+        console.log('startTime updated: ', scope.schedule);
+        scope.closeStartTimeModal();  // Close the startTime modal
       };
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////  DEADLINE  ////////////////////////////////////
       scope.toggleDeadlineModal = (type) => {
-        if(type && !scope.noStartTime) {
+        let starting = scope.schedule.startTime;
+        if(type && starting.moment) {
           scope.deadlineType = type; // softDeadline or hardDeadline
-          scope.startToday = scope.schedule.startTime.isSame(moment(), 'day') ? true : false;
-          scope.startingDay = scope.schedule.startTime.day();
-          scope.startingHour = scope.schedule.startTime.hour();
-          scope.tempDeadline = scope.schedule.startTime.clone();
+          scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
+          scope.tempDeadline = starting.moment.clone();
           scope.deadlineModalFlag = true;
         } else scope.deadlineModalFlag = false;
       };
       scope.setDeadline = value => {
+        let deadline = scope.schedule[scope.deadlineType];
         scope.scheduleNames[scope.deadlineType] = value[0];
-        scope.schedule[scope.deadlineType] = value[1];
-        console.log('schedule obj updated: ', scope.schedule);
+        deadline.moment = value[1];
+        deadline.year = deadline.moment ? deadline.moment.year() : undefined;
+        deadline.month = deadline.moment ? deadline.moment.month() : undefined;
+        deadline.day = deadline.moment ? deadline.moment.date() : undefined;
+        deadline.hour = deadline.moment ? deadline.moment.hour() : undefined;
+        deadline.minute = deadline.moment ? deadline.moment.minute() : undefined;
+        console.log(`${scope.deadlineType} updated: ${scope.schedule}`);
         scope.toggleDeadlineModal();
       };
 ////////////////////////////////////////////////////////////////////////////////
@@ -377,17 +388,60 @@ export function quickScheduler(moment, dataSvc) {
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////  SUBMIT  /////////////////////////////////////
       scope.quickSchedule = () => {
-        let scheduled = scope.schedule.startTime ? true : false;
-        console.log(scope.startTime, scheduled);
+        let {startTime, softDeadline, hardDeadline} = scope.schedule,
+            scheduled = startTime.moment ? true : false,
+            startsNow = scheduled ? startTime.moment.isSameOrBefore(moment()) : false,
+            active = scheduled ? startsNow : false,
+            pending = scheduled ? !startsNow : false,
+            inactive = !scheduled,
+            tasksToChange = [],
+            keysToChange = 'schedule,status.active,status.pending,status.scheduled,status.inactive',
+            newValues = [scope.schedule, active, pending, scheduled, inactive];
+
         for (let i = 0; i < scope.tasks.length; i++) {
           if(scope.tasks[i].status.editable) {
             scope.tasks[i].schedule = scope.schedule;
-            scope.tasks[i].status.active = scheduled;
-            scope.tasks[i].status.inactive = !scheduled;
+            scope.tasks[i].status.active = active;
+            scope.tasks[i].status.pending = pending;
+            scope.tasks[i].status.scheduled = scheduled;
+            scope.tasks[i].status.inactive = inactive;
+            tasksToChange.push(scope.tasks[i]._id);
           }
         }
-        scope.editTasks('schedule,status.active,status.inactive', [scope.schedule, scheduled, !scheduled]);
-        console.log(scope.tasks);
+
+        console.log("-----Sent to Backend-----");
+        console.log("tasksToChange: ", tasksToChange);
+        console.log("keysToChange: ", keysToChange);
+        console.log("newValues: ", newValues);
+        dataSvc.editTasks(tasksToChange, keysToChange, newValues).then(
+          function( res ){ console.log("item(s) saved", res); },
+          function( err ){ console.log("Error while saving: ", err); }
+        );
+
+        //// SET THE AGENDA VALUES ////
+        function updateAgenda(yr, mo, day, hr, min, key, ids){
+          let {agenda} = dataSvc.user;
+          agenda[yr] = agenda[yr] || [];
+          agenda[yr][mo] = agenda[yr][mo] || [];
+          agenda[yr][mo][day] = agenda[yr][mo][day] || [];
+          agenda[yr][mo][day][hr] = agenda[yr][mo][day][hr] || [];
+          agenda[yr][mo][day][hr][min] = agenda[yr][mo][day][hr][min] || {};
+          agenda[yr][mo][day][hr][min][key] = agenda[yr][mo][day][hr][min][key] || [];
+          agenda[yr][mo][day][hr][min][key].push(...ids);
+          dataSvc.updateAgenda(yr, mo, day, hr, min, key, ids).then(
+            function(res){ console.log(`Agenda updated: ${res.data}`); },
+            function(err){ console.log(`Failed to update agenda: ${err}`); }
+          );
+        }
+        let st = startTime,
+            sd = softDeadline,
+            hd = hardDeadline;
+        if(st.moment){
+          updateAgenda(st.year, st.month, st.day, st.hour, st.minute, 'startTime', tasksToChange);
+          if(sd.moment) updateAgenda(sd.year, sd.month, sd.day, sd.hour, sd.minute, 'softDeadline', tasksToChange);
+          if(hd.moment) updateAgenda(hd.year, hd.month, hd.day, hd.hour, hd.minute, 'hardDeadline', tasksToChange);
+        }
+
         scope.toggleQuickScheduler();
         scope.toggleEditOff();
       };
