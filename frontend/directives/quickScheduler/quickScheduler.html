@@ -42,7 +42,7 @@
       </div>
       <!-- Custom -->
       <div class="custom row" ng-if="customStart">
-        <form name="myForm" ng-submit="setStartTime(['Custom', moment(customStartDate)])" novalidate>
+        <form name="myForm" ng-submit="setStartTime([moment(customStartDate).calendar(), moment(customStartDate)])" novalidate>
           <label for="exampleInput">Pick a date and time:</label>
           <input type="datetime-local" id="exampleInput" name="input" ng-model="customStartDate"
             min="2015-01-01T00:00:00" max="2020-12-31T00:00:00" required />
@@ -53,11 +53,11 @@
               Not a valid date!</span>
           </div>
           <p><input type="submit" ng-disabled="myForm.input.$invalid"></p>
-          <tt>value = {{customStartDate | date: "yyyy-MM-ddTHH:mm:ss"}}</tt>
+          <!-- <tt>value = {{customStartDate | date: "yyyy-MM-ddTHH:mm:ss"}}</tt>
           <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt>
           <tt>myForm.input.$error = {{myForm.input.$error}}</tt>
           <tt>myForm.$valid = {{myForm.$valid}}</tt>
-          <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt>
+          <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt> -->
         </form>
       </div>
     </div>

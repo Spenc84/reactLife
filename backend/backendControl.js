@@ -15,7 +15,7 @@ import User from './User';
         offset = (15-(now.minute()%15))*60000;
     offset -= now.second()*1000;
     offset -= now.millisecond();
-    console.log('offset: ', offset);
+    console.log(`(re)started periodic task updates`);
     setTimeout(function(){ updateInterval = setInterval(periodicUpdate, 15*60000); periodicUpdate(); }, offset);
   }
 
@@ -24,10 +24,10 @@ import User from './User';
   function periodicUpdate(){
     let now = moment(),
         minute = moment().startOf('minute');
-    console.log('now: ', now._d);
-    console.log('minute: ', minute._d);
-    console.log('toString: ', minute._d.toJSON());
 
+    console.log('Time check: ', minute._d.toJSON());
+    // Over time, the small processing delay in setInterval will cause the check
+    // to occur outside of the 15 minute quaters. When this happens, reset it.
     if(minute.minute() % 15 !== 0){
       clearInterval(updateInterval);
       restartUpdateInterval();
@@ -35,7 +35,7 @@ import User from './User';
       console.log('New Minute: ', minute._d);
     }
 
-    // This will check to see if any task is scheduled to start now, and if so,
+    // This will check to see if any tasks are scheduled to start now, and if so,
     // will set it to active and notify any applicable users
     Task.find({'schedule.startTime.moment': minute._d.toJSON()}, (error, tasks)=>{
         if(error) console.log('Error finding tasks: ', error);
@@ -52,7 +52,7 @@ import User from './User';
   }
   function report(error, resp){
     if(error) console.log('Error saving: ', error);
-    else console.log('saved', resp);
+    else console.log('saved');
   }
 ////////////////////////////////////////////////////////////////////////////////
 
