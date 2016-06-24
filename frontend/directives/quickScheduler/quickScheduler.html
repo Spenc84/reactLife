@@ -23,12 +23,13 @@
     </div>
     <!-- Start Time -->
     <div class="startTime modal" ng-if="startTimeModalFlag">
-      <div class="top row" ng-click="toggleStartTimeModal()">
+      <!-- Defaults -->
+      <div class="top row" ng-click="closeStartTimeModal()">
           <span>Start Time</span>
           <div class="startTime item">{{scheduleNames.startTime}}</div>
       </div><div class="spacer"></div>
-      <div class="bottom row">
-          <div class="startTime item" ng-click="setStartTime(['Now', moment()])">Now</div>
+      <div class="bottom row" ng-if="!customStart">
+          <div class="startTime item" ng-click="setStartTime(['Now', moment().startOf('hour')])">Now</div>
           <div class="startTime item" ng-if="hour < 17" ng-click="setStartTime(['Tonight', moment().hour(18).startOf('hour')])">Tonight</div>
           <div class="startTime item" ng-click="setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])">Tomorrow</div>
           <div class="startTime item" ng-click="setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])">Tomorrow Evening</div>
@@ -37,7 +38,27 @@
           <div class="startTime item" ng-click="setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])">Next Weekend</div>
           <div class="startTime item" ng-click="setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])">Next Month</div>
           <div class="startTime item" ng-click="setStartTime(['Someday', ''])">Someday</div>
-          <div class="startTime item" ng-click="toggleQuickScheduler()">Custom</div>
+          <div class="startTime item" ng-click="openCustomStart()">Custom</div>
+      </div>
+      <!-- Custom -->
+      <div class="custom row" ng-if="customStart">
+        <form name="myForm" ng-submit="setStartTime(['Custom', moment(customStartDate)])" novalidate>
+          <label for="exampleInput">Pick a date and time:</label>
+          <input type="datetime-local" id="exampleInput" name="input" ng-model="customStartDate"
+            min="2015-01-01T00:00:00" max="2020-12-31T00:00:00" required />
+          <div role="alert" style="color:red">
+            <span class="error" ng-show="myForm.input.$error.required">
+              Required!</span>
+            <span class="error" ng-show="myForm.input.$error.datetimelocal">
+              Not a valid date!</span>
+          </div>
+          <p><input type="submit" ng-disabled="myForm.input.$invalid"></p>
+          <tt>value = {{customStartDate | date: "yyyy-MM-ddTHH:mm:ss"}}</tt>
+          <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt>
+          <tt>myForm.input.$error = {{myForm.input.$error}}</tt>
+          <tt>myForm.$valid = {{myForm.$valid}}</tt>
+          <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt>
+        </form>
       </div>
     </div>
     <!-- Deadline -->

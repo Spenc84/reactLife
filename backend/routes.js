@@ -11,8 +11,6 @@ module.exports = function( app ){
      .delete(ctrl.deleteUser);
   app.route('/api/users/:ids/:keys/:values')
      .put(ctrl.editUsers);
-  app.route('/api/user/:id/agenda').get(ctrl.getAgenda);
-  app.route('/api/user/:id/agenda/:yr/:mo/:day/:hr/:min/:key/:ids').put(ctrl.updateAgenda);
 
      // --- TASKS ---
   app.route('/api/tasks')
@@ -25,9 +23,8 @@ module.exports = function( app ){
   app.route('/api/tasks/:ids/:keys/:values')
      .put(ctrl.editTasks);
 
-     // --- CRON ---
-  app.route('/api/cron/:yr/:mo/:day/:hr/:min/:key/:ids')
-     .put(ctrl.updateCron);
+  app.route('/api/test')
+     .get(ctrl.getTest);
 
      // --- EVENTS ---
   // app.route('/api/events')

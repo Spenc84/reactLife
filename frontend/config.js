@@ -97,7 +97,7 @@ export default function routes ($stateProvider, $urlRouterProvider) {
         else
         dataSvc.getUser().then(
           function(user){
-            dataSvc.user = user.data; console.log(`User aquired: ${user.data}`);
+            dataSvc.user = user.data; console.log(`User aquired: `, user.data);
             deferred.resolve("User aquired");
           },
           function(rejected){ alert("Failed to aquire user"); deferred.reject("Failed to aquire user"); $state.go("home");}

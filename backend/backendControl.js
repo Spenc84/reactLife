@@ -1,12 +1,62 @@
-//  OLD MONGO STYLE
-// var mongo = require('mongojs'),
-//      db = mongo('database', ['data']),
-//      data = db.collection('data');
+// Import document schemas
+import Task from './Task';
+import User from './User';
 
-var Task = require('./Task'),
-    User = require('./User');
+////////////////////////////////////////////////////////////////////////////////
+// Run a function every 15 minutes that will update tasks and notify users
+// concerning task start times and deadlines
+  import moment from 'moment';
+  // Calculate an offset so that the reoccuring function starts exactly when the
+  // clock hits a time that's divisable by 15
+  let updateInterval;
+  restartUpdateInterval();
+  function restartUpdateInterval() {
+    let now = moment(),
+        offset = (15-(now.minute()%15))*60000;
+    offset -= now.second()*1000;
+    offset -= now.millisecond();
+    console.log('offset: ', offset);
+    setTimeout(function(){ updateInterval = setInterval(periodicUpdate, 15*60000); periodicUpdate(); }, offset);
+  }
 
-var cb = function(res){
+
+  // This is the function that will run every 15 minutes
+  function periodicUpdate(){
+    let now = moment(),
+        minute = moment().startOf('minute');
+    console.log('now: ', now._d);
+    console.log('minute: ', minute._d);
+    console.log('toString: ', minute._d.toJSON());
+
+    if(minute.minute() % 15 !== 0){
+      clearInterval(updateInterval);
+      restartUpdateInterval();
+      while(minute.minute() % 15) minute.subtract(1, 'minute');
+      console.log('New Minute: ', minute._d);
+    }
+
+    // This will check to see if any task is scheduled to start now, and if so,
+    // will set it to active and notify any applicable users
+    Task.find({'schedule.startTime.moment': minute._d.toJSON()}, (error, tasks)=>{
+        if(error) console.log('Error finding tasks: ', error);
+        else {
+          console.log('tasks: ', tasks.length);
+          for (let i = 0; i < tasks.length; i++) {
+            console.log(tasks[i].name);
+            tasks[i].status.pending = false;
+            tasks[i].status.active = true;
+            tasks[i].save(report);
+          }
+        }
+    });
+  }
+  function report(error, resp){
+    if(error) console.log('Error saving: ', error);
+    else console.log('saved', resp);
+  }
+////////////////////////////////////////////////////////////////////////////////
+
+let cb = function(res){
   return function(error, response){
     if(error) res.status(500).json(error);
     else res.status(200).json(response);
@@ -14,6 +64,10 @@ var cb = function(res){
 };
 
 module.exports = {
+  getTest( req, res ){
+    console.log(req.query);
+    Task.find(req.query, cb(res));
+  },
   // ----- USERS -----
   postUser: function( req, res ){
     User.create(req.body, cb(res));
@@ -29,14 +83,14 @@ module.exports = {
   },
   editUsers: function( req, res ){
     console.log(req.params);
-    var set = {},
+    let set = {},
         items = req.params.ids.split(','),
         keys = req.params.keys.split(','),
         values = JSON.parse(req.params.values);
     console.log(items);
     console.log(keys);
     console.log(values);
-    for (var i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; i++) {
       set[keys[i]] = values[i];
     }
     console.log(set);
@@ -61,14 +115,14 @@ module.exports = {
   },
   editTasks: function( req, res ){
     console.log(req.params);
-    var set = {},
+    let set = {},
         items = req.params.ids.split(','),
         keys = req.params.keys.split(','),
         values = JSON.parse(req.params.values);
     console.log(items);
     console.log(keys);
     console.log(values);
-    for (var i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; i++) {
       set[keys[i]] = values[i];
     }
     console.log(set);
@@ -76,28 +130,32 @@ module.exports = {
   },
   deleteTasks: function( req, res ){
     console.log(req.params.id);
-    var items = req.params.id.split(',');
+    let items = req.params.id.split(',');
     console.log(items);
     Task.remove({ _id: { $in: items } }, cb(res));
   },
   deleteTask: function( req, res ){
     Task.findByIdAndRemove(req.params.id, cb(res));
-  },
-
-  // ----- AGENDA -----
-  getAgenda: function( req, res ){
-    // User.findById(req.params.id, function(error, response){
-    //   if(error) res.status(500).json(error);
-    //   else res.status(200).json(response.agenda);
-    // });
-    res.status(200).send();  // REMOVE ME
-  },
-  updateAgenda: function( req, res ){
-    // Task.create(req.body, cb(res));
-    res.status(200).send();   // REMOVE ME
-  },
-  updateCron: function( req, res ){
-    // Task.create(req.body, cb(res));
-    res.status(200).send();   // REMOVE ME
   }
+
+  // ----- AGENDA ----- //test
+  // getAgenda: function( req, res ){
+  //   // User.findById(req.params.id, function(error, response){
+  //   //   if(error) res.status(500).json(error);
+  //   //   else res.status(200).json(response.agenda);
+  //   // });
+  //   res.status(200).send();  // REMOVE ME
+  // },
+  // updateAgenda: function( req, res ){
+  //   User.findById(req.params.id, function(error, response){
+  //     if(error) res.status(500).json(error);
+  //
+  //     else res.status(200).json(response.agenda);
+  //   });
+  //   res.status(200).send();   // REMOVE ME
+  // },
+  // updateCron: function( req, res ){
+  //   // Task.create(req.body, cb(res));
+  //   res.status(200).send();   // REMOVE ME
+  // }
 };

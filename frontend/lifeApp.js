@@ -19,7 +19,8 @@ import dataSvc from './dataSvc';
 
 // Import directives
 import {calHeader, optionPane, calendar, listHeader, taskItems, addItem,
-        editItemPane, newItemPane, scheduler, quickScheduler} from './directives/directives';
+        editItemPane, newItemPane, scheduler} from './directives/directives';
+import {quickScheduler} from './directives/quickScheduler/quickScheduler';
 
 // Instantiate App
 angular.module('lifeApp', ['ui.router', 'angularMoment'])

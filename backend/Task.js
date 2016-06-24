@@ -9,7 +9,8 @@ var taskSchema = new mongoose.Schema({
       month: Number,
       day: Number,
       hour: Number,
-      minute: Number
+      minute: Number,
+      top: Number
     },
     duration: Number,
     softDeadline: {

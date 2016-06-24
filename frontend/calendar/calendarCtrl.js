@@ -1,7 +1,9 @@
 export default function calendarCtrl($scope, dataSvc, moment, $interval) {
   $scope.tasks = dataSvc.tasks;
+  $scope.user = dataSvc.user;
   console.log('Tasks: ', $scope.tasks);
-  console.log(`User: `, dataSvc.user);
+  console.log(`User: `, $scope.user);
+
   // let agenda = buildAgenda();
   //
   // function buildAgenda(){
@@ -55,19 +57,6 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
   $scope.month = buildMonth();
   console.log($scope.now);
   console.log($scope.currentMinute);
-
-//------------------------------  DATA TRANSFERS -----------------------------//
-    // GET Methods
-    // $scope.getTasks = function(){
-    //   dataSvc.getTasks().then(
-    //         function(result){console.log('calendar retrieve'); $scope.tasks = dataSvc.tasks = result.data;
-    //         console.log(result.data[0].schedule);},
-    //         function(error){console.log("Failed to get tasks.", error);}
-    //   );
-    // };
-    // if(dataSvc.tasks) $scope.tasks = dataSvc.tasks;
-    // else $scope.getTasks();
-//----------------------------------------------------------------------------//
 
   //Update $scope.now with the current time once every 60 seconds
   let minuteIteration = $interval(function(){
@@ -126,7 +115,14 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
     let week = [],
         day = moment.clone().startOf('week');
     for (let i = 0; i < 7; i++) {
-      week.push(day.clone());
+      let newDay = day.clone(),
+          tasks = [];
+      for (let i = 0; i < $scope.tasks.length; i++) {
+        let start = $scope.tasks[i].schedule.startTime.moment;
+        if(day.isSame(start, 'day')) tasks.push($scope.tasks[i]);
+      }
+      newDay.tasks = tasks;
+      week.push(newDay);
       day = day.add(1, 'days');
     }
     return week;

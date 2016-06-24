@@ -127,6 +127,7 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
   // Data transfer variables
   let modified = {};
   $scope.tasks = dataSvc.tasks;
+  $scope.user = dataSvc.user;
 
   // GET Methods
   $scope.getTasks = function(){

@@ -89,10 +89,18 @@
 
 	var _directives = __webpack_require__(128);
 
+	var _quickScheduler = __webpack_require__(141);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	// Instantiate App
 
+
+	// Import directives
+
+
+	// Import states and views
+	_angular2.default.module('lifeApp', ['ui.router', 'angularMoment']).config(_config2.default).controller('calendarCtrl', _calendarCtrl2.default).controller('listCtrl', _listCtrl2.default).service('dataSvc', _dataSvc2.default).directive('calHeader', _directives.calHeader).directive('optionPane', _directives.optionPane).directive('calendar', _directives.calendar).directive('listHeader', _directives.listHeader).directive('taskItems', _directives.taskItems).directive('addItem', _directives.addItem).directive('editItemPane', _directives.editItemPane).directive('newItemPane', _directives.newItemPane).directive('scheduler', _directives.scheduler).directive('quickScheduler', _quickScheduler.quickScheduler);
 
 	// Import data services
 
@@ -102,12 +110,6 @@
 
 	// Import stylesheets
 	// Import Node Module dependencies
-	_angular2.default.module('lifeApp', ['ui.router', 'angularMoment']).config(_config2.default).controller('calendarCtrl', _calendarCtrl2.default).controller('listCtrl', _listCtrl2.default).service('dataSvc', _dataSvc2.default).directive('calHeader', _directives.calHeader).directive('optionPane', _directives.optionPane).directive('calendar', _directives.calendar).directive('listHeader', _directives.listHeader).directive('taskItems', _directives.taskItems).directive('addItem', _directives.addItem).directive('editItemPane', _directives.editItemPane).directive('newItemPane', _directives.newItemPane).directive('scheduler', _directives.scheduler).directive('quickScheduler', _directives.quickScheduler);
-
-	// Import directives
-
-
-	// Import states and views
 
 /***/ },
 /* 2 */
@@ -50139,7 +50141,7 @@
 
 
 	// module
-	exports.push([module.id, "[ng:cloak],\n[ng-cloak],\n[data-ng-cloak],\n[x-ng-cloak],\n.ng-cloak,\n.x-ng-cloak {\n  display: none !important;\n}\nhtml,\nbody {\n  margin: 0;\n  padding: 0;\n}\n.container {\n  width: 100vw;\n  height: 100vh;\n  position: fixed;\n  overflow-x: hidden;\n  overflow-y: auto;\n  flex-wrap: wrap;\n}\ndiv.calendar.view {\n  box-shadow: none;\n  z-index: 0;\n}\ndiv.calendar.view .row {\n  padding: 0;\n}\ndiv.calendar.view .row:first-child {\n  color: rgba(0,0,0,0.5);\n  margin: 5px;\n}\ndiv.calendar.view .row:nth-child(2) {\n  flex-grow: 1;\n  color: #000;\n}\ndiv.calendar.view .row span {\n  min-height: 1em;\n}\ndiv.week.container #date {\n  width: 100vw;\n}\ndiv.week.container #date div.col8 {\n  text-align: center;\n}\ndiv.week.container #date div.col8>div:first-child {\n  font-size: 10px;\n}\ndiv.week.container div.dividers.column {\n  position: absolute;\n  padding-top: 6px;\n}\ndiv.week.container div.dividers.column hr {\n  margin: 0;\n  border: none;\n  margin-bottom: 29px;\n  border-bottom: 1px solid rgba(0,0,0,0.3);\n  width: 100vw;\n}\ndiv.week.container div.dividers.column hr:nth-child(even) {\n  border-bottom: 1px dashed rgba(0,0,0,0.3);\n}\ndiv.week.container div.event.column {\n  padding-top: 6px;\n}\ndiv.week.container div.event.column svg {\n  margin-left: -7px;\n}\ndiv.week.container div.event.column div.col7 {\n  display: inline-flex;\n  height: 1440px;\n  box-sizing: border-box;\n  border-left: 1px solid rgba(0,0,0,0.3);\n}\ndiv.day.container #date {\n  width: 50px;\n  flex-direction: column;\n}\ndiv.day.container #date>div:first-child {\n  font-size: 10px;\n}\ndiv.day.container div.event.column svg {\n  margin-left: -7px;\n}\ndiv.day.container div.event.column hr {\n  margin: 3px 0;\n  border-color: rgba(0,0,0,0.3);\n}\ndiv.day.container div.event.column > div {\n  height: 60px;\n  width: 100%;\n  box-sizing: border-box;\n  border-bottom: 1px solid rgba(0,0,0,0.3);\n}\ndiv.day.container div.event.column > div div {\n  height: 30px;\n  width: 100%;\n  box-sizing: border-box;\n  border-bottom: 1px dashed rgba(0,0,0,0.3);\n}\ndiv.day.container,\ndiv.week.container {\n  display: flex;\n}\ndiv.day.container #date,\ndiv.week.container #date {\n  position: fixed;\n  left: 0;\n  top: 70px;\n  height: 60px;\n  font-size: 24px;\n  background-color: #fff;\n  box-shadow: 0 5px 15px #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\ndiv.day.container #date.spacer,\ndiv.week.container #date.spacer {\n  top: 300px;\n}\ndiv.day.container .today,\ndiv.week.container .today {\n  color: rgba(0,120,255,0.5);\n}\ndiv.day.container .inactive,\ndiv.week.container .inactive {\n  color: rgba(0,0,0,0.5);\n}\ndiv.day.container .selected,\ndiv.week.container .selected {\n  color: #0078ff;\n  font-size: 110%;\n}\ndiv.day.container div.hour.column,\ndiv.week.container div.hour.column {\n  width: 50px;\n  font-size: 12px;\n  text-align: center;\n  flex-grow: 0;\n}\ndiv.day.container div.hour.column div,\ndiv.week.container div.hour.column div {\n  height: 60px;\n}\ndiv.day.container div.event.column,\ndiv.week.container div.event.column {\n  position: relative;\n  flex-grow: 1;\n}\ndiv.day.container div.event.column svg,\ndiv.week.container div.event.column svg {\n  position: absolute;\n  fill: #0078ff;\n  stroke: #0078ff;\n  z-index: 50;\n}\nnav.calHeader {\n  position: fixed;\n  z-index: 10;\n  width: 100%;\n  height: 70px;\n  top: 0;\n  font-size: 30px;\n  box-shadow: 0 1px 10px #515151;\n  padding: 0 0.3em;\n  display: flex;\n  justify-content: space-between;\n  background-color: #fff;\n}\nnav.calHeader div {\n  width: 33%;\n  margin: 0 0.5em;\n  display: inline-flex;\n  align-items: center;\n}\nnav.calHeader div.right {\n  justify-content: flex-end;\n}\nnav.calHeader div.left {\n  justify-content: flex-start;\n}\nnav.calHeader div span {\n  display: flex;\n  align-items: center;\n  padding-left: 0.7em;\n}\nnav.calHeader div i {\n  padding-right: 0.3em;\n}\ndiv.spacer1 {\n  height: 70px;\n  width: 100vw;\n}\ndiv.spacer2 {\n  height: 230px;\n  width: 100vw;\n}\ndiv.weekViewSpacer {\n  height: 130px;\n  width: 100vw;\n}\nfade {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 20;\n  background-color: rgba(0,0,0,0.3);\n}\n.noScroll {\n  overflow: hidden;\n}\ndiv.optionPane {\n  position: absolute;\n  display: inline-flex;\n  width: 100vw;\n  left: 0;\n  min-height: 100%;\n  align-items: center;\n}\ndiv.optionPane > .col {\n  background-color: #fff;\n  width: 320px;\n  box-shadow: 1px 0 10px #515151;\n  z-index: 30;\n}\ndiv.optionPane > .col .row {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n}\ndiv.optionPane > .col .row:first-child {\n  background-color: rgba(0,128,0,0.2);\n  border-bottom: 1px solid #333;\n}\ndiv.optionPane > .col .row:first-child img {\n  padding: 5px;\n  height: 56px;\n}\ndiv.optionPane > .col .row:nth-child(2) .col {\n  display: flex;\n  align-items: center;\n  padding: 1em 0.5em 0.5em 0.5em;\n}\ndiv.optionPane > .col .row:nth-child(2) .col img {\n  height: 3em;\n  padding: 0 0.5em;\n}\ndiv.optionPane > .col .row:nth-child(2) .col span {\n  font-size: 24px;\n  margin-right: 10px;\n}\ndiv.optionPane > .col .row:nth-child(3) div.col {\n  display: block;\n}\ndiv.optionPane > .col .row:nth-child(3) div.col div {\n  display: flex;\n  align-items: center;\n  padding: 10px;\n}\ndiv.optionPane > .col .row:nth-child(3) div.col div span {\n  font-size: 18px;\n  margin-left: 1em;\n  margin-right: 5em;\n}\ncalendar.header {\n  position: fixed;\n  width: 100%;\n  z-index: 15;\n  top: 70px;\n  background-color: #fff;\n}\ndiv.calendar {\n  box-shadow: 0 1px 10px #515151;\n}\ndiv.calendar div.row {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  padding: 8px 0;\n}\ndiv.calendar div.row:nth-child(2) {\n  color: rgba(0,0,0,0.5);\n  text-align: center;\n}\ndiv.calendar div.row > div.col7 {\n  display: flex;\n  justify-content: space-around;\n  flex-direction: column;\n  align-items: center;\n}\ndiv.calendar div.row > div.col7 div {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  width: 25px;\n}\ndiv.calendar div.row > div.col7 div.cal {\n  height: 25px;\n}\ndiv.calendar div.row .hide {\n  visibility: hidden;\n}\ndiv.calendar div.row .disabled {\n  opacity: 0.3;\n}\ndiv.calendar div.row .selected,\ndiv.calendar div.row .today {\n  border-radius: 50%;\n  box-sizing: border-box;\n  font-size: 90%;\n}\ndiv.calendar div.row .today {\n  background-color: rgba(0,120,255,0.3);\n  color: #fff;\n}\ndiv.calendar div.row .selected {\n  background-color: #0078ff;\n  color: #fff;\n}\ndiv.calendarHead {\n  box-shadow: 0 1px 10px #515151;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  background-color: #f00;\n}\ndiv.calendarHead b {\n  font-size: 24px;\n}\nsection.calendar {\n  position: fixed;\n  height: 100vh;\n  left: 0;\n  right: 0;\n  z-index: -1;\n  opacity: 0.3;\n}\ndiv.list.view div.view.body {\n  position: fixed;\n  z-index: 1;\n  top: 6.1em;\n  bottom: 0;\n  overflow: scroll;\n  width: 100vw;\n}\ndiv.list.view div.tab {\n  position: fixed;\n  top: 3.8em;\n  height: 2.2em;\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  border: 1px solid rgba(0,0,0,0.8);\n  border-bottom: none;\n  background-color: #fff;\n  color: rgba(255,255,255,0.9);\n  font-weight: bold;\n  text-shadow: 1px 1px 20px rgba(0,120,255,0.3), -1px -1px 20px rgba(0,120,255,0.3), -1px 1px 20px rgba(0,120,255,0.3), 1px -1px 20px rgba(0,120,255,0.3), 1px 2px 1px #000, -1px -0.5px 1px #000, -1px 2px 1px #000, 1px -0.5px 1px #000;\n  z-index: 100;\n}\ndiv.list.spacer {\n  height: 6em;\n}\ndiv.item.row {\n  height: 3em;\n  display: flex;\n}\ndiv.item.row div.item.col:first-child {\n  width: 12vw;\n  height: 100%;\n  display: flex;\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n}\ndiv.item.row div.item.col:first-child svg {\n  stroke: rgba(0,0,0,0.53);\n  stroke-width: 1.5px;\n}\ndiv.list.star.view div.star.tab {\n  width: 11vw;\n  border-left: none;\n}\ndiv.list.star.view div.star.tab i {\n  font-size: 27px;\n  color: #f1c40f;\n  text-shadow: 1px 1px 20px rgba(0,120,255,0.3), -1px -1px 20px rgba(0,120,255,0.3), -1px 1px 20px rgba(0,120,255,0.3), 1px -1px 20px rgba(0,120,255,0.3), 1px 2px 1px #000, -1px -0.5px 1px #000, -1px 2px 1px #000, 1px -0.5px 1px #000;\n}\ndiv.list.active.view div.active.tab {\n  width: 20.900000000000002vw;\n  left: 10.3vw;\n}\ndiv.list.pending.view div.pending.tab {\n  width: 24.200000000000003vw;\n  left: 29.3vw;\n}\ndiv.list.inactive.view div.inactive.tab {\n  width: 24.200000000000003vw;\n  left: 51.3vw;\n}\ndiv.list.completed.view div.completed.tab {\n  width: 27vw;\n  left: 73.3vw;\n}\ndiv.list.search.view div.search.icon {\n  position: fixed;\n  width: 12vw;\n  right: 0.7em;\n  height: 4em;\n  display: flex;\n  z-index: 150;\n}\ndiv.list.search.view div.search.icon i {\n  font-size: 2em;\n  color: #6cf;\n  text-shadow: 0 3px 6px #00f;\n  margin: auto;\n  background-color: #0078ff;\n}\ndiv.list.search.view div.search.box {\n  position: fixed;\n  width: 100vw;\n  top: 6em;\n  padding: 0.3em 0;\n  background-color: #fff;\n  border: 1px solid rgba(0,0,0,0.5);\n  box-sizing: border-box;\n  box-shadow: 0 1px 10px #515151;\n}\ndiv.list.search.view div.search.box div.row {\n  display: flex;\n}\ndiv.list.search.view div.search.box div.row div.col2 {\n  color: rgba(0,0,0,0.4);\n}\ndiv.list.search.view div.search.box div.row div.col2 .selected {\n  color: rgba(0,0,0,0.8);\n  text-shadow: 0 3px 6px #004080;\n}\ndiv.list.search.view div.search.box div.row div.col2:first-child {\n  width: 15vw;\n  flex-grow: 0;\n  display: flex;\n  justify-content: space-around;\n  flex-direction: column;\n  font-weight: bold;\n  text-align: center;\n}\ndiv.list.search.view div.search.box div.row div.col2:first-child i:active {\n  color: rgba(0,0,0,0.8);\n  text-shadow: 0 3px 6px #004080;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child {\n  flex-grow: 1;\n  display: flex;\n  justify-content: space-around;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child div.icol3 {\n  display: flex;\n  flex: 0 1 auto;\n  flex-direction: column;\n  align-items: center;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child div.icol3:first-child {\n  width: 32%;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child div.icol3 div.irow3 {\n  margin: 0.4em;\n}\ndiv.list.search.view div.search.box div.row input {\n  font-size: 1em;\n  margin: 0.5em 1em;\n  flex-grow: 1;\n}\ndiv.edit-item-pane.container,\ndiv.new-item-pane.container {\n  top: 0;\n  left: 0;\n  z-index: 500;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column {\n  font-size: 26px;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column div,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column div,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column div,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column div {\n  display: flex;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button {\n  background: none;\n  color: #fff;\n  border: 1px solid transparent;\n  border-radius: 4px;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button:disabled,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button:disabled,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button:disabled,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button:disabled {\n  color: rgba(255,255,255,0.3);\n}\ndiv.edit-item-pane.container div.edit-item-pane.body,\ndiv.new-item-pane.container div.edit-item-pane.body,\ndiv.edit-item-pane.container div.new-item-pane.body,\ndiv.new-item-pane.container div.new-item-pane.body {\n  z-index: 100;\n  position: absolute;\n  width: 100vw;\n  top: 4em;\n  bottom: 0;\n  padding: 1.5em;\n  box-sizing: border-box;\n  background-color: #fff;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form,\ndiv.new-item-pane.container div.edit-item-pane.body form,\ndiv.edit-item-pane.container div.new-item-pane.body form,\ndiv.new-item-pane.container div.new-item-pane.body form {\n  font-size: 1.5em;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form div.form.row,\ndiv.new-item-pane.container div.edit-item-pane.body form div.form.row,\ndiv.edit-item-pane.container div.new-item-pane.body form div.form.row,\ndiv.new-item-pane.container div.new-item-pane.body form div.form.row {\n  display: flex;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form div.form.row input,\ndiv.new-item-pane.container div.edit-item-pane.body form div.form.row input,\ndiv.edit-item-pane.container div.new-item-pane.body form div.form.row input,\ndiv.new-item-pane.container div.new-item-pane.body form div.form.row input {\n  flex-grow: 1;\n  margin: 0 1em;\n  border: none;\n  font-size: 20px;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form div.form.row input:focus,\ndiv.new-item-pane.container div.edit-item-pane.body form div.form.row input:focus,\ndiv.edit-item-pane.container div.new-item-pane.body form div.form.row input:focus,\ndiv.new-item-pane.container div.new-item-pane.body form div.form.row input:focus {\n  outline: none;\n}\ndiv.directive.scheduler.container {\n  z-index: 500;\n  background-color: rgba(0,0,0,0.3);\n}\ndiv.directive.scheduler.container div.scheduler.body {\n  z-index: 25;\n  position: absolute;\n  top: 10vh;\n  left: 10vw;\n  right: 10vw;\n  padding: 1em 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n  border-radius: 0.3em;\n}\ndiv.directive.scheduler.container div.scheduler.body div.top {\n  display: flex;\n  position: absolute;\n  align-items: center;\n  flex-direction: column;\n  height: auto;\n  left: 1px;\n  right: 1px;\n  background-color: rgba(255,255,255,0.85);\n  box-shadow: 0 6px 6px -5px rgba(100,100,100,0.5);\n}\ndiv.directive.scheduler.container div.scheduler.body div.top span {\n  font-size: small;\n  margin-bottom: -0.6em;\n}\ndiv.directive.scheduler.container div.scheduler.body div.top div.item {\n  height: 1.5em;\n  font-size: 2em;\n  display: flex;\n  align-items: center;\n}\ndiv.directive.scheduler.container div.scheduler.body div.spacer {\n  height: 4em;\n}\ndiv.directive.scheduler.container div.scheduler.body div.bottom {\n  display: inline-flex;\n  flex-wrap: wrap;\n  justify-content: space-around;\n}\ndiv.directive.scheduler.container div.scheduler.body div.bottom div.item {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  height: 2.5em;\n  width: 44%;\n  box-sizing: border-box;\n  margin: 0.5em;\n  padding: 0.3em;\n  border-radius: 0.5em;\n  box-shadow: 0 1px 10px #515151;\n  text-align: center;\n}\ndiv.directive.quickScheduler.container {\n  z-index: 400;\n  background-color: rgba(0,0,0,0.3);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body {\n  z-index: 25;\n  position: absolute;\n  top: 10vh;\n  left: 10vw;\n  right: 10vw;\n  padding: 1em 0.5em 0 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n  border-radius: 0.3em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top {\n  display: flex;\n  position: absolute;\n  align-items: center;\n  flex-direction: column;\n  height: auto;\n  left: 1px;\n  right: 1px;\n  background-color: #fff;\n  box-shadow: 0 6px 6px -5px rgba(100,100,100,0.5);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top.disabled {\n  color: rgba(0,0,0,0.3);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top span {\n  font-size: small;\n  margin-bottom: -0.6em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top div.item {\n  height: 1.5em;\n  font-size: 2em;\n  display: flex;\n  align-items: center;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.last.row {\n  box-shadow: none;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.spacer {\n  height: 4em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal {\n  position: absolute;\n  z-index: 50;\n  top: 1em;\n  bottom: 10px;\n  left: 1px;\n  right: 1px;\n  display: flex;\n  flex-direction: column;\n  background-color: rgba(255,255,255,0.85);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.spacer {\n  width: 100%;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  flex-wrap: wrap;\n  flex-grow: 1;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.bottom div.item {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  height: 2.5em;\n  width: 44%;\n  box-sizing: border-box;\n  padding: 0.3em;\n  border-radius: 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n  text-align: center;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div#qsSaveButton {\n  position: absolute;\n  z-index: 50;\n  left: 50%;\n  margin-left: -10vw;\n  margin-top: 2em;\n  font-weight: bold;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div#qsSaveButton div.item {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  height: 2.5em;\n  width: 20vw;\n  border-radius: 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n}\ndiv.item.row div.item.col {\n  display: flex;\n  margin: auto;\n}\ndiv.item.row div.item.col:nth-child(2) {\n  flex-grow: 1;\n  padding: 0.5em;\n}\ndiv.item.row div.item.col:nth-child(2) form {\n  display: flex;\n  flex-grow: 1;\n}\ndiv.item.row div.item.col:nth-child(2) form input {\n  color: rgba(0,0,0,0.8);\n  flex-grow: 1;\n  font-size: 1.2em;\n  border: none;\n}\ndiv.item.row div.item.col.icon {\n  color: rgba(0,0,0,0.53);\n}\ndiv.item.row div.item.col:last-child {\n  padding-right: 0.3em;\n}\ndiv.list.header,\ndiv.new-item-pane.header,\ndiv.edit-item-pane.header {\n  width: 100vw;\n}\ndiv.list.header div.title.row,\ndiv.new-item-pane.header div.title.row,\ndiv.edit-item-pane.header div.title.row,\ndiv.list.header div.icon.row,\ndiv.new-item-pane.header div.icon.row,\ndiv.edit-item-pane.header div.icon.row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  height: 2em;\n  padding: 0.3em;\n  box-sizing: border-box;\n  font-size: 2em;\n}\ndiv.list.header div.title.row div.title.column,\ndiv.new-item-pane.header div.title.row div.title.column,\ndiv.edit-item-pane.header div.title.row div.title.column,\ndiv.list.header div.icon.row div.title.column,\ndiv.new-item-pane.header div.icon.row div.title.column,\ndiv.edit-item-pane.header div.icon.row div.title.column,\ndiv.list.header div.title.row div.icon.column,\ndiv.new-item-pane.header div.title.row div.icon.column,\ndiv.edit-item-pane.header div.title.row div.icon.column,\ndiv.list.header div.icon.row div.icon.column,\ndiv.new-item-pane.header div.icon.row div.icon.column,\ndiv.edit-item-pane.header div.icon.row div.icon.column {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n}\ndiv.list.header div.title.row div.title.column i,\ndiv.new-item-pane.header div.title.row div.title.column i,\ndiv.edit-item-pane.header div.title.row div.title.column i,\ndiv.list.header div.icon.row div.title.column i,\ndiv.new-item-pane.header div.icon.row div.title.column i,\ndiv.edit-item-pane.header div.icon.row div.title.column i,\ndiv.list.header div.title.row div.icon.column i,\ndiv.new-item-pane.header div.title.row div.icon.column i,\ndiv.edit-item-pane.header div.title.row div.icon.column i,\ndiv.list.header div.icon.row div.icon.column i,\ndiv.new-item-pane.header div.icon.row div.icon.column i,\ndiv.edit-item-pane.header div.icon.row div.icon.column i {\n  text-align: center;\n  margin-right: 0.5em;\n}\ndiv.list.header div.title.row,\ndiv.new-item-pane.header div.title.row,\ndiv.edit-item-pane.header div.title.row {\n  background-color: #0078ff;\n  color: #fff;\n}\ndiv.list.header div.icon.row,\ndiv.new-item-pane.header div.icon.row,\ndiv.edit-item-pane.header div.icon.row {\n  background-color: #fff;\n  color: rgba(0,0,0,0.5);\n}\ndiv.list.header div.tabs.row,\ndiv.new-item-pane.header div.tabs.row,\ndiv.edit-item-pane.header div.tabs.row {\n  display: flex;\n  height: 2em;\n  border-bottom: 1px solid rgba(0,0,0,0.8);\n}\ndiv.list.header div.tabs.row div.tab.column,\ndiv.new-item-pane.header div.tabs.row div.tab.column,\ndiv.edit-item-pane.header div.tabs.row div.tab.column {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  color: rgba(0,0,0,0.5);\n  border: 1px solid rgba(0,0,0,0.5);\n  border-bottom: none;\n  box-sizing: border-box;\n}\ndiv.list.header div.tabs.row div.tab.column.star,\ndiv.new-item-pane.header div.tabs.row div.tab.column.star,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.star {\n  width: 10vw;\n}\ndiv.list.header div.tabs.row div.tab.column.active,\ndiv.new-item-pane.header div.tabs.row div.tab.column.active,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.active {\n  width: 19vw;\n}\ndiv.list.header div.tabs.row div.tab.column.pending,\ndiv.new-item-pane.header div.tabs.row div.tab.column.pending,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.pending {\n  width: 22vw;\n}\ndiv.list.header div.tabs.row div.tab.column.inactive,\ndiv.new-item-pane.header div.tabs.row div.tab.column.inactive,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.inactive {\n  width: 22vw;\n}\ndiv.list.header div.tabs.row div.tab.column.completed,\ndiv.new-item-pane.header div.tabs.row div.tab.column.completed,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.completed {\n  width: 27vw;\n}\n.col12 {\n  width: 8.333333333333334%;\n}\n.col11 {\n  width: 9.090909090909092%;\n}\n.col10 {\n  width: 10%;\n}\n.col9 {\n  width: 11.11111111111111%;\n}\n.col8 {\n  width: 12.5%;\n}\n.col7 {\n  width: 14.285714285714286%;\n}\n.col6 {\n  width: 16.666666666666668%;\n}\n.col5 {\n  width: 20%;\n}\n.col4 {\n  width: 25%;\n}\n.col3 {\n  width: 33.333333333333336%;\n}\n.col2 {\n  width: 50%;\n}\n.col1 {\n  width: 100%;\n}\n.col {\n  width: auto;\n}\n.row12 {\n  height: 8.333333333333334%;\n}\n.row11 {\n  height: 9.090909090909092%;\n}\n.row10 {\n  height: 10%;\n}\n.row9 {\n  height: 11.11111111111111%;\n}\n.row8 {\n  height: 12.5%;\n}\n.row7 {\n  height: 14.285714285714286%;\n}\n.row6 {\n  height: 16.666666666666668%;\n}\n.row5 {\n  height: 20%;\n}\n.row4 {\n  height: 25%;\n}\n.row3 {\n  height: 33.333333333333336%;\n}\n.row2 {\n  height: 50%;\n}\n.row1 {\n  height: 100%;\n}\n.row {\n  height: auto;\n}\n.material-icons.md-18 {\n  font-size: 18px;\n}\n.material-icons.md-24 {\n  font-size: 24px;\n}\n.material-icons.md-36 {\n  font-size: 36px;\n}\n.material-icons.md-48 {\n  font-size: 48px;\n}\n.material-icons.md-dark {\n  color: rgba(0,0,0,0.54);\n}\n.material-icons.md-dark.md-inactive {\n  color: rgba(0,0,0,0.28);\n}\n.material-icons.md-light {\n  color: #fff;\n}\n.material-icons.md-light.md-inactive {\n  color: $light(0.3);\n}\n", ""]);
+	exports.push([module.id, "[ng:cloak],\n[ng-cloak],\n[data-ng-cloak],\n[x-ng-cloak],\n.ng-cloak,\n.x-ng-cloak {\n  display: none !important;\n}\nhtml,\nbody {\n  margin: 0;\n  padding: 0;\n}\n.container {\n  width: 100vw;\n  height: 100vh;\n  position: fixed;\n  overflow-x: hidden;\n  overflow-y: auto;\n  flex-wrap: wrap;\n}\ndiv.calendar.view {\n  box-shadow: none;\n  z-index: 0;\n}\ndiv.calendar.view .row {\n  padding: 0;\n}\ndiv.calendar.view .row:first-child {\n  color: rgba(0,0,0,0.5);\n  margin: 5px;\n}\ndiv.calendar.view .row:nth-child(2) {\n  flex-grow: 1;\n  color: #000;\n}\ndiv.calendar.view .row span {\n  min-height: 1em;\n}\ndiv.week.container #date {\n  z-index: 10;\n  left: 50px;\n  right: 0;\n}\ndiv.week.container #date div.col7 {\n  text-align: center;\n}\ndiv.week.container #date div.col7>div:first-child {\n  font-size: 10px;\n}\ndiv.week.container div.dividers.column {\n  position: absolute;\n  padding-top: 5px;\n}\ndiv.week.container div.dividers.column hr {\n  margin: 0;\n  border: none;\n  margin-bottom: 29px;\n  border-bottom: 1px solid rgba(0,0,0,0.3);\n  width: 100vw;\n}\ndiv.week.container div.dividers.column hr:nth-child(even) {\n  border-bottom: 1px dashed rgba(0,0,0,0.3);\n}\ndiv.week.container div.event.column {\n  padding-top: 5px;\n}\ndiv.week.container div.event.column svg {\n  margin-left: -7px;\n}\ndiv.week.container div.event.column div.week.calendarItem {\n  position: absolute;\n  left: 0;\n  right: 0;\n  margin-top: -5px;\n  background-color: #add8e6;\n  overflow: scroll;\n  font-size: small;\n  padding: 1px;\n  box-sizing: border-box;\n  border: 1px solid rgba(0,0,0,0.3);\n}\ndiv.week.container div.event.column div.col7 {\n  position: relative;\n  display: inline-flex;\n  height: 1440px;\n  box-sizing: border-box;\n  border-left: 1px solid rgba(0,0,0,0.3);\n}\ndiv.day.container #date {\n  left: 0;\n  width: 50px;\n  flex-direction: column;\n  background-color: #fff;\n  box-shadow: 0 5px 15px #fff;\n}\ndiv.day.container #date>div:first-child {\n  font-size: 10px;\n}\ndiv.day.container div.event.column svg {\n  margin-left: -7px;\n}\ndiv.day.container div.event.column div.day.calendarItem {\n  position: absolute;\n  padding: 5px 10px;\n  background-color: #add8e6;\n  border: 1px solid rgba(0,0,0,0.3);\n}\ndiv.day.container div.event.column hr {\n  margin: 0;\n  margin-top: 3px;\n  border-color: rgba(0,0,0,0.3);\n}\ndiv.day.container div.event.column > div {\n  height: 60px;\n  width: 100%;\n  box-sizing: border-box;\n  border-bottom: 1px solid rgba(0,0,0,0.3);\n}\ndiv.day.container div.event.column > div div {\n  height: 30px;\n  width: 100%;\n  box-sizing: border-box;\n  border-bottom: 1px dashed rgba(0,0,0,0.3);\n}\ndiv.day.container,\ndiv.week.container {\n  display: flex;\n}\ndiv.day.container #date,\ndiv.week.container #date {\n  position: fixed;\n  top: 70px;\n  height: 60px;\n  font-size: 24px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\ndiv.day.container #date.spacer,\ndiv.week.container #date.spacer {\n  top: 300px;\n}\ndiv.day.container .today,\ndiv.week.container .today {\n  color: rgba(0,120,255,0.5);\n}\ndiv.day.container .inactive,\ndiv.week.container .inactive {\n  color: rgba(0,0,0,0.5);\n}\ndiv.day.container .selected,\ndiv.week.container .selected {\n  color: #0078ff;\n  font-size: 110%;\n}\ndiv.day.container div.hour.column,\ndiv.week.container div.hour.column {\n  width: 50px;\n  font-size: 12px;\n  text-align: center;\n  flex-grow: 0;\n}\ndiv.day.container div.hour.column div,\ndiv.week.container div.hour.column div {\n  height: 60px;\n}\ndiv.day.container div.event.column,\ndiv.week.container div.event.column {\n  position: relative;\n  flex-grow: 1;\n}\ndiv.day.container div.event.column svg,\ndiv.week.container div.event.column svg {\n  position: absolute;\n  fill: #0078ff;\n  stroke: #0078ff;\n  z-index: 50;\n}\nnav.calHeader {\n  position: fixed;\n  z-index: 10;\n  width: 100%;\n  height: 70px;\n  top: 0;\n  font-size: 30px;\n  box-shadow: 0 1px 10px #515151;\n  padding: 0 0.3em;\n  display: flex;\n  justify-content: space-between;\n  background-color: #fff;\n}\nnav.calHeader div {\n  width: 33%;\n  margin: 0 0.5em;\n  display: inline-flex;\n  align-items: center;\n}\nnav.calHeader div.right {\n  justify-content: flex-end;\n}\nnav.calHeader div.left {\n  justify-content: flex-start;\n}\nnav.calHeader div span {\n  display: flex;\n  align-items: center;\n  padding-left: 0.7em;\n}\nnav.calHeader div i {\n  padding-right: 0.3em;\n}\ndiv.spacer1 {\n  height: 70px;\n  width: 100vw;\n}\ndiv.spacer2 {\n  height: 230px;\n  width: 100vw;\n}\ndiv.weekViewSpacer {\n  height: 130px;\n  width: 100vw;\n}\nfade {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 20;\n  background-color: rgba(0,0,0,0.3);\n}\n.noScroll {\n  overflow: hidden;\n}\ndiv.optionPane {\n  position: absolute;\n  display: inline-flex;\n  width: 100vw;\n  left: 0;\n  min-height: 100%;\n  align-items: center;\n}\ndiv.optionPane > .col {\n  background-color: #fff;\n  width: 320px;\n  box-shadow: 1px 0 10px #515151;\n  z-index: 30;\n}\ndiv.optionPane > .col .row {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n}\ndiv.optionPane > .col .row:first-child {\n  background-color: rgba(0,128,0,0.2);\n  border-bottom: 1px solid #333;\n}\ndiv.optionPane > .col .row:first-child img {\n  padding: 5px;\n  height: 56px;\n}\ndiv.optionPane > .col .row:nth-child(2) .col {\n  display: flex;\n  align-items: center;\n  padding: 1em 0.5em 0.5em 0.5em;\n}\ndiv.optionPane > .col .row:nth-child(2) .col img {\n  height: 3em;\n  padding: 0 0.5em;\n}\ndiv.optionPane > .col .row:nth-child(2) .col span {\n  font-size: 24px;\n  margin-right: 10px;\n}\ndiv.optionPane > .col .row:nth-child(3) div.col {\n  display: block;\n}\ndiv.optionPane > .col .row:nth-child(3) div.col div {\n  display: flex;\n  align-items: center;\n  padding: 10px;\n}\ndiv.optionPane > .col .row:nth-child(3) div.col div span {\n  font-size: 18px;\n  margin-left: 1em;\n  margin-right: 5em;\n}\ncalendar.header {\n  position: fixed;\n  width: 100%;\n  z-index: 15;\n  top: 70px;\n  background-color: #fff;\n}\ndiv.calendar {\n  box-shadow: 0 1px 10px #515151;\n}\ndiv.calendar div.row {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  padding: 8px 0;\n}\ndiv.calendar div.row:nth-child(2) {\n  color: rgba(0,0,0,0.5);\n  text-align: center;\n}\ndiv.calendar div.row > div.col7 {\n  display: flex;\n  justify-content: space-around;\n  flex-direction: column;\n  align-items: center;\n}\ndiv.calendar div.row > div.col7 div {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  width: 25px;\n}\ndiv.calendar div.row > div.col7 div.cal {\n  height: 25px;\n}\ndiv.calendar div.row .hide {\n  visibility: hidden;\n}\ndiv.calendar div.row .disabled {\n  opacity: 0.3;\n}\ndiv.calendar div.row .selected,\ndiv.calendar div.row .today {\n  border-radius: 50%;\n  box-sizing: border-box;\n  font-size: 90%;\n}\ndiv.calendar div.row .today {\n  background-color: rgba(0,120,255,0.3);\n  color: #fff;\n}\ndiv.calendar div.row .selected {\n  background-color: #0078ff;\n  color: #fff;\n}\ndiv.calendarHead {\n  box-shadow: 0 1px 10px #515151;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  background-color: #f00;\n}\ndiv.calendarHead b {\n  font-size: 24px;\n}\nsection.calendar {\n  position: fixed;\n  height: 100vh;\n  left: 0;\n  right: 0;\n  z-index: -1;\n  opacity: 0.3;\n}\ndiv.list.view div.view.body {\n  position: fixed;\n  z-index: 1;\n  top: 6.1em;\n  bottom: 0;\n  overflow: scroll;\n  width: 100vw;\n}\ndiv.list.view div.tab {\n  position: fixed;\n  top: 3.8em;\n  height: 2.2em;\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  border: 1px solid rgba(0,0,0,0.8);\n  border-bottom: none;\n  background-color: #fff;\n  color: rgba(255,255,255,0.9);\n  font-weight: bold;\n  text-shadow: 1px 1px 20px rgba(0,120,255,0.3), -1px -1px 20px rgba(0,120,255,0.3), -1px 1px 20px rgba(0,120,255,0.3), 1px -1px 20px rgba(0,120,255,0.3), 1px 2px 1px #000, -1px -0.5px 1px #000, -1px 2px 1px #000, 1px -0.5px 1px #000;\n  z-index: 100;\n}\ndiv.list.spacer {\n  height: 6em;\n}\ndiv.item.row {\n  height: 3em;\n  display: flex;\n}\ndiv.item.row div.item.col:first-child {\n  width: 12vw;\n  height: 100%;\n  display: flex;\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n}\ndiv.item.row div.item.col:first-child svg {\n  stroke: rgba(0,0,0,0.53);\n  stroke-width: 1.5px;\n}\ndiv.list.star.view div.star.tab {\n  width: 11vw;\n  border-left: none;\n}\ndiv.list.star.view div.star.tab i {\n  font-size: 27px;\n  color: #f1c40f;\n  text-shadow: 1px 1px 20px rgba(0,120,255,0.3), -1px -1px 20px rgba(0,120,255,0.3), -1px 1px 20px rgba(0,120,255,0.3), 1px -1px 20px rgba(0,120,255,0.3), 1px 2px 1px #000, -1px -0.5px 1px #000, -1px 2px 1px #000, 1px -0.5px 1px #000;\n}\ndiv.list.active.view div.active.tab {\n  width: 20.900000000000002vw;\n  left: 10.3vw;\n}\ndiv.list.pending.view div.pending.tab {\n  width: 24.200000000000003vw;\n  left: 29.3vw;\n}\ndiv.list.inactive.view div.inactive.tab {\n  width: 24.200000000000003vw;\n  left: 51.3vw;\n}\ndiv.list.completed.view div.completed.tab {\n  width: 27vw;\n  left: 73.3vw;\n}\ndiv.list.search.view div.search.icon {\n  position: fixed;\n  width: 2em;\n  right: 0.6em;\n  height: 4em;\n  display: flex;\n  z-index: 150;\n}\ndiv.list.search.view div.search.icon i {\n  font-size: 2em;\n  color: #6cf;\n  text-shadow: 0 3px 6px #00f;\n  margin: auto;\n  background-color: #0078ff;\n}\ndiv.list.search.view div.search.box {\n  position: fixed;\n  width: 100vw;\n  top: 6em;\n  padding: 0.3em 0;\n  background-color: #fff;\n  border: 1px solid rgba(0,0,0,0.5);\n  box-sizing: border-box;\n  box-shadow: 0 1px 10px #515151;\n}\ndiv.list.search.view div.search.box div.row {\n  display: flex;\n}\ndiv.list.search.view div.search.box div.row div.col2 {\n  color: rgba(0,0,0,0.4);\n}\ndiv.list.search.view div.search.box div.row div.col2 .selected {\n  color: rgba(0,0,0,0.8);\n  text-shadow: 0 3px 6px #004080;\n}\ndiv.list.search.view div.search.box div.row div.col2:first-child {\n  width: 15vw;\n  flex-grow: 0;\n  display: flex;\n  justify-content: space-around;\n  flex-direction: column;\n  font-weight: bold;\n  text-align: center;\n}\ndiv.list.search.view div.search.box div.row div.col2:first-child i:active {\n  color: rgba(0,0,0,0.8);\n  text-shadow: 0 3px 6px #004080;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child {\n  flex-grow: 1;\n  display: flex;\n  justify-content: space-around;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child div.icol3 {\n  display: flex;\n  flex: 0 1 auto;\n  flex-direction: column;\n  align-items: center;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child div.icol3:first-child {\n  width: 32%;\n}\ndiv.list.search.view div.search.box div.row div.col2:last-child div.icol3 div.irow3 {\n  margin: 0.4em;\n}\ndiv.list.search.view div.search.box div.row input {\n  font-size: 1em;\n  margin: 0.5em 1em;\n  flex-grow: 1;\n}\ndiv.edit-item-pane.container,\ndiv.new-item-pane.container {\n  top: 0;\n  left: 0;\n  z-index: 500;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column {\n  font-size: 26px;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column div,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column div,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column div,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column div {\n  display: flex;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button {\n  background: none;\n  color: #fff;\n  border: 1px solid transparent;\n  border-radius: 4px;\n}\ndiv.edit-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button:disabled,\ndiv.new-item-pane.container div.edit-item-pane.header div.title.row div.title.column:last-child button:disabled,\ndiv.edit-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button:disabled,\ndiv.new-item-pane.container div.new-item-pane.header div.title.row div.title.column:last-child button:disabled {\n  color: rgba(255,255,255,0.3);\n}\ndiv.edit-item-pane.container div.edit-item-pane.body,\ndiv.new-item-pane.container div.edit-item-pane.body,\ndiv.edit-item-pane.container div.new-item-pane.body,\ndiv.new-item-pane.container div.new-item-pane.body {\n  z-index: 100;\n  position: absolute;\n  width: 100vw;\n  top: 4em;\n  bottom: 0;\n  padding: 1.5em;\n  box-sizing: border-box;\n  background-color: #fff;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form,\ndiv.new-item-pane.container div.edit-item-pane.body form,\ndiv.edit-item-pane.container div.new-item-pane.body form,\ndiv.new-item-pane.container div.new-item-pane.body form {\n  font-size: 1.5em;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form div.form.row,\ndiv.new-item-pane.container div.edit-item-pane.body form div.form.row,\ndiv.edit-item-pane.container div.new-item-pane.body form div.form.row,\ndiv.new-item-pane.container div.new-item-pane.body form div.form.row {\n  display: flex;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form div.form.row input,\ndiv.new-item-pane.container div.edit-item-pane.body form div.form.row input,\ndiv.edit-item-pane.container div.new-item-pane.body form div.form.row input,\ndiv.new-item-pane.container div.new-item-pane.body form div.form.row input {\n  flex-grow: 1;\n  margin: 0 1em;\n  border: none;\n  font-size: 20px;\n}\ndiv.edit-item-pane.container div.edit-item-pane.body form div.form.row input:focus,\ndiv.new-item-pane.container div.edit-item-pane.body form div.form.row input:focus,\ndiv.edit-item-pane.container div.new-item-pane.body form div.form.row input:focus,\ndiv.new-item-pane.container div.new-item-pane.body form div.form.row input:focus {\n  outline: none;\n}\ndiv.directive.scheduler.container {\n  z-index: 500;\n  background-color: rgba(0,0,0,0.3);\n}\ndiv.directive.scheduler.container div.scheduler.body {\n  z-index: 25;\n  position: absolute;\n  top: 10vh;\n  left: 10vw;\n  right: 10vw;\n  padding: 1em 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n  border-radius: 0.3em;\n}\ndiv.directive.scheduler.container div.scheduler.body div.top {\n  display: flex;\n  position: absolute;\n  align-items: center;\n  flex-direction: column;\n  height: auto;\n  left: 1px;\n  right: 1px;\n  background-color: rgba(255,255,255,0.85);\n  box-shadow: 0 6px 6px -5px rgba(100,100,100,0.5);\n}\ndiv.directive.scheduler.container div.scheduler.body div.top span {\n  font-size: small;\n  margin-bottom: -0.6em;\n}\ndiv.directive.scheduler.container div.scheduler.body div.top div.item {\n  height: 1.5em;\n  font-size: 2em;\n  display: flex;\n  align-items: center;\n}\ndiv.directive.scheduler.container div.scheduler.body div.spacer {\n  height: 4em;\n}\ndiv.directive.scheduler.container div.scheduler.body div.bottom {\n  display: inline-flex;\n  flex-wrap: wrap;\n  justify-content: space-around;\n}\ndiv.directive.scheduler.container div.scheduler.body div.bottom div.item {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  height: 2.5em;\n  width: 44%;\n  box-sizing: border-box;\n  margin: 0.5em;\n  padding: 0.3em;\n  border-radius: 0.5em;\n  box-shadow: 0 1px 10px #515151;\n  text-align: center;\n}\ndiv.directive.quickScheduler.container {\n  z-index: 400;\n  background-color: rgba(0,0,0,0.3);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body {\n  z-index: 25;\n  position: absolute;\n  top: 10vh;\n  left: 10vw;\n  right: 10vw;\n  padding: 1em 0.5em 0 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n  border-radius: 0.3em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top {\n  display: flex;\n  position: absolute;\n  align-items: center;\n  flex-direction: column;\n  height: auto;\n  left: 1px;\n  right: 1px;\n  background-color: #fff;\n  box-shadow: 0 6px 6px -5px rgba(100,100,100,0.5);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top.disabled {\n  color: rgba(0,0,0,0.3);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top span {\n  font-size: small;\n  margin-bottom: -0.6em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.top div.item {\n  height: 1.5em;\n  font-size: 2em;\n  display: flex;\n  align-items: center;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.last.row {\n  box-shadow: none;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.spacer {\n  height: 4em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal {\n  position: absolute;\n  z-index: 50;\n  top: 1em;\n  bottom: 10px;\n  left: 1px;\n  right: 1px;\n  display: flex;\n  flex-direction: column;\n  background-color: rgba(255,255,255,0.85);\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.spacer {\n  width: 100%;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  flex-wrap: wrap;\n  flex-grow: 1;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.bottom div.item {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  height: 2.5em;\n  width: 44%;\n  box-sizing: border-box;\n  padding: 0.3em;\n  border-radius: 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n  text-align: center;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.custom {\n  padding: 0 10px;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.custom form {\n  display: flex;\n  flex-direction: column;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div.modal div.custom form input {\n  font-size: 1em;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div#qsSaveButton {\n  position: absolute;\n  z-index: 50;\n  left: 50%;\n  margin-left: -10vw;\n  margin-top: 2em;\n  font-weight: bold;\n}\ndiv.directive.quickScheduler.container div.quickScheduler.body div#qsSaveButton div.item {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  height: 2.5em;\n  width: 20vw;\n  border-radius: 0.5em;\n  background-color: #fff;\n  box-shadow: 0 1px 10px #515151;\n}\ndiv.item.row div.item.col {\n  display: flex;\n  margin: auto;\n}\ndiv.item.row div.item.col:nth-child(2) {\n  flex-grow: 1;\n  padding: 0.5em;\n}\ndiv.item.row div.item.col:nth-child(2) form {\n  display: flex;\n  flex-grow: 1;\n}\ndiv.item.row div.item.col:nth-child(2) form input {\n  color: rgba(0,0,0,0.8);\n  flex-grow: 1;\n  font-size: 1.2em;\n  border: none;\n}\ndiv.item.row div.item.col.icon {\n  color: rgba(0,0,0,0.53);\n}\ndiv.item.row div.item.col:last-child {\n  padding-right: 0.3em;\n}\ndiv.list.header,\ndiv.new-item-pane.header,\ndiv.edit-item-pane.header {\n  width: 100vw;\n}\ndiv.list.header div.title.row,\ndiv.new-item-pane.header div.title.row,\ndiv.edit-item-pane.header div.title.row,\ndiv.list.header div.icon.row,\ndiv.new-item-pane.header div.icon.row,\ndiv.edit-item-pane.header div.icon.row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  height: 2em;\n  padding: 0.3em;\n  box-sizing: border-box;\n  font-size: 2em;\n}\ndiv.list.header div.title.row div.title.column,\ndiv.new-item-pane.header div.title.row div.title.column,\ndiv.edit-item-pane.header div.title.row div.title.column,\ndiv.list.header div.icon.row div.title.column,\ndiv.new-item-pane.header div.icon.row div.title.column,\ndiv.edit-item-pane.header div.icon.row div.title.column,\ndiv.list.header div.title.row div.icon.column,\ndiv.new-item-pane.header div.title.row div.icon.column,\ndiv.edit-item-pane.header div.title.row div.icon.column,\ndiv.list.header div.icon.row div.icon.column,\ndiv.new-item-pane.header div.icon.row div.icon.column,\ndiv.edit-item-pane.header div.icon.row div.icon.column {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n}\ndiv.list.header div.title.row div.title.column i,\ndiv.new-item-pane.header div.title.row div.title.column i,\ndiv.edit-item-pane.header div.title.row div.title.column i,\ndiv.list.header div.icon.row div.title.column i,\ndiv.new-item-pane.header div.icon.row div.title.column i,\ndiv.edit-item-pane.header div.icon.row div.title.column i,\ndiv.list.header div.title.row div.icon.column i,\ndiv.new-item-pane.header div.title.row div.icon.column i,\ndiv.edit-item-pane.header div.title.row div.icon.column i,\ndiv.list.header div.icon.row div.icon.column i,\ndiv.new-item-pane.header div.icon.row div.icon.column i,\ndiv.edit-item-pane.header div.icon.row div.icon.column i {\n  text-align: center;\n  margin-right: 0.5em;\n}\ndiv.list.header div.title.row div.search.column,\ndiv.new-item-pane.header div.title.row div.search.column,\ndiv.edit-item-pane.header div.title.row div.search.column,\ndiv.list.header div.icon.row div.search.column,\ndiv.new-item-pane.header div.icon.row div.search.column,\ndiv.edit-item-pane.header div.icon.row div.search.column {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  width: 1em;\n}\ndiv.list.header div.title.row,\ndiv.new-item-pane.header div.title.row,\ndiv.edit-item-pane.header div.title.row {\n  background-color: #0078ff;\n  color: #fff;\n}\ndiv.list.header div.icon.row,\ndiv.new-item-pane.header div.icon.row,\ndiv.edit-item-pane.header div.icon.row {\n  background-color: #fff;\n  color: rgba(0,0,0,0.5);\n}\ndiv.list.header div.tabs.row,\ndiv.new-item-pane.header div.tabs.row,\ndiv.edit-item-pane.header div.tabs.row {\n  display: flex;\n  height: 2em;\n  border-bottom: 1px solid rgba(0,0,0,0.8);\n}\ndiv.list.header div.tabs.row div.tab.column,\ndiv.new-item-pane.header div.tabs.row div.tab.column,\ndiv.edit-item-pane.header div.tabs.row div.tab.column {\n  display: flex;\n  align-items: center;\n  justify-content: space-around;\n  color: rgba(0,0,0,0.5);\n  border: 1px solid rgba(0,0,0,0.5);\n  border-bottom: none;\n  box-sizing: border-box;\n}\ndiv.list.header div.tabs.row div.tab.column.star,\ndiv.new-item-pane.header div.tabs.row div.tab.column.star,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.star {\n  width: 10vw;\n}\ndiv.list.header div.tabs.row div.tab.column.active,\ndiv.new-item-pane.header div.tabs.row div.tab.column.active,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.active {\n  width: 19vw;\n}\ndiv.list.header div.tabs.row div.tab.column.pending,\ndiv.new-item-pane.header div.tabs.row div.tab.column.pending,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.pending {\n  width: 22vw;\n}\ndiv.list.header div.tabs.row div.tab.column.inactive,\ndiv.new-item-pane.header div.tabs.row div.tab.column.inactive,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.inactive {\n  width: 22vw;\n}\ndiv.list.header div.tabs.row div.tab.column.completed,\ndiv.new-item-pane.header div.tabs.row div.tab.column.completed,\ndiv.edit-item-pane.header div.tabs.row div.tab.column.completed {\n  width: 27vw;\n}\n.col12 {\n  width: 8.333333333333334%;\n}\n.col11 {\n  width: 9.090909090909092%;\n}\n.col10 {\n  width: 10%;\n}\n.col9 {\n  width: 11.11111111111111%;\n}\n.col8 {\n  width: 12.5%;\n}\n.col7 {\n  width: 14.285714285714286%;\n}\n.col6 {\n  width: 16.666666666666668%;\n}\n.col5 {\n  width: 20%;\n}\n.col4 {\n  width: 25%;\n}\n.col3 {\n  width: 33.333333333333336%;\n}\n.col2 {\n  width: 50%;\n}\n.col1 {\n  width: 100%;\n}\n.col {\n  width: auto;\n}\n.row12 {\n  height: 8.333333333333334%;\n}\n.row11 {\n  height: 9.090909090909092%;\n}\n.row10 {\n  height: 10%;\n}\n.row9 {\n  height: 11.11111111111111%;\n}\n.row8 {\n  height: 12.5%;\n}\n.row7 {\n  height: 14.285714285714286%;\n}\n.row6 {\n  height: 16.666666666666668%;\n}\n.row5 {\n  height: 20%;\n}\n.row4 {\n  height: 25%;\n}\n.row3 {\n  height: 33.333333333333336%;\n}\n.row2 {\n  height: 50%;\n}\n.row1 {\n  height: 100%;\n}\n.row {\n  height: auto;\n}\n.material-icons.md-18 {\n  font-size: 18px;\n}\n.material-icons.md-24 {\n  font-size: 24px;\n}\n.material-icons.md-36 {\n  font-size: 36px;\n}\n.material-icons.md-48 {\n  font-size: 48px;\n}\n.material-icons.md-dark {\n  color: rgba(0,0,0,0.54);\n}\n.material-icons.md-dark.md-inactive {\n  color: rgba(0,0,0,0.28);\n}\n.material-icons.md-light {\n  color: #fff;\n}\n.material-icons.md-light.md-inactive {\n  color: $light(0.3);\n}\n", ""]);
 
 	// exports
 
@@ -50544,7 +50546,7 @@
 	  function getUser($state, $q, dataSvc) {
 	    var deferred = $q.defer();
 	    if (dataSvc.user) deferred.resolve('User already loaded');else dataSvc.getUser().then(function (user) {
-	      dataSvc.user = user.data;console.log('User aquired: ' + user.data);
+	      dataSvc.user = user.data;console.log('User aquired: ', user.data);
 	      deferred.resolve("User aquired");
 	    }, function (rejected) {
 	      alert("Failed to aquire user");deferred.reject("Failed to aquire user");$state.go("home");
@@ -50573,13 +50575,13 @@
 /* 116 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Header -->\n<cal-header icon=\"list\" month=\"month\" flag1=\"optionFlag\" flag2=\"monthFlag\"></cal-header>\n<!-- Body -->\n<div class=\"day container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"spacer1\"></div>\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- Date icon in the top left corner -->\n  <div id=\"date\" ng-class=\"{inactive: month.moment.isBefore(moment(), 'day'), selected: month.moment.isSame(moment(), 'day'), spacer: monthFlag}\">\n    <div>{{ month.moment.format(\"ddd\") }}</div>\n    <div>{{ month.moment.date() }}</div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <hr>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n  </div>\n</div>\n";
+	module.exports = "<!-- Header -->\n<cal-header icon=\"list\" month=\"month\" flag1=\"optionFlag\" flag2=\"monthFlag\"></cal-header>\n<!-- Body -->\n<div class=\"day container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"spacer1\"></div>\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- Date icon in the top left corner -->\n  <div id=\"date\" ng-class=\"{inactive: month.moment.isBefore(moment(), 'day'), selected: month.moment.isSame(moment(), 'day'), spacer: monthFlag}\">\n    <div>{{ month.moment.format(\"ddd\") }}</div>\n    <div>{{ month.moment.date() }}</div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <!-- Task List (absolute) -->\n    <div ng-repeat=\"task in month.currentWeek[month.moment.day()].tasks\"\n         ng-if=\"task.schedule.duration\"\n         style=\"top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px\"\n         class=\"day calendarItem\">\n         {{task.name}}\n    </div>\n    <hr>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n  </div>\n</div>\n";
 
 /***/ },
 /* 117 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Header -->\n<cal-header icon=\"list\" month=\"month\" flag1=\"optionFlag\" flag2=\"monthFlag\"></cal-header>\n<!-- Body -->\n<div class=\"week container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"weekViewSpacer\"></div>\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- 1ST ROW - Day titles and number -->\n  <div id=\"date\" ng-class=\"{spacer: monthFlag}\">\n    <div class=\"col8\"></div>\n    <div class=\"col8\" ng-repeat=\"day in month.currentWeek\" ng-click=\"month.rebuild(day)\" ui-sref=\"calendar.day\" ng-class=\"{inactive: day.isBefore(moment(), 'day'), selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}\">\n      <div>{{ day.format(\"ddd\") }}</div>\n      <div>{{ day.date() }}</div>\n    </div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Horizontal HR dividers -->\n  <div class=\"dividers column\"><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr></div>\n\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <!-- Current time marker -->\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <!-- Seven Day columns -->\n    <div class=\"col7\" ng-repeat=\"day in month.currentWeek\">\n    </div>\n  </div>\n</div>\n";
+	module.exports = "<!-- Header -->\n<cal-header icon=\"list\" month=\"month\" flag1=\"optionFlag\" flag2=\"monthFlag\"></cal-header>\n<!-- Body -->\n<div class=\"week container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"weekViewSpacer\"></div>\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- 1ST ROW - Day titles and number -->\n  <div id=\"date\" ng-class=\"{spacer: monthFlag}\">\n    <div class=\"col7\" ng-repeat=\"day in month.currentWeek\" ng-click=\"month.rebuild(day)\" ui-sref=\"calendar.day\" ng-class=\"{inactive: day.isBefore(moment(), 'day'), selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}\">\n      <div>{{ day.format(\"ddd\") }}</div>\n      <div>{{ day.date() }}</div>\n    </div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Horizontal HR dividers -->\n  <div class=\"dividers column\"><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr></div>\n\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <!-- Current time marker -->\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <!-- Seven Day columns -->\n    <div class=\"col7\" ng-repeat=\"day in month.currentWeek\">\n      <div ng-repeat=\"task in day.tasks\"\n           ng-if=\"task.schedule.duration\"\n           style=\"top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px\"\n           class=\"week calendarItem\">\n           {{task.name}}\n      </div>\n    </div>\n  </div>\n</div>\n";
 
 /***/ },
 /* 118 */
@@ -50635,8 +50637,10 @@
 	exports.default = calendarCtrl;
 	function calendarCtrl($scope, dataSvc, moment, $interval) {
 	  $scope.tasks = dataSvc.tasks;
+	  $scope.user = dataSvc.user;
 	  console.log('Tasks: ', $scope.tasks);
-	  console.log('User: ', dataSvc.user);
+	  console.log('User: ', $scope.user);
+
 	  // let agenda = buildAgenda();
 	  //
 	  // function buildAgenda(){
@@ -50690,19 +50694,6 @@
 	  $scope.month = buildMonth();
 	  console.log($scope.now);
 	  console.log($scope.currentMinute);
-
-	  //------------------------------  DATA TRANSFERS -----------------------------//
-	  // GET Methods
-	  // $scope.getTasks = function(){
-	  //   dataSvc.getTasks().then(
-	  //         function(result){console.log('calendar retrieve'); $scope.tasks = dataSvc.tasks = result.data;
-	  //         console.log(result.data[0].schedule);},
-	  //         function(error){console.log("Failed to get tasks.", error);}
-	  //   );
-	  // };
-	  // if(dataSvc.tasks) $scope.tasks = dataSvc.tasks;
-	  // else $scope.getTasks();
-	  //----------------------------------------------------------------------------//
 
 	  //Update $scope.now with the current time once every 60 seconds
 	  var minuteIteration = $interval(function () {
@@ -50768,7 +50759,14 @@
 	    var week = [],
 	        day = moment.clone().startOf('week');
 	    for (var i = 0; i < 7; i++) {
-	      week.push(day.clone());
+	      var newDay = day.clone(),
+	          tasks = [];
+	      for (var _i2 = 0; _i2 < $scope.tasks.length; _i2++) {
+	        var start = $scope.tasks[_i2].schedule.startTime.moment;
+	        if (day.isSame(start, 'day')) tasks.push($scope.tasks[_i2]);
+	      }
+	      newDay.tasks = tasks;
+	      week.push(newDay);
 	      day = day.add(1, 'days');
 	    }
 	    return week;
@@ -50782,16 +50780,16 @@
 	        hours[i] = false;
 	      }
 	    } else if (date.isAfter($scope.now, 'day')) {
-	      for (var _i2 = 0; _i2 < 24; _i2++) {
-	        hours[_i2] = true;
+	      for (var _i3 = 0; _i3 < 24; _i3++) {
+	        hours[_i3] = true;
 	      }
 	    } else {
 	      var hour = $scope.now.hour();
-	      for (var _i3 = 0; _i3 <= hour; _i3++) {
-	        hours[_i3] = false;
+	      for (var _i4 = 0; _i4 <= hour; _i4++) {
+	        hours[_i4] = false;
 	      }
-	      for (var _i4 = hour + 1; _i4 < 24; _i4++) {
-	        hours[_i4] = true;
+	      for (var _i5 = hour + 1; _i5 < 24; _i5++) {
+	        hours[_i5] = true;
 	      }
 	    }
 	    return hours;
@@ -50931,6 +50929,7 @@
 	  // Data transfer variables
 	  var modified = {};
 	  $scope.tasks = dataSvc.tasks;
+	  $scope.user = dataSvc.user;
 
 	  // GET Methods
 	  $scope.getTasks = function () {
@@ -51046,14 +51045,15 @@
 	  };
 	  //----------------------------------------------------------------------------//
 
-	  ////////////////////////////////  AGENDA  //////////////////////////////////////
-	  this.getAgenda = function () {
-	    return $http.get("/api/user/" + self.user._id + "/agenda");
-	  };
-	  this.updateAgenda = function (yr, mo, day, hr, min, key, ids) {
-	    $http.put("/api/cron/" + yr + "/" + mo + "/" + day + "/" + hr + "/" + min + "/" + key + "/" + ids);
-	    return $http.put("/api/user/" + self.user._id + "/agenda/" + yr + "/" + mo + "/" + day + "/" + hr + "/" + min + "/" + key + "/" + ids);
-	  };
+	  ////////////////////////////////  AGENDA  ////////////////////////////////////// //test
+	  // this.getAgenda = function(){
+	  //   return $http.get(`/api/user/${self.user._id}/agenda`);
+	  // };
+	  // this.updateAgenda = function(yr, mo, day, hr, min, key, ids){
+	  //   // $http.put(`/api/cron/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
+	  //   console.log(`ID of User to be updated: ${self.user._id}`);
+	  //   return $http.put(`/api/user/${self.user._id}/agenda/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
+	  // };
 	  //----------------------------------------------------------------------------//
 
 	  /////////////////////////////////  USERS  //////////////////////////////////////
@@ -51100,11 +51100,7 @@
 	exports.addItem = addItem;
 	exports.editItemPane = editItemPane;
 	exports.newItemPane = newItemPane;
-	exports.quickScheduler = quickScheduler;
 	exports.scheduler = scheduler;
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 	//////////////   CALENDAR DIRECTIVES   /////////////////////////////////////////
 	// The header on the Calendar side
 	function calHeader($state) {
@@ -51198,11 +51194,98 @@
 	    template: __webpack_require__(138)
 	  };
 	}
+	// (MAY NOT BE NEEDED) Full scheduler directive
+	function scheduler(moment) {
+	  return {
+	    restrict: 'E',
+	    template: __webpack_require__(140),
+	    link: function link(scope, element, attrs, ctrl) {}
+	  };
+	}scheduler.$inject = ['moment'];
+	////////////////////////////////////////////////////////////////////////////////
+
+/***/ },
+/* 129 */
+/***/ function(module, exports) {
+
+	module.exports = "<fade ng-if=\"optionFlag\" ng-click=\"clear()\"></fade>\n<option-pane ng-if=\"optionFlag\"></option-pane>\n\n<!-- <div class=\"spacer1\" ng-if=\"monthFlag\"></div> test-->\n<nav class=\"calHeader\">\n  <div class=\"left\">\n    <i ng-click=\"toggleOption()\" class=\"material-icons md-dark md-36\">menu</i>\n    <span ng-if=\"view !== 'month'\" ui-sref=\"calendar.month\">\n      {{month.name}}\n    </span>\n    <i ng-if=\"!monthFlag\" ng-click=\"toggleMonth()\" class=\"material-icons md-dark md-36\">arrow_drop_down</i>\n    <i ng-if=\"monthFlag\" ng-click=\"toggleMonth()\" class=\"material-icons md-dark md-36\">arrow_drop_up</i>\n    <span ng-if=\"view === 'month'\">{{month.name}}</span>\n  </div>\n  <div class=\"right\">\n    <i ng-if=\"icon === 'eye' && eyeFlag\" ng-click=\"toggleEye()\" class=\"material-icons md-dark md-24\" style=\"border-right: 2px solid black\">visibility</i>\n    <i ng-if=\"icon === 'eye' && !eyeFlag\" ng-click=\"toggleEye()\" class=\"material-icons md-dark md-24\" style=\"border-right: 2px solid black\">visibility_off</i>\n    <i ui-sref=\"list.star\" ng-if=\"icon === 'list'\" class=\"material-icons md-dark md-24\" style=\"border-right: 2px solid black\">list</i>\n    <i class=\"material-icons md-dark md-24\"></i>\n    <i ng-click=\"month.rebuild()\" class=\"material-icons md-dark md-24\">today</i>\n  </div>\n</nav>\n\n<!-- <div class=\"spacer2\" ng-if=\"monthFlag\"></div> test -->\n<calendar class=\"header\" ng-if=\"monthFlag\"></calendar>\n";
+
+/***/ },
+/* 130 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = "<div class=\"optionPane\">\n  <div class=\"col\">\n    <!-- Row 1 -->\n    <div class=\"row\">\n      <img src=\"" + __webpack_require__(131) + "\" alt=\"company logo\">\n    </div>\n\n    <!-- Row2 -->\n    <div class=\"row\">\n      <div class=\"col\">\n        <img src=\"" + __webpack_require__(132) + "\" alt=\"Profile Picture\">\n        <span>spenc84@gmail.com</span>\n      </div>\n    </div>\n\n    <!-- Row 3 -->\n    <div class=\"row\">\n      <div class=\"col\">\n        <div ui-sref=\"calendar.agenda\"><i class=\"material-icons md-36 md-dark\">view_agenda</i><span>Agenda</span></div>\n        <div ui-sref=\"calendar.day\"><i class=\"material-icons md-36 md-dark\">view_day</i><span>Day</span></div>\n        <div ui-sref=\"calendar.week\"><i class=\"material-icons md-36 md-dark\">view_week</i><span>Week</span></div>\n        <div ui-sref=\"calendar.month\"><i class=\"material-icons md-36 md-dark\">apps</i><span>Month</span></div>\n        <div ui-sref=\"list.star\"><i class=\"material-icons md-36 md-dark\">storage</i><span>List View</span></div>\n      </div>\n    </div>\n    <!-- <hr> -->\n    <calendar></calendar>\n  </div>\n</div>\n";
+
+/***/ },
+/* 131 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "nl-logo.png";
+
+/***/ },
+/* 132 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "userPic.png";
+
+/***/ },
+/* 133 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"calendar\">\n  <div class=\"calendarHead\">\n      <i class=\"material-icons md-dark\" ng-click=\"month.rebuild(month.moment.subtract(1, 'month'))\">chevron_left</i>\n      <b>{{ month.name }}</b>\n      <i class=\"material-icons md-dark\" ng-click=\"month.rebuild(month.moment.add(1, 'month'))\">chevron_right</i>\n  </div>\n  <div class=\"row\" ui-sref=\"calendar.week\">\n      <span class=\"col7\">S</span>\n      <span class=\"col7\">M</span>\n      <span class=\"col7\">T</span>\n      <span class=\"col7\">W</span>\n      <span class=\"col7\">T</span>\n      <span class=\"col7\">F</span>\n      <span class=\"col7\">S</span>\n  </div>\n  <div class=\"row\" ng-repeat=\"week in month.weeks\">\n      <div class=\"col7\" ng-class=\"{disabled: day.format('MMMM') !== month.name}\" ng-repeat=\"day in week\">\n        <div ng-click=\"month.rebuild(day);clearOption()\" ng-class=\"{selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}\">{{day.date()}}</div>\n      </div>\n  </div>\n</div>\n<section class=\"calendar\" ng-click=\"toggleMonth()\" ng-if=\"monthFlag && !optionFlag\"></section>\n";
+
+/***/ },
+/* 134 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"list container\">\n  <div class=\"list header\">\n    <!-- 1ST ROW - BOTTOM LAYER: Icons -->\n    <div class=\"icon row\" ng-if=\"editableItems > 0\">\n      <div class=\"icon column\">\n        <div ng-click=\"toggleEditOff()\">\n          <i class=\"material-icons\">arrow_back</i>\n        </div>\n      </div>\n      <div class=\"icon column\">\n        <i class=\"material-icons\">group_work</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">link</i> -->\n        <i class=\"material-icons\">linear_scale</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">place</i> -->\n        <i class=\"material-icons\" ng-click=\"deleteTask()\">info</i>\n        <i class=\"material-icons\">group_add</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">supervisor_account</i> -->\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">person_pin</i> -->\n        <i class=\"material-icons\" ng-click=\"toggleQuickScheduler()\">schedule</i>\n        <i style=\"color:rgb(241,196,15)\" class=\"material-icons\" ng-click=\"toggleStarred()\">star</i>\n        <i class=\"material-icons\">more_vert</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">check</i> -->\n        <i style=\"color:rgb(50,200,50); font-size:1.1em; margin-right:0; margin-left:-.2em\" class=\"material-icons\" ng-click=\"toggleCompleted()\">check_circle</i>\n        <!-- <div style=\"border: 1px solid black; border-radius:50%; background-color:rgba(0,255,0,.25); color:black;\">\n          <i style=\"margin:.25em\" class=\"material-icons\" ng-click=\"toggleCompleted()\">check</i>\n        </div> -->\n      </div>\n    </div>\n    <!-- 1ST ROW - TOP LAYER: Title -->\n    <div class=\"title row\" ng-if=\"editableItems === 0\">\n      <div class=\"title column\">\n        <div ui-sref=\"{{priorView}}\">\n          <i class=\"material-icons\">close</i>\n        </div>\n        <div>{{title}}</div>\n      </div>\n      <div ui-sref=\"list.search\" class=\"search column\">\n        <i class=\"material-icons\">search</i>\n      </div>\n    </div>\n    <!-- 2ND ROW: Tabs -->\n    <div class=\"row tabs\">\n        <div ui-sref=\"list.star\" class=\"tab column star\">\n          <i class=\"material-icons md-24 md-dark\">star_border</i>\n        </div>\n        <div ui-sref=\"list.active\" class=\"tab column active\">Active</div>\n        <div ui-sref=\"list.pending\" class=\"tab column pending\">Pending</div>\n        <div ui-sref=\"list.inactive\" class=\"tab column inactive\">Inactive</div>\n        <div ui-sref=\"list.completed\" class=\"tab column completed\">Completed</div>\n    </div>\n  </div>\n</div>\n\n<!-- Overlaid option panes -->\n<scheduler ng-if=\"schedulerFlag\"></scheduler>\n<quick-scheduler ng-if=\"quickSchedulerFlag\"></quick-scheduler>\n";
+
+/***/ },
+/* 135 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"row item\">\n  <div class=\"col item\" ng-click=\"toggleEdit($index)\">\n    <svg width=\"3em\" height=\"3em\">\n      <circle cx=\"1.5em\" cy=\"1.5em\" r=\".75em\" fill=\"white\"/>\n      <circle cx=\"1.5em\" cy=\"1.5em\" r=\".5em\" fill=\"rgb(50,200,50)\" ng-if=\"!task.status.editable && task.status.completed\" />\n      <line x1=\"1.2em\" x2=\"1.4em\" y1=\"1.5em\" y2=\"1.7em\" style=\"stroke:white;stroke-width:2\" ng-if=\"!task.status.editable && task.status.completed\" />\n      <line x1=\"1.4em\" x2=\"1.8em\" y1=\"1.7em\" y2=\"1.3em\" style=\"stroke:white;stroke-width:2\" ng-if=\"!task.status.editable && task.status.completed\" />\n      <circle cx=\"1.5em\" cy=\"1.5em\" r=\".5em\" fill=\"rgba(0,120,255,1)\" ng-if=\"task.status.editable\" />\n    </svg>\n  </div>\n  <div class=\"col item\">\n    <form ng-submit=\"saveTask($index)\">\n      <input type=\"text\" ng-model=\"tasks[$index].name\" ng-if=\"!task.status.editable\" ng-click=\"toggleEditItemPane($index)\" readonly>\n      <input type=\"text\" ng-model=\"tasks[$index].name\" ng-if=\"task.status.editable\">\n    </form>\n  </div>\n  <div class=\"col item icon\" ng-if=\"task.status.starred\">\n    <i style=\"color:rgb(241,196,15)\" class=\"material-icons\" ng-click=\"toggleStarred()\">star</i>\n  </div>\n  <div class=\"col item icon\" ng-if=\"task.status.editable\">\n    <i class=\"material-icons\"  ng-click=\"toggleEditItemPane($index)\">info_outline</i>\n  </div>\n</div>\n";
+
+/***/ },
+/* 136 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"row add item\">\n  <div class=\"col add item\" ng-click=\"toggleNewItemPane()\">\n    <svg width=\"3em\" height=\"3em\">\n      <line x1=\"1.5em\" x2=\"1.5em\" y1=\"0.75em\" y2=\"2.25em\" />\n      <line x1=\"0.75em\" x2=\"2.25em\" y1=\"1.5em\" y2=\"1.5em\" />\n    </svg>\n  </div>\n  <div class=\"col add item\">\n    <form ng-submit=\"saveNew()\">\n      <input type=\"text\" ng-model=\"newItem.name\">\n    </form>\n  </div>\n</div>\n";
+
+/***/ },
+/* 137 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"edit-item-pane container\">\n  <!-- ***** HEADER ***** -->\n    <div class=\"edit-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleEditItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{tasks[editPaneIndx].name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"saveTask(editPaneIndx); toggleEditItemPane()\" ng-disabled=\"editItemForm.$invalid\" form=\"editItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"edit-item-pane body\">\n      <form id=\"editItemForm\" name=\"editItemForm\" novalidate>\n        <div class=\"form row\">\n          <label for=\"name\">Name:</label>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"tasks[editPaneIndx].name\" autocomplete=\"off\" autofocus required />\n        </div>\n      </form>\n    </div>\n</div>\n";
+
+/***/ },
+/* 138 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"new-item-pane container\">\n  <!-- ***** HEADER ***** -->\n    <div class=\"new-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleNewItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{newItem.name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"toggleNewItemPane(); saveNew()\" ng-disabled=\"newItemForm.$invalid\" form=\"newItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"new-item-pane body\">\n      <form id=\"newItemForm\" name=\"newItemForm\" novalidate>\n        <div class=\"form row\">\n          <label for=\"name\">Name:</label>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"newItem.name\" autocomplete=\"off\" autofocus required />\n        </div>\n      </form>\n    </div>\n</div>\n";
+
+/***/ },
+/* 139 */,
+/* 140 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"directive scheduler container\">\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n</div>\n";
+
+/***/ },
+/* 141 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.quickScheduler = quickScheduler;
 	//the modal that allows you to quickly choose a time for your task
 	function quickScheduler(moment, dataSvc) {
 	  return {
 	    restrict: 'E',
-	    template: __webpack_require__(139),
+	    template: __webpack_require__(142),
 	    link: function link(scope, element, attrs, ctrl) {
 	      scope.moment = moment;
 	      scope.hour = moment().hour();
@@ -51214,7 +51297,9 @@
 	      if (dataSvc.schedule) {
 	        scope.schedule = dataSvc.schedule;
 	        scope.scheduleNames = dataSvc.scheduleNames;
-	      } else {
+	      } else createNewSchedule();
+
+	      function createNewSchedule() {
 	        scope.scheduleNames = {
 	          startTime: 'Now',
 	          duration: 'None',
@@ -51222,7 +51307,7 @@
 	          hardDeadline: 'None',
 	          availability: 'Anytime'
 	        };
-	        var now = moment();
+	        var now = moment().startOf('hour');
 	        scope.schedule = {
 	          startTime: {
 	            moment: now,
@@ -51230,7 +51315,8 @@
 	            month: now.month(),
 	            day: now.date(),
 	            hour: now.hour(),
-	            minute: now.minute() },
+	            minute: 0,
+	            top: now.hour() * 60 + 5 },
 	          duration: 0,
 	          softDeadline: { moment: '' },
 	          hardDeadline: { moment: '' },
@@ -51283,7 +51369,7 @@
 	              if (scope.hour < 17) {
 	                // If it's before 5:00 pm
 	                var startName = scope.hour < 9 ? '9:00 AM' : 'Now',
-	                    startTime = scope.hour < 9 ? moment().hour(9).startOf('hour') : moment();
+	                    startTime = scope.hour < 9 ? moment().hour(9).startOf('hour') : moment().startOf('hour');
 	                scope.setStartTime([startName, startTime]);
 	                scope.setDeadline(['5:00 PM', moment().hour(17).startOf('hour')]);
 	              } else {
@@ -51298,7 +51384,7 @@
 	              if (scope.hour < 22) {
 	                // If it's before 10:00 pm
 	                var _startName = scope.hour < 18 ? '6:00 PM' : 'Now',
-	                    _startTime = scope.hour < 18 ? moment().hour(18).startOf('hour') : moment();
+	                    _startTime = scope.hour < 18 ? moment().hour(18).startOf('hour') : moment().startOf('hour');
 	                scope.setStartTime([_startName, _startTime]);
 	                scope.setDeadline(['10:00 PM', moment().hour(22).startOf('hour')]);
 	              } else {
@@ -51313,7 +51399,7 @@
 	              if (scope.hour < 22) {
 	                // If it's before 10:00 pm
 	                var _startName2 = scope.hour < 8 ? '8:00 AM' : 'Now',
-	                    _startTime2 = scope.hour < 8 ? moment().hour(8).startOf('hour') : moment();
+	                    _startTime2 = scope.hour < 8 ? moment().hour(8).startOf('hour') : moment().startOf('hour');
 	                scope.setStartTime([_startName2, _startTime2]);
 	                scope.setDeadline(['10:00 PM', moment().hour(22).startOf('hour')]);
 	              } else {
@@ -51333,10 +51419,14 @@
 	      ////////////////////////////////////////////////////////////////////////////////
 	      ///////////////////////////////  START TIME  ///////////////////////////////////
 	      scope.closeStartTimeModal = function () {
-	        scope.startTimeModalFlag = false;
+	        scope.startTimeModalFlag = false;scope.customStart = false;
 	      };
 	      scope.toggleStartTimeModal = function () {
 	        scope.startTimeModalFlag = !scope.startTimeModalFlag;
+	      };
+	      scope.openCustomStart = function () {
+	        scope.customStartDate = new Date(moment().startOf('minute'));
+	        scope.customStart = true;
 	      };
 
 	      scope.setStartTime = function (value) {
@@ -51353,11 +51443,12 @@
 	        // Else if the user chooses a valid start time, then set some variables for the deadline modal to use
 	        else {
 	            scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
-	            starting.year = starting.moment.year();
+	            starting.year = starting.moment.year() - 2000;
 	            starting.month = starting.moment.month();
 	            starting.day = starting.moment.date();
 	            starting.hour = starting.moment.hour();
 	            starting.minute = starting.moment.minute();
+	            starting.top = starting.moment ? 5 + starting.hour * 60 + starting.minute : undefined;
 	            // ...and reset the deadline values if they've already been chosen and they're prior to the new start time
 	            if (scope.schedule.softDeadline.moment && scope.schedule.softDeadline.moment.isBefore(starting.moment)) {
 	              scope.scheduleNames.softDeadline = 'None';
@@ -51388,7 +51479,7 @@
 	        var deadline = scope.schedule[scope.deadlineType];
 	        scope.scheduleNames[scope.deadlineType] = value[0];
 	        deadline.moment = value[1];
-	        deadline.year = deadline.moment ? deadline.moment.year() : undefined;
+	        deadline.year = deadline.moment ? deadline.moment.year() - 2000 : undefined;
 	        deadline.month = deadline.moment ? deadline.moment.month() : undefined;
 	        deadline.day = deadline.moment ? deadline.moment.date() : undefined;
 	        deadline.hour = deadline.moment ? deadline.moment.hour() : undefined;
@@ -51409,15 +51500,15 @@
 	      scope.setAvailability.anytime = function () {
 	        scope.scheduleNames.availability = 'Anytime';
 	        var arrayOfDays = [];
-	        for (var _i = 0; _i < 7; _i++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j3 = 0; _j3 < 8; _j3++) {
+	          for (var j = 0; j < 8; j++) {
 	            arrayOfHours.push(0);
 	          }
-	          for (var _j4 = 8; _j4 < 22; _j4++) {
+	          for (var _j3 = 8; _j3 < 22; _j3++) {
 	            arrayOfHours.push(1);
 	          }
-	          for (var _j5 = 22; _j5 < 24; _j5++) {
+	          for (var _j4 = 22; _j4 < 24; _j4++) {
 	            arrayOfHours.push(0);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51429,15 +51520,15 @@
 	      scope.setAvailability.earlyBird = function () {
 	        scope.scheduleNames.availability = 'Early Bird';
 	        var arrayOfDays = [];
-	        for (var _i2 = 0; _i2 < 7; _i2++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j6 = 0; _j6 < 6; _j6++) {
+	          for (var j = 0; j < 6; j++) {
 	            arrayOfHours.push(0);
 	          }
-	          for (var _j7 = 6; _j7 < 8; _j7++) {
+	          for (var _j5 = 6; _j5 < 8; _j5++) {
 	            arrayOfHours.push(1);
 	          }
-	          for (var _j8 = 8; _j8 < 24; _j8++) {
+	          for (var _j6 = 8; _j6 < 24; _j6++) {
 	            arrayOfHours.push(0);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51449,15 +51540,15 @@
 	      scope.setAvailability.mornings = function () {
 	        scope.scheduleNames.availability = 'Mornings';
 	        var arrayOfDays = [];
-	        for (var _i3 = 0; _i3 < 7; _i3++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j9 = 0; _j9 < 6; _j9++) {
+	          for (var j = 0; j < 6; j++) {
 	            arrayOfHours.push(0);
 	          }
-	          for (var _j10 = 6; _j10 < 12; _j10++) {
+	          for (var _j7 = 6; _j7 < 12; _j7++) {
 	            arrayOfHours.push(1);
 	          }
-	          for (var _j11 = 12; _j11 < 24; _j11++) {
+	          for (var _j8 = 12; _j8 < 24; _j8++) {
 	            arrayOfHours.push(0);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51469,15 +51560,15 @@
 	      scope.setAvailability.daytime = function () {
 	        scope.scheduleNames.availability = 'Daytime';
 	        var arrayOfDays = [];
-	        for (var _i4 = 0; _i4 < 7; _i4++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j12 = 0; _j12 < 9; _j12++) {
+	          for (var j = 0; j < 9; j++) {
 	            arrayOfHours.push(0);
 	          }
-	          for (var _j13 = 9; _j13 < 17; _j13++) {
+	          for (var _j9 = 9; _j9 < 17; _j9++) {
 	            arrayOfHours.push(1);
 	          }
-	          for (var _j14 = 17; _j14 < 24; _j14++) {
+	          for (var _j10 = 17; _j10 < 24; _j10++) {
 	            arrayOfHours.push(0);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51489,15 +51580,15 @@
 	      scope.setAvailability.afternoon = function () {
 	        scope.scheduleNames.availability = 'Afternoon';
 	        var arrayOfDays = [];
-	        for (var _i5 = 0; _i5 < 7; _i5++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j15 = 0; _j15 < 12; _j15++) {
+	          for (var j = 0; j < 12; j++) {
 	            arrayOfHours.push(0);
 	          }
-	          for (var _j16 = 12; _j16 < 18; _j16++) {
+	          for (var _j11 = 12; _j11 < 18; _j11++) {
 	            arrayOfHours.push(1);
 	          }
-	          for (var _j17 = 18; _j17 < 24; _j17++) {
+	          for (var _j12 = 18; _j12 < 24; _j12++) {
 	            arrayOfHours.push(0);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51509,15 +51600,15 @@
 	      scope.setAvailability.evenings = function () {
 	        scope.scheduleNames.availability = 'Evenings';
 	        var arrayOfDays = [];
-	        for (var _i6 = 0; _i6 < 7; _i6++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j18 = 0; _j18 < 18; _j18++) {
+	          for (var j = 0; j < 18; j++) {
 	            arrayOfHours.push(0);
 	          }
-	          for (var _j19 = 18; _j19 < 22; _j19++) {
+	          for (var _j13 = 18; _j13 < 22; _j13++) {
 	            arrayOfHours.push(1);
 	          }
-	          for (var _j20 = 22; _j20 < 24; _j20++) {
+	          for (var _j14 = 22; _j14 < 24; _j14++) {
 	            arrayOfHours.push(0);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51529,9 +51620,9 @@
 	      scope.setAvailability._24x7 = function () {
 	        scope.scheduleNames.availability = '24x7';
 	        var arrayOfDays = [];
-	        for (var _i7 = 0; _i7 < 7; _i7++) {
+	        for (var i = 0; i < 7; i++) {
 	          var arrayOfHours = [];
-	          for (var _j21 = 0; _j21 < 24; _j21++) {
+	          for (var j = 0; j < 24; j++) {
 	            arrayOfHours.push(1);
 	          }
 	          arrayOfDays.push(arrayOfHours);
@@ -51555,58 +51646,59 @@
 	        var pending = scheduled ? !startsNow : false;
 	        var inactive = !scheduled;
 	        var tasksToChange = [];
+	        var taskIds = [];
 	        var keysToChange = 'schedule,status.active,status.pending,status.scheduled,status.inactive';
 	        var newValues = [scope.schedule, active, pending, scheduled, inactive];
 
-	        for (var _i8 = 0; _i8 < scope.tasks.length; _i8++) {
-	          if (scope.tasks[_i8].status.editable) {
-	            scope.tasks[_i8].schedule = scope.schedule;
-	            scope.tasks[_i8].status.active = active;
-	            scope.tasks[_i8].status.pending = pending;
-	            scope.tasks[_i8].status.scheduled = scheduled;
-	            scope.tasks[_i8].status.inactive = inactive;
-	            tasksToChange.push(scope.tasks[_i8]._id);
+	        for (var i = 0; i < scope.tasks.length; i++) {
+	          if (scope.tasks[i].status.editable) {
+	            scope.tasks[i].schedule = scope.schedule;
+	            scope.tasks[i].status.active = active;
+	            scope.tasks[i].status.pending = pending;
+	            scope.tasks[i].status.scheduled = scheduled;
+	            scope.tasks[i].status.inactive = inactive;
+	            tasksToChange.push(scope.tasks[i]);
+	            taskIds.push(scope.tasks[i]._id);
 	          }
 	        }
 
 	        console.log("-----Sent to Backend-----");
-	        console.log("tasksToChange: ", tasksToChange);
+	        console.log("taskIds: ", taskIds);
 	        console.log("keysToChange: ", keysToChange);
 	        console.log("newValues: ", newValues);
-	        dataSvc.editTasks(tasksToChange, keysToChange, newValues).then(function (res) {
+	        dataSvc.editTasks(taskIds, keysToChange, newValues).then(function (res) {
 	          console.log("item(s) saved", res);
 	        }, function (err) {
 	          console.log("Error while saving: ", err);
 	        });
 
-	        //// SET THE AGENDA VALUES ////
-	        function updateAgenda(yr, mo, day, hr, min, key, ids) {
-	          var _agenda$yr$mo$day$hr$;
-
-	          var agenda = dataSvc.user.agenda;
-
-	          agenda[yr] = agenda[yr] || [];
-	          agenda[yr][mo] = agenda[yr][mo] || [];
-	          agenda[yr][mo][day] = agenda[yr][mo][day] || [];
-	          agenda[yr][mo][day][hr] = agenda[yr][mo][day][hr] || [];
-	          agenda[yr][mo][day][hr][min] = agenda[yr][mo][day][hr][min] || {};
-	          agenda[yr][mo][day][hr][min][key] = agenda[yr][mo][day][hr][min][key] || [];
-	          (_agenda$yr$mo$day$hr$ = agenda[yr][mo][day][hr][min][key]).push.apply(_agenda$yr$mo$day$hr$, _toConsumableArray(ids));
-	          dataSvc.updateAgenda(yr, mo, day, hr, min, key, ids).then(function (res) {
-	            console.log('Agenda updated: ' + res.data);
-	          }, function (err) {
-	            console.log('Failed to update agenda: ' + err);
-	          });
-	        }
-	        var st = startTime,
-	            sd = softDeadline,
-	            hd = hardDeadline;
-	        if (st.moment) {
-	          updateAgenda(st.year, st.month, st.day, st.hour, st.minute, 'startTime', tasksToChange);
-	          if (sd.moment) updateAgenda(sd.year, sd.month, sd.day, sd.hour, sd.minute, 'softDeadline', tasksToChange);
-	          if (hd.moment) updateAgenda(hd.year, hd.month, hd.day, hd.hour, hd.minute, 'hardDeadline', tasksToChange);
-	        }
-
+	        //// SET THE AGENDA VALUES ////  //test  !!!!PROBABLY NOT NEEDED!!!!
+	        // function updateAgenda(yr, mo, day, hr, min, key, ids, tasks){
+	        //   let {agenda} = dataSvc.user;
+	        //   agenda[yr] = agenda[yr] || [];
+	        //   agenda[yr][mo] = agenda[yr][mo] || [];
+	        //   agenda[yr][mo][day] = agenda[yr][mo][day] || [];
+	        //   agenda[yr][mo][day][hr] = agenda[yr][mo][day][hr] || [];
+	        //   agenda[yr][mo][day][hr][min] = agenda[yr][mo][day][hr][min] || {};
+	        //   agenda[yr][mo][day][hr][min][key] = agenda[yr][mo][day][hr][min][key] || [];
+	        //   agenda[yr][mo][day][hr][min][key].push(...tasks);
+	        //   agenda[yr][mo][day][24] = agenda[yr][mo][day][24] || [];
+	        //   if(key === 'startTime') agenda[yr][mo][day][24].push(...tasks);
+	        //   dataSvc.updateAgenda(yr, mo, day, hr, min, key, ids).then(
+	        //     function(res){ console.log(`Agenda updated: `, res); },
+	        //     function(err){ console.log(`Failed to update agenda: ${err}`); }
+	        //   );
+	        //   console.log("User's Agenda updated: ", scope.user);
+	        // }
+	        // let st = startTime,
+	        //     sd = softDeadline,
+	        //     hd = hardDeadline;
+	        // if(st.moment){
+	        //   updateAgenda(st.year, st.month, st.day, st.hour, st.minute, 'startTime', taskIds, tasksToChange);
+	        //   if(sd.moment) updateAgenda(sd.year, sd.month, sd.day, sd.hour, sd.minute, 'softDeadline', taskIds, tasksToChange);
+	        //   if(hd.moment) updateAgenda(hd.year, hd.month, hd.day, hd.hour, hd.minute, 'hardDeadline', taskIds, tasksToChange);
+	        // }
+	        createNewSchedule();
 	        scope.toggleQuickScheduler();
 	        scope.toggleEditOff();
 	      };
@@ -51615,86 +51707,11 @@
 	  };
 	}quickScheduler.$inject = ['moment', 'dataSvc'];
 
-	function scheduler(moment) {
-	  return {
-	    restrict: 'E',
-	    template: __webpack_require__(140),
-	    link: function link(scope, element, attrs, ctrl) {}
-	  };
-	}scheduler.$inject = ['moment'];
-	////////////////////////////////////////////////////////////////////////////////
-
 /***/ },
-/* 129 */
+/* 142 */
 /***/ function(module, exports) {
 
-	module.exports = "<fade ng-if=\"optionFlag\" ng-click=\"clear()\"></fade>\n<option-pane ng-if=\"optionFlag\"></option-pane>\n\n<!-- <div class=\"spacer1\" ng-if=\"monthFlag\"></div> test-->\n<nav class=\"calHeader\">\n  <div class=\"left\">\n    <i ng-click=\"toggleOption()\" class=\"material-icons md-dark md-36\">menu</i>\n    <span ng-if=\"view !== 'month'\" ui-sref=\"calendar.month\">\n      {{month.name}}\n    </span>\n    <i ng-if=\"!monthFlag\" ng-click=\"toggleMonth()\" class=\"material-icons md-dark md-36\">arrow_drop_down</i>\n    <i ng-if=\"monthFlag\" ng-click=\"toggleMonth()\" class=\"material-icons md-dark md-36\">arrow_drop_up</i>\n    <span ng-if=\"view === 'month'\">{{month.name}}</span>\n  </div>\n  <div class=\"right\">\n    <i ng-if=\"icon === 'eye' && eyeFlag\" ng-click=\"toggleEye()\" class=\"material-icons md-dark md-24\" style=\"border-right: 2px solid black\">visibility</i>\n    <i ng-if=\"icon === 'eye' && !eyeFlag\" ng-click=\"toggleEye()\" class=\"material-icons md-dark md-24\" style=\"border-right: 2px solid black\">visibility_off</i>\n    <i ui-sref=\"list.star\" ng-if=\"icon === 'list'\" class=\"material-icons md-dark md-24\" style=\"border-right: 2px solid black\">list</i>\n    <i class=\"material-icons md-dark md-24\"></i>\n    <i ng-click=\"month.rebuild()\" class=\"material-icons md-dark md-24\">today</i>\n  </div>\n</nav>\n\n<!-- <div class=\"spacer2\" ng-if=\"monthFlag\"></div> test -->\n<calendar class=\"header\" ng-if=\"monthFlag\"></calendar>\n";
-
-/***/ },
-/* 130 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = "<div class=\"optionPane\">\n  <div class=\"col\">\n    <!-- Row 1 -->\n    <div class=\"row\">\n      <img src=\"" + __webpack_require__(131) + "\" alt=\"company logo\">\n    </div>\n\n    <!-- Row2 -->\n    <div class=\"row\">\n      <div class=\"col\">\n        <img src=\"" + __webpack_require__(132) + "\" alt=\"Profile Picture\">\n        <span>spenc84@gmail.com</span>\n      </div>\n    </div>\n\n    <!-- Row 3 -->\n    <div class=\"row\">\n      <div class=\"col\">\n        <div ui-sref=\"calendar.agenda\"><i class=\"material-icons md-36 md-dark\">view_agenda</i><span>Agenda</span></div>\n        <div ui-sref=\"calendar.day\"><i class=\"material-icons md-36 md-dark\">view_day</i><span>Day</span></div>\n        <div ui-sref=\"calendar.week\"><i class=\"material-icons md-36 md-dark\">view_week</i><span>Week</span></div>\n        <div ui-sref=\"calendar.month\"><i class=\"material-icons md-36 md-dark\">apps</i><span>Month</span></div>\n        <div ui-sref=\"list.star\"><i class=\"material-icons md-36 md-dark\">storage</i><span>List View</span></div>\n      </div>\n    </div>\n    <!-- <hr> -->\n    <calendar></calendar>\n  </div>\n</div>\n";
-
-/***/ },
-/* 131 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "nl-logo.png";
-
-/***/ },
-/* 132 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "userPic.png";
-
-/***/ },
-/* 133 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"calendar\">\n  <div class=\"calendarHead\">\n      <i class=\"material-icons md-dark\" ng-click=\"month.rebuild(month.moment.subtract(1, 'month'))\">chevron_left</i>\n      <b>{{ month.name }}</b>\n      <i class=\"material-icons md-dark\" ng-click=\"month.rebuild(month.moment.add(1, 'month'))\">chevron_right</i>\n  </div>\n  <div class=\"row\" ui-sref=\"calendar.week\">\n      <span class=\"col7\">S</span>\n      <span class=\"col7\">M</span>\n      <span class=\"col7\">T</span>\n      <span class=\"col7\">W</span>\n      <span class=\"col7\">T</span>\n      <span class=\"col7\">F</span>\n      <span class=\"col7\">S</span>\n  </div>\n  <div class=\"row\" ng-repeat=\"week in month.weeks\">\n      <div class=\"col7\" ng-class=\"{disabled: day.format('MMMM') !== month.name}\" ng-repeat=\"day in week\">\n        <div ng-click=\"month.rebuild(day);clearOption()\" ng-class=\"{selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}\">{{day.date()}}</div>\n      </div>\n  </div>\n</div>\n<section class=\"calendar\" ng-click=\"toggleMonth()\" ng-if=\"monthFlag && !optionFlag\"></section>\n";
-
-/***/ },
-/* 134 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"list container\">\n  <div class=\"list header\">\n    <!-- 1ST ROW - BOTTOM LAYER: Icons -->\n    <div class=\"icon row\" ng-if=\"editableItems > 0\">\n      <div class=\"icon column\">\n        <div ng-click=\"toggleEditOff()\">\n          <i class=\"material-icons\">arrow_back</i>\n        </div>\n      </div>\n      <div class=\"icon column\">\n        <i class=\"material-icons\">group_work</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">link</i> -->\n        <i class=\"material-icons\">linear_scale</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">place</i> -->\n        <i class=\"material-icons\" ng-click=\"deleteTask()\">info</i>\n        <i class=\"material-icons\">group_add</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">supervisor_account</i> -->\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">person_pin</i> -->\n        <i class=\"material-icons\" ng-click=\"toggleQuickScheduler()\">schedule</i>\n        <i style=\"color:rgb(241,196,15)\" class=\"material-icons\" ng-click=\"toggleStarred()\">star</i>\n        <i class=\"material-icons\">more_vert</i>\n        <!-- <i class=\"material-icons\" ng-click=\"toggleCompleted()\">check</i> -->\n        <i style=\"color:rgb(50,200,50); font-size:1.1em; margin-right:0; margin-left:-.2em\" class=\"material-icons\" ng-click=\"toggleCompleted()\">check_circle</i>\n        <!-- <div style=\"border: 1px solid black; border-radius:50%; background-color:rgba(0,255,0,.25); color:black;\">\n          <i style=\"margin:.25em\" class=\"material-icons\" ng-click=\"toggleCompleted()\">check</i>\n        </div> -->\n      </div>\n    </div>\n    <!-- 1ST ROW - TOP LAYER: Title -->\n    <div class=\"title row\" ng-if=\"editableItems === 0\">\n      <div class=\"title column\">\n        <div ui-sref=\"{{priorView}}\">\n          <i class=\"material-icons\">close</i>\n        </div>\n        <div>{{title}}</div>\n      </div>\n      <div ui-sref=\"list.search\" class=\"title column\">\n        <i class=\"material-icons\">search</i>\n      </div>\n    </div>\n    <!-- 2ND ROW: Tabs -->\n    <div class=\"row tabs\">\n        <div ui-sref=\"list.star\" class=\"tab column star\">\n          <i class=\"material-icons md-24 md-dark\">star_border</i>\n        </div>\n        <div ui-sref=\"list.active\" class=\"tab column active\">Active</div>\n        <div ui-sref=\"list.pending\" class=\"tab column pending\">Pending</div>\n        <div ui-sref=\"list.inactive\" class=\"tab column inactive\">Inactive</div>\n        <div ui-sref=\"list.completed\" class=\"tab column completed\">Completed</div>\n    </div>\n  </div>\n</div>\n\n<!-- Overlaid option panes -->\n<scheduler ng-if=\"schedulerFlag\"></scheduler>\n<quick-scheduler ng-if=\"quickSchedulerFlag\"></quick-scheduler>\n";
-
-/***/ },
-/* 135 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"row item\">\n  <div class=\"col item\" ng-click=\"toggleEdit($index)\">\n    <svg width=\"3em\" height=\"3em\">\n      <circle cx=\"1.5em\" cy=\"1.5em\" r=\".75em\" fill=\"white\"/>\n      <circle cx=\"1.5em\" cy=\"1.5em\" r=\".5em\" fill=\"rgb(50,200,50)\" ng-if=\"!task.status.editable && task.status.completed\" />\n      <line x1=\"1.2em\" x2=\"1.4em\" y1=\"1.5em\" y2=\"1.7em\" style=\"stroke:white;stroke-width:2\" ng-if=\"!task.status.editable && task.status.completed\" />\n      <line x1=\"1.4em\" x2=\"1.8em\" y1=\"1.7em\" y2=\"1.3em\" style=\"stroke:white;stroke-width:2\" ng-if=\"!task.status.editable && task.status.completed\" />\n      <circle cx=\"1.5em\" cy=\"1.5em\" r=\".5em\" fill=\"rgba(0,120,255,1)\" ng-if=\"task.status.editable\" />\n    </svg>\n  </div>\n  <div class=\"col item\">\n    <form ng-submit=\"saveTask($index)\">\n      <input type=\"text\" ng-model=\"tasks[$index].name\" ng-if=\"!task.status.editable\" ng-click=\"toggleEditItemPane($index)\" readonly>\n      <input type=\"text\" ng-model=\"tasks[$index].name\" ng-if=\"task.status.editable\">\n    </form>\n  </div>\n  <div class=\"col item icon\" ng-if=\"task.status.starred\">\n    <i style=\"color:rgb(241,196,15)\" class=\"material-icons\" ng-click=\"toggleStarred()\">star</i>\n  </div>\n  <div class=\"col item icon\" ng-if=\"task.status.editable\">\n    <i class=\"material-icons\"  ng-click=\"toggleEditItemPane($index)\">info_outline</i>\n  </div>\n</div>\n";
-
-/***/ },
-/* 136 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"row add item\">\n  <div class=\"col add item\" ng-click=\"toggleNewItemPane()\">\n    <svg width=\"3em\" height=\"3em\">\n      <line x1=\"1.5em\" x2=\"1.5em\" y1=\"0.75em\" y2=\"2.25em\" />\n      <line x1=\"0.75em\" x2=\"2.25em\" y1=\"1.5em\" y2=\"1.5em\" />\n    </svg>\n  </div>\n  <div class=\"col add item\">\n    <form ng-submit=\"saveNew()\">\n      <input type=\"text\" ng-model=\"newItem.name\">\n    </form>\n  </div>\n</div>\n";
-
-/***/ },
-/* 137 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"edit-item-pane container\">\n  <!-- ***** HEADER ***** -->\n    <div class=\"edit-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleEditItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{tasks[editPaneIndx].name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"saveTask(editPaneIndx); toggleEditItemPane()\" ng-disabled=\"editItemForm.$invalid\" form=\"editItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"edit-item-pane body\">\n      <form id=\"editItemForm\" name=\"editItemForm\" novalidate>\n        <div class=\"form row\">\n          <label for=\"name\">Name:</label>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"tasks[editPaneIndx].name\" autocomplete=\"off\" autofocus required />\n        </div>\n      </form>\n    </div>\n</div>\n";
-
-/***/ },
-/* 138 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"new-item-pane container\">\n  <!-- ***** HEADER ***** -->\n    <div class=\"new-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleNewItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{newItem.name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"toggleNewItemPane(); saveNew()\" ng-disabled=\"newItemForm.$invalid\" form=\"newItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"new-item-pane body\">\n      <form id=\"newItemForm\" name=\"newItemForm\" novalidate>\n        <div class=\"form row\">\n          <label for=\"name\">Name:</label>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"newItem.name\" autocomplete=\"off\" autofocus required />\n        </div>\n      </form>\n    </div>\n</div>\n";
-
-/***/ },
-/* 139 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"directive quickScheduler container\">\n  <fade ng-click=\"toggleQuickScheduler()\"></fade>\n  <div class=\"quickScheduler body\">\n\n    <!--__________________ ITEM MODALS __________________-->\n    <!-- Duration -->\n    <div class=\"duration modal\" ng-if=\"durationModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n        <span>Duration</span>\n        <div class=\"duration item\">{{scheduleNames.duration}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n        <div class=\"duration item\" ng-click=\"setDuration(['None', 0])\">None</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['30 Minutes', 30])\">30 Minutes</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['1 Hour', 60])\">1 Hour</div>\n        <!-- <div class=\"duration item\" ng-click=\"setDuration(['2 Hours', 120])\">2 Hours</div> -->\n        <div class=\"duration item\" ng-click=\"setDuration(['4 Hours', 240])\">4 Hours</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Work Day', 480, 1])\">Work Day</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Evening', 240, 2])\">Evening</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['All Day', 1440, 3])\">All Day</div>\n        <div class=\"duration item\" ng-click=\"toggleDurationModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Start Time -->\n    <div class=\"startTime modal\" ng-if=\"startTimeModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n          <span>Start Time</span>\n          <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Now', moment()])\">Now</div>\n          <div class=\"startTime item\" ng-if=\"hour < 17\" ng-click=\"setStartTime(['Tonight', moment().hour(18).startOf('hour')])\">Tonight</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])\">Tomorrow</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])\">Tomorrow Evening</div>\n          <div class=\"startTime item\" ng-if=\"day < 5\" ng-click=\"setStartTime(['This Weekend', moment().day(6).hour(8).startOf('hour')])\">This Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Week', moment().add(1, 'week').day(1).hour(8).startOf('hour')])\">Next Week</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])\">Next Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])\">Next Month</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Someday', ''])\">Someday</div>\n          <div class=\"startTime item\" ng-click=\"toggleQuickScheduler()\">Custom</div>\n      </div>\n    </div>\n    <!-- Deadline -->\n    <div class=\"deadline modal\" ng-if=\"deadlineModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDeadlineModal()\">\n          <span>Deadline is realative to start time</span>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'softDeadline'\">{{scheduleNames.softDeadline}}</div>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'hardDeadline'\">{{scheduleNames.hardDeadline}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"deadline item\" ng-click=\"setDeadline(['None', ''])\">None</div>\n          <div class=\"deadline item\" ng-if=\"schedule.duration && !durationTemplate\" ng-click=\"setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])\">{{scheduleNames.duration}}</div>\n          <div class=\"deadline item\" ng-if=\"startToday && schedule.startTime.hour < 17\" ng-click=\"setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])\">5:00 PM Today</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])\">Midnight</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])\">Midnight Tomorrow</div>\n          <div class=\"deadline item\" ng-if=\"!startToday && schedule.startTime.hour < 17\" ng-click=\"setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])\">End of Workday</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])\">End of Day</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])\">End of Following Day</div>\n          <div class=\"deadline item\" ng-if=\"schedule.startTime.moment.day() < 5 || (schedule.startTime.moment.day() === 5 && schedule.startTime.hour < 17)\" ng-click=\"setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])\">End of Workweek</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])\">End of Week</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])\">End of Month</div>\n          <div class=\"deadline item\" ng-click=\"toggleDeadlineModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Availability -->\n    <div class=\"availability modal\" ng-if=\"availabilityModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleAvailabilityModal()\">\n          <span>Availability</span>\n          <div class=\"availability item\">{{scheduleNames.availability}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"availability item\" ng-click=\"setAvailability.anytime()\">Anytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.earlyBird()\">Early Bird</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.mornings()\">Mornings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.daytime()\">Daytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.afternoon()\">Afternoon</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.evenings()\">Evenings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability._24x7()\">24x7</div>\n          <div class=\"availability item\" ng-click=\"toggleAvailabilityModal()\">Custom</div>\n      </div>\n    </div>\n\n    <!--_________________________________________________-->\n\n    <!-- ITEM ROWS -->\n    <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n      <span>Duration</span>\n      <div class=\"duration item\">{{scheduleNames.duration}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n      <span>Start Time</span>\n      <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('softDeadline')\">\n      <span>Soft Deadline</span>\n      <div class=\"softDeadline item\">{{scheduleNames.softDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('hardDeadline')\">\n      <span>Hard Deadline</span>\n      <div class=\"hardDeadline item\">{{scheduleNames.hardDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"last top row\" ng-click=\"toggleAvailabilityModal()\">\n      <span>Availability</span>\n      <div class=\"availability item\">{{scheduleNames.availability}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div id=\"qsSaveButton\">\n      <div class=\"item\" ng-click=\"quickSchedule()\">Save</div>\n    </div>\n    <!-- <div class=\"bottom row2\">\n      <div class=\"item\" ng-click=\"quickSchedule(moment())\">Today</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().hour(18).startOf('hour'))\" ng-if=\"hour < 17\">Tonight</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(8).startOf('hour'))\">Tomorrow</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(18).startOf('hour'))\">Tomorrow Evening</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().day(6).hour(8).startOf('hour'))\" ng-if=\"day < 5\">This Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(1).hour(8).startOf('hour'))\">Next Week</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(6).hour(8).startOf('hour'))\">Next Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))\">Next Month</div>\n      <div class=\"item\" ng-click=\"quickSchedule()\">Someday</div>\n      <div class=\"item\" ng-click=\"toggleScheduler(); toggleQuickScheduler()\">Custom</div>\n    </div> -->\n  </div>\n</div>\n";
-
-/***/ },
-/* 140 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"directive scheduler container\">\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n</div>\n";
+	module.exports = "<div class=\"directive quickScheduler container\">\n  <fade ng-click=\"toggleQuickScheduler()\"></fade>\n  <div class=\"quickScheduler body\">\n\n    <!--__________________ ITEM MODALS __________________-->\n    <!-- Duration -->\n    <div class=\"duration modal\" ng-if=\"durationModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n        <span>Duration</span>\n        <div class=\"duration item\">{{scheduleNames.duration}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n        <div class=\"duration item\" ng-click=\"setDuration(['None', 0])\">None</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['30 Minutes', 30])\">30 Minutes</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['1 Hour', 60])\">1 Hour</div>\n        <!-- <div class=\"duration item\" ng-click=\"setDuration(['2 Hours', 120])\">2 Hours</div> -->\n        <div class=\"duration item\" ng-click=\"setDuration(['4 Hours', 240])\">4 Hours</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Work Day', 480, 1])\">Work Day</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Evening', 240, 2])\">Evening</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['All Day', 1440, 3])\">All Day</div>\n        <div class=\"duration item\" ng-click=\"toggleDurationModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Start Time -->\n    <div class=\"startTime modal\" ng-if=\"startTimeModalFlag\">\n      <!-- Defaults -->\n      <div class=\"top row\" ng-click=\"closeStartTimeModal()\">\n          <span>Start Time</span>\n          <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\" ng-if=\"!customStart\">\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Now', moment().startOf('hour')])\">Now</div>\n          <div class=\"startTime item\" ng-if=\"hour < 17\" ng-click=\"setStartTime(['Tonight', moment().hour(18).startOf('hour')])\">Tonight</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])\">Tomorrow</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])\">Tomorrow Evening</div>\n          <div class=\"startTime item\" ng-if=\"day < 5\" ng-click=\"setStartTime(['This Weekend', moment().day(6).hour(8).startOf('hour')])\">This Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Week', moment().add(1, 'week').day(1).hour(8).startOf('hour')])\">Next Week</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])\">Next Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])\">Next Month</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Someday', ''])\">Someday</div>\n          <div class=\"startTime item\" ng-click=\"openCustomStart()\">Custom</div>\n      </div>\n      <!-- Custom -->\n      <div class=\"custom row\" ng-if=\"customStart\">\n        <form name=\"myForm\" ng-submit=\"setStartTime(['Custom', moment(customStartDate)])\" novalidate>\n          <label for=\"exampleInput\">Pick a date and time:</label>\n          <input type=\"datetime-local\" id=\"exampleInput\" name=\"input\" ng-model=\"customStartDate\"\n            min=\"2015-01-01T00:00:00\" max=\"2020-12-31T00:00:00\" required />\n          <div role=\"alert\" style=\"color:red\">\n            <span class=\"error\" ng-show=\"myForm.input.$error.required\">\n              Required!</span>\n            <span class=\"error\" ng-show=\"myForm.input.$error.datetimelocal\">\n              Not a valid date!</span>\n          </div>\n          <p><input type=\"submit\" ng-disabled=\"myForm.input.$invalid\"></p>\n          <tt>value = {{customStartDate | date: \"yyyy-MM-ddTHH:mm:ss\"}}</tt>\n          <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt>\n          <tt>myForm.input.$error = {{myForm.input.$error}}</tt>\n          <tt>myForm.$valid = {{myForm.$valid}}</tt>\n          <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt>\n        </form>\n      </div>\n    </div>\n    <!-- Deadline -->\n    <div class=\"deadline modal\" ng-if=\"deadlineModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDeadlineModal()\">\n          <span>Deadline is realative to start time</span>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'softDeadline'\">{{scheduleNames.softDeadline}}</div>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'hardDeadline'\">{{scheduleNames.hardDeadline}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"deadline item\" ng-click=\"setDeadline(['None', ''])\">None</div>\n          <div class=\"deadline item\" ng-if=\"schedule.duration && !durationTemplate\" ng-click=\"setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])\">{{scheduleNames.duration}}</div>\n          <div class=\"deadline item\" ng-if=\"startToday && schedule.startTime.hour < 17\" ng-click=\"setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])\">5:00 PM Today</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])\">Midnight</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])\">Midnight Tomorrow</div>\n          <div class=\"deadline item\" ng-if=\"!startToday && schedule.startTime.hour < 17\" ng-click=\"setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])\">End of Workday</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])\">End of Day</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])\">End of Following Day</div>\n          <div class=\"deadline item\" ng-if=\"schedule.startTime.moment.day() < 5 || (schedule.startTime.moment.day() === 5 && schedule.startTime.hour < 17)\" ng-click=\"setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])\">End of Workweek</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])\">End of Week</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])\">End of Month</div>\n          <div class=\"deadline item\" ng-click=\"toggleDeadlineModal()\">Custom</div>\n      </div>\n    </div>\n    <!-- Availability -->\n    <div class=\"availability modal\" ng-if=\"availabilityModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleAvailabilityModal()\">\n          <span>Availability</span>\n          <div class=\"availability item\">{{scheduleNames.availability}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\">\n          <div class=\"availability item\" ng-click=\"setAvailability.anytime()\">Anytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.earlyBird()\">Early Bird</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.mornings()\">Mornings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.daytime()\">Daytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.afternoon()\">Afternoon</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.evenings()\">Evenings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability._24x7()\">24x7</div>\n          <div class=\"availability item\" ng-click=\"toggleAvailabilityModal()\">Custom</div>\n      </div>\n    </div>\n\n    <!--_________________________________________________-->\n\n    <!-- ITEM ROWS -->\n    <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n      <span>Duration</span>\n      <div class=\"duration item\">{{scheduleNames.duration}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n      <span>Start Time</span>\n      <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('softDeadline')\">\n      <span>Soft Deadline</span>\n      <div class=\"softDeadline item\">{{scheduleNames.softDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('hardDeadline')\">\n      <span>Hard Deadline</span>\n      <div class=\"hardDeadline item\">{{scheduleNames.hardDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"last top row\" ng-click=\"toggleAvailabilityModal()\">\n      <span>Availability</span>\n      <div class=\"availability item\">{{scheduleNames.availability}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div id=\"qsSaveButton\">\n      <div class=\"item\" ng-click=\"quickSchedule()\">Save</div>\n    </div>\n    <!-- <div class=\"bottom row2\">\n      <div class=\"item\" ng-click=\"quickSchedule(moment())\">Today</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().hour(18).startOf('hour'))\" ng-if=\"hour < 17\">Tonight</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(8).startOf('hour'))\">Tomorrow</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'day').hour(18).startOf('hour'))\">Tomorrow Evening</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().day(6).hour(8).startOf('hour'))\" ng-if=\"day < 5\">This Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(1).hour(8).startOf('hour'))\">Next Week</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'week').day(6).hour(8).startOf('hour'))\">Next Weekend</div>\n      <div class=\"item\" ng-click=\"quickSchedule(moment().add(1, 'month').date(1).hour(8).startOf('hour'))\">Next Month</div>\n      <div class=\"item\" ng-click=\"quickSchedule()\">Someday</div>\n      <div class=\"item\" ng-click=\"toggleScheduler(); toggleQuickScheduler()\">Custom</div>\n    </div> -->\n  </div>\n</div>\n";
 
 /***/ }
 /******/ ]);

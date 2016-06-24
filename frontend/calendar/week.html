@@ -7,8 +7,7 @@
   <div class="spacer2" ng-if="monthFlag"></div>
   <!-- 1ST ROW - Day titles and number -->
   <div id="date" ng-class="{spacer: monthFlag}">
-    <div class="col8"></div>
-    <div class="col8" ng-repeat="day in month.currentWeek" ng-click="month.rebuild(day)" ui-sref="calendar.day" ng-class="{inactive: day.isBefore(moment(), 'day'), selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}">
+    <div class="col7" ng-repeat="day in month.currentWeek" ng-click="month.rebuild(day)" ui-sref="calendar.day" ng-class="{inactive: day.isBefore(moment(), 'day'), selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}">
       <div>{{ day.format("ddd") }}</div>
       <div>{{ day.date() }}</div>
     </div>
@@ -29,6 +28,12 @@
     </svg>
     <!-- Seven Day columns -->
     <div class="col7" ng-repeat="day in month.currentWeek">
+      <div ng-repeat="task in day.tasks"
+           ng-if="task.schedule.duration"
+           style="top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px"
+           class="week calendarItem">
+           {{task.name}}
+      </div>
     </div>
   </div>
 </div>

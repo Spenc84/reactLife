@@ -20,6 +20,13 @@
       <circle cx="4" cy="4" r="2.5"/>
       <line x1="4" y1="4" x2="100%" y2="4" style="stroke-width:1"/>
     </svg>
+    <!-- Task List (absolute) -->
+    <div ng-repeat="task in month.currentWeek[month.moment.day()].tasks"
+         ng-if="task.schedule.duration"
+         style="top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px"
+         class="day calendarItem">
+         {{task.name}}
+    </div>
     <hr>
     <div><div></div></div>
     <div><div></div></div>

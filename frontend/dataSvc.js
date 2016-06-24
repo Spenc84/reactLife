@@ -32,14 +32,15 @@ export default function dataSvc ($http) {
   };
 //----------------------------------------------------------------------------//
 
-////////////////////////////////  AGENDA  //////////////////////////////////////
-  this.getAgenda = function(){
-    return $http.get(`/api/user/${self.user._id}/agenda`);
-  };
-  this.updateAgenda = function(yr, mo, day, hr, min, key, ids){
-    $http.put(`/api/cron/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
-    return $http.put(`/api/user/${self.user._id}/agenda/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
-  };
+////////////////////////////////  AGENDA  ////////////////////////////////////// //test
+  // this.getAgenda = function(){
+  //   return $http.get(`/api/user/${self.user._id}/agenda`);
+  // };
+  // this.updateAgenda = function(yr, mo, day, hr, min, key, ids){
+  //   // $http.put(`/api/cron/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
+  //   console.log(`ID of User to be updated: ${self.user._id}`);
+  //   return $http.put(`/api/user/${self.user._id}/agenda/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
+  // };
 //----------------------------------------------------------------------------//
 
 /////////////////////////////////  USERS  //////////////////////////////////////
