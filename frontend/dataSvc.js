@@ -17,7 +17,7 @@ export default function dataSvc ($http) {
     return $http.get("/api/task/"+id);
   };
   this.saveNewTask = function(task){
-    console.log("sending " + task);
+    console.log("sending ", task);
     return $http.post('/api/tasks', task);
   };
   this.saveTask = function(task){

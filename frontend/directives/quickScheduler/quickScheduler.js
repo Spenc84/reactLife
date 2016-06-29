@@ -8,6 +8,7 @@ export function quickScheduler(moment, dataSvc) {
       scope.hour = moment().hour();
       scope.day = moment().day();
       console.log(scope.hour, scope.day);
+      console.log(scope.editPaneIndx);
 
       // If one doesn't already exist, build a new schedule object
       // which can then be assigned to a task
@@ -19,38 +20,32 @@ export function quickScheduler(moment, dataSvc) {
 
       function createNewSchedule() {
         scope.scheduleNames = {
-          startTime: 'Now',
           duration: 'None',
+          startTime: 'Now',
           softDeadline: 'None',
           hardDeadline: 'None',
           availability: 'Anytime'
         };
         let now = moment().startOf('hour');
         scope.schedule = {
+          duration: 0,
           startTime: {
               moment: now,
-              year: now.year(),
-              month: now.month(),
-              day: now.date(),
-              hour: now.hour(),
-              minute: 0,
               top: (now.hour()*60)+5 },
-          duration: 0,
-          softDeadline: {moment: ''},
-          hardDeadline: {moment: ''},
+          softDeadline: '',
+          hardDeadline: '',
           availability: []
         };
         scope.startToday = true;
         // scope.schedule.availability is defined as an array of 7 elements which
-        // represent days. Each day that is available to complete the task will
-        // contain an array of 24 elements which represent hours, otherwise it will
-        // be undefined if that day is not available. Each element in the hours array
-        // will contain a 1 if that hour is available to complete the task, or a 0 if not
+        // represent days. Each day element contains an array of 24 elements which
+        // represent the hours in each day. Each element in the hours array will
+        // be 'true' if that hour is available to complete the task, or false otherwise
         for(let i = 0; i < 7; i++){
           let hourArray = [];
-          for (let j = 0; j < 8; j++) { hourArray.push(0); }
-          for (let j = 8; j < 22; j++) { hourArray.push(1); }
-          for (let j = 22; j < 24; j++) { hourArray.push(0); }
+          for (let j = 0; j < 8; j++) { hourArray.push(false); }
+          for (let j = 8; j < 22; j++) { hourArray.push(true); }
+          for (let j = 22; j < 24; j++) { hourArray.push(false); }
           scope.schedule.availability.push(hourArray);
         }
         console.log('schedule obj intialized: ', scope.schedule);
@@ -63,6 +58,10 @@ export function quickScheduler(moment, dataSvc) {
       scope.toggleDurationModal = () => {
         scope.durationModalFlag = !scope.durationModalFlag;
       };
+      scope.closeDurationModal = () => {
+        scope.durationModalFlag = false;
+        scope.customDurationFlag = false;
+      };
       scope.setDuration = value => {
         scope.scheduleNames.duration = value[0];
         scope.schedule.duration = value[1];
@@ -72,7 +71,7 @@ export function quickScheduler(moment, dataSvc) {
           scope.hour = moment().hour();
           // Reset the hard deadline option
           scope.scheduleNames.hardDeadline = 'None';
-          scope.schedule.hardDeadline.moment = '';
+          scope.schedule.hardDeadline = '';
           // Update startTime, softDeadline, and availability fields based on template
           scope.deadlineType = 'softDeadline';
           switch(value[2]){
@@ -118,19 +117,15 @@ export function quickScheduler(moment, dataSvc) {
           }
         }
         console.log('duration updated: ', scope.schedule);
-        scope.toggleDurationModal();
+        scope.closeDurationModal();
       };
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////  START TIME  ///////////////////////////////////
-      scope.closeStartTimeModal = () => { scope.startTimeModalFlag = false; scope.customStart = false; };
+      scope.closeStartTimeModal = () => { scope.startTimeModalFlag = false; scope.customDateFlag = false; };
       scope.toggleStartTimeModal = () => {
         scope.startTimeModalFlag = !scope.startTimeModalFlag;
-      };
-      scope.openCustomStart = () => {
-        scope.customStartDate = new Date(moment().startOf('minute'));
-        scope.customStart = true;
       };
 
       scope.setStartTime = value => {
@@ -141,26 +136,21 @@ export function quickScheduler(moment, dataSvc) {
         if(!starting.moment){
           scope.scheduleNames.softDeadline = 'None';
           scope.scheduleNames.hardDeadline = 'None';
-          scope.schedule.softDeadline.moment = '';
-          scope.schedule.hardDeadline.moment = '';
+          scope.schedule.softDeadline = '';
+          scope.schedule.hardDeadline = '';
         }
         // Else if the user chooses a valid start time, then set some variables for the deadline modal to use
         else {
           scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
-          starting.year = starting.moment.year()-2000;
-          starting.month = starting.moment.month();
-          starting.day = starting.moment.date();
-          starting.hour = starting.moment.hour();
-          starting.minute = starting.moment.minute();
-          starting.top = starting.moment ? 5+(starting.hour*60)+(starting.minute) : undefined;
+          starting.top = starting.moment ? 5+(starting.moment.hour()*60)+(starting.moment.minute()) : undefined;
           // ...and reset the deadline values if they've already been chosen and they're prior to the new start time
-          if(scope.schedule.softDeadline.moment && scope.schedule.softDeadline.moment.isBefore(starting.moment)){
+          if(scope.schedule.softDeadline && scope.schedule.softDeadline.isBefore(starting.moment)){
             scope.scheduleNames.softDeadline = 'None';
-            scope.schedule.softDeadline.moment = '';
+            scope.schedule.softDeadline = '';
           }
-          if(scope.schedule.hardDeadline.moment && scope.schedule.hardDeadline.moment.isBefore(starting.moment)){
+          if(scope.schedule.hardDeadline && scope.schedule.hardDeadline.isBefore(starting.moment)){
             scope.scheduleNames.hardDeadline = 'None';
-            scope.schedule.hardDeadline.moment = '';
+            scope.schedule.hardDeadline = '';
           }
         }
         console.log('startTime updated: ', scope.schedule);
@@ -177,18 +167,12 @@ export function quickScheduler(moment, dataSvc) {
           scope.startToday = starting.moment.isSame(moment(), 'day') ? true : false;
           scope.tempDeadline = starting.moment.clone();
           scope.deadlineModalFlag = true;
-        } else scope.deadlineModalFlag = false;
+        } else { scope.deadlineModalFlag = false; scope.customDateFlag = false; }
       };
       scope.setDeadline = value => {
-        let deadline = scope.schedule[scope.deadlineType];
         scope.scheduleNames[scope.deadlineType] = value[0];
-        deadline.moment = value[1];
-        deadline.year = deadline.moment ? deadline.moment.year()-2000 : undefined;
-        deadline.month = deadline.moment ? deadline.moment.month() : undefined;
-        deadline.day = deadline.moment ? deadline.moment.date() : undefined;
-        deadline.hour = deadline.moment ? deadline.moment.hour() : undefined;
-        deadline.minute = deadline.moment ? deadline.moment.minute() : undefined;
-        console.log(`${scope.deadlineType} updated: ${scope.schedule}`);
+        scope.schedule[scope.deadlineType] = value[1];
+        console.log(`${scope.deadlineType} updated: ${scope.schedule[scope.deadlineType]}`);
         scope.toggleDeadlineModal();
       };
 ////////////////////////////////////////////////////////////////////////////////
@@ -206,9 +190,9 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 8; j++) { arrayOfHours.push(0); }
-          for (let j = 8; j < 22; j++) { arrayOfHours.push(1); }
-          for (let j = 22; j < 24; j++) { arrayOfHours.push(0); }
+          for (let j = 0; j < 8; j++) { arrayOfHours.push(false); }
+          for (let j = 8; j < 22; j++) { arrayOfHours.push(true); }
+          for (let j = 22; j < 24; j++) { arrayOfHours.push(false); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
@@ -220,9 +204,9 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 6; j++) { arrayOfHours.push(0); }
-          for (let j = 6; j < 8; j++) { arrayOfHours.push(1); }
-          for (let j = 8; j < 24; j++) { arrayOfHours.push(0); }
+          for (let j = 0; j < 6; j++) { arrayOfHours.push(false); }
+          for (let j = 6; j < 8; j++) { arrayOfHours.push(true); }
+          for (let j = 8; j < 24; j++) { arrayOfHours.push(false); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
@@ -234,9 +218,9 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 6; j++) { arrayOfHours.push(0); }
-          for (let j = 6; j < 12; j++) { arrayOfHours.push(1); }
-          for (let j = 12; j < 24; j++) { arrayOfHours.push(0); }
+          for (let j = 0; j < 6; j++) { arrayOfHours.push(false); }
+          for (let j = 6; j < 12; j++) { arrayOfHours.push(true); }
+          for (let j = 12; j < 24; j++) { arrayOfHours.push(false); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
@@ -248,9 +232,9 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 9; j++) { arrayOfHours.push(0); }
-          for (let j = 9; j < 17; j++) { arrayOfHours.push(1); }
-          for (let j = 17; j < 24; j++) { arrayOfHours.push(0); }
+          for (let j = 0; j < 9; j++) { arrayOfHours.push(false); }
+          for (let j = 9; j < 17; j++) { arrayOfHours.push(true); }
+          for (let j = 17; j < 24; j++) { arrayOfHours.push(false); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
@@ -262,9 +246,9 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 12; j++) { arrayOfHours.push(0); }
-          for (let j = 12; j < 18; j++) { arrayOfHours.push(1); }
-          for (let j = 18; j < 24; j++) { arrayOfHours.push(0); }
+          for (let j = 0; j < 12; j++) { arrayOfHours.push(false); }
+          for (let j = 12; j < 18; j++) { arrayOfHours.push(true); }
+          for (let j = 18; j < 24; j++) { arrayOfHours.push(false); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
@@ -276,9 +260,9 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 18; j++) { arrayOfHours.push(0); }
-          for (let j = 18; j < 22; j++) { arrayOfHours.push(1); }
-          for (let j = 22; j < 24; j++) { arrayOfHours.push(0); }
+          for (let j = 0; j < 18; j++) { arrayOfHours.push(false); }
+          for (let j = 18; j < 22; j++) { arrayOfHours.push(true); }
+          for (let j = 22; j < 24; j++) { arrayOfHours.push(false); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
@@ -290,13 +274,61 @@ export function quickScheduler(moment, dataSvc) {
         let arrayOfDays = [];
         for(let i = 0; i < 7; i++){
           let arrayOfHours = [];
-          for (let j = 0; j < 24; j++) { arrayOfHours.push(1); }
+          for (let j = 0; j < 24; j++) { arrayOfHours.push(true); }
           arrayOfDays.push(arrayOfHours);
         }
         scope.schedule.availability = arrayOfDays;
         scope.availabilityModalFlag = false;
       };
 
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// CUSTOM MODALS //////////////////////////////////
+scope.openCustomDuration = () => {
+  scope.customDurationFlag = true;
+  scope.durationHours = 0;
+  scope.durationMinutes = 0;
+};
+scope.setCustomDuration = (hours, minutes) => {
+  let str, value = (hours*60)+minutes;
+  if(hours){
+    hours += minutes/60;
+    str = `${hours} Hour`;
+    if(hours !== 1) str += `s`; }
+  else if(minutes) str = `${minutes} Minutes`;
+  else str = `None`;
+  scope.setDuration([str, value]);
+};
+scope.openCustomDate = () => {
+  let minute = moment().minute();
+  while(minute%15 !== 0) {minute--;}
+  scope.customDate = new Date(moment().minute(minute).startOf('minute'));
+  scope.minCustomDate = moment(scope.customDate).toJSON();
+  scope.customDateFlag = true;
+};
+scope.setCustomDate = (value, customStartDate) => {
+  if(customStartDate) scope.setStartTime(value);
+  else scope.setDeadline(value);
+};
+scope.openCustomAvailability = () => {
+  scope.customAvailabilityFlag = true;
+  scope.customAvailabilityDays = [];
+  for (let i = 0; i < 7; i++) { scope.customAvailabilityDays[i] = true; }
+  scope.customAvailabilityHours = [];
+  for (let i = 0; i < 24; i++) { scope.customAvailabilityHours[i] = false; }
+  scope.toggleDays = () => { for (let i = 0; i < 7; i++) { scope.customAvailabilityDays[i] = !scope.customAvailabilityDays[i]; } };
+  scope.toggleHours = (x,y) => { for (let i = x; i < y; i++) { scope.customAvailabilityHours[i] = !scope.customAvailabilityHours[i]; } };
+};
+scope.setCustomAvailability = () => {
+  scope.scheduleNames.availability = 'Custom';
+  let days = scope.customAvailabilityDays,
+      hours = scope.customAvailabilityHours,
+      schedule = scope.schedule.availability;
+  for (let i = 0; i < 7; i++) { if(days[i]) schedule[i] = hours.slice(); }
+  scope.customAvailabilityFlag = false;
+  scope.availabilityModalFlag = false;
+};
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -308,19 +340,27 @@ export function quickScheduler(moment, dataSvc) {
             active = scheduled ? startsNow : false,
             pending = scheduled ? !startsNow : false,
             inactive = !scheduled,
-            tasksToChange = [],
             taskIds = [],
             keysToChange = 'schedule,status.active,status.pending,status.scheduled,status.inactive',
             newValues = [scope.schedule, active, pending, scheduled, inactive];
 
-        for (let i = 0; i < scope.tasks.length; i++) {
+        if(scope.editPaneIndx){
+          let i = scope.editPaneIndx;
+          scope.tasks[i].schedule = scope.schedule;
+          scope.tasks[i].scheduleNames = scope.scheduleNames;
+          scope.tasks[i].status.active = active;
+          scope.tasks[i].status.pending = pending;
+          scope.tasks[i].status.scheduled = scheduled;
+          scope.tasks[i].status.inactive = inactive;
+          taskIds.push(scope.tasks[i]._id);
+        }
+        else for (let i = 0; i < scope.tasks.length; i++) {
           if(scope.tasks[i].status.editable) {
             scope.tasks[i].schedule = scope.schedule;
             scope.tasks[i].status.active = active;
             scope.tasks[i].status.pending = pending;
             scope.tasks[i].status.scheduled = scheduled;
             scope.tasks[i].status.inactive = inactive;
-            tasksToChange.push(scope.tasks[i]);
             taskIds.push(scope.tasks[i]._id);
           }
         }
@@ -333,33 +373,6 @@ export function quickScheduler(moment, dataSvc) {
           function( res ){ console.log("item(s) saved", res); },
           function( err ){ console.log("Error while saving: ", err); }
         );
-
-        //// SET THE AGENDA VALUES ////  //test  !!!!PROBABLY NOT NEEDED!!!!
-        // function updateAgenda(yr, mo, day, hr, min, key, ids, tasks){
-        //   let {agenda} = dataSvc.user;
-        //   agenda[yr] = agenda[yr] || [];
-        //   agenda[yr][mo] = agenda[yr][mo] || [];
-        //   agenda[yr][mo][day] = agenda[yr][mo][day] || [];
-        //   agenda[yr][mo][day][hr] = agenda[yr][mo][day][hr] || [];
-        //   agenda[yr][mo][day][hr][min] = agenda[yr][mo][day][hr][min] || {};
-        //   agenda[yr][mo][day][hr][min][key] = agenda[yr][mo][day][hr][min][key] || [];
-        //   agenda[yr][mo][day][hr][min][key].push(...tasks);
-        //   agenda[yr][mo][day][24] = agenda[yr][mo][day][24] || [];
-        //   if(key === 'startTime') agenda[yr][mo][day][24].push(...tasks);
-        //   dataSvc.updateAgenda(yr, mo, day, hr, min, key, ids).then(
-        //     function(res){ console.log(`Agenda updated: `, res); },
-        //     function(err){ console.log(`Failed to update agenda: ${err}`); }
-        //   );
-        //   console.log("User's Agenda updated: ", scope.user);
-        // }
-        // let st = startTime,
-        //     sd = softDeadline,
-        //     hd = hardDeadline;
-        // if(st.moment){
-        //   updateAgenda(st.year, st.month, st.day, st.hour, st.minute, 'startTime', taskIds, tasksToChange);
-        //   if(sd.moment) updateAgenda(sd.year, sd.month, sd.day, sd.hour, sd.minute, 'softDeadline', taskIds, tasksToChange);
-        //   if(hd.moment) updateAgenda(hd.year, hd.month, hd.day, hd.hour, hd.minute, 'hardDeadline', taskIds, tasksToChange);
-        // }
         createNewSchedule();
         scope.toggleQuickScheduler();
         scope.toggleEditOff();

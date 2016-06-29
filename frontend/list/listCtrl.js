@@ -1,4 +1,4 @@
-export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment) {
+export default function listCtrl($rootScope, $scope, $state, dataSvc, PriorState, moment) {
   //record the name of the view that the user came to this view from
   if(PriorState.Name) $scope.priorView = PriorState.Name; // + "({ optionFlag: 's' })";
   else $scope.priorView = "calendar.agenda";
@@ -83,22 +83,12 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
     for (let i = 0; i < $scope.tasks.length; i++) {
       if($scope.tasks[i].status.editable){
         if($scope.tasks[i].status.completed) completedFlag = false;
-        $scope.tasks[i].status.completed = !$scope.tasks[i].status.completed;
+        $scope.tasks[i].status.completed = completedFlag;
       }
     }
     $scope.editTasks('status.completed', [completedFlag]);
     $scope.toggleEditOff();
   };
-  // $scope.toggleActive = () => {
-  //   for (let i = 0; i < $scope.tasks.length; i++) {
-  //     if($scope.tasks[i].status.editable){
-  //       $scope.tasks[i].status.active = !$scope.tasks[i].status.active;
-  //       $scope.tasks[i].status.inactive = !$scope.tasks[i].status.inactive;
-  //       $scope.tasks[i].status.pending = false;
-  //     }
-  //   }
-  //   $scope.toggleEditOff();
-  // };
   $scope.toggleStarred = () => {
     let starFlag = false;
     for (let i = 0; i < $scope.tasks.length; i++) {
@@ -139,14 +129,46 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
 
   // POST Methods
   $scope.saveNew = () => {
-    dataSvc.saveNewTask($scope.newItem).then(function( res, err ){
-      if(err) console.log(err);
-      else {
+    function buildNewTask(now){
+      $scope.newItem.status = $scope.newItem.status || {};
+      $scope.newItem.status.inactive = false;
+      $scope.newItem.schedule = {
+        startTime: {
+            moment: now,
+            year: now.year(),
+            month: now.month(),
+            day: now.date(),
+            hour: now.hour(),
+            minute: 0,
+            top: (now.hour()*60)+5 },
+        availability: []
+      };
+      for(let i = 0; i < 7; i++){
+        let hourArray = [];
+        for (let j = 0; j < 8; j++) { hourArray.push(0); }
+        for (let j = 8; j < 22; j++) { hourArray.push(1); }
+        for (let j = 22; j < 24; j++) { hourArray.push(0); }
+        $scope.newItem.schedule.availability.push(hourArray);
+      }
+    }
+    // If new item is saved from the 'active' view
+    if($state.current.name === "list.active"){
+      buildNewTask(moment().startOf('hour'));
+      $scope.newItem.status.active = true;
+    }
+    // If new item is saved from the 'pending' view
+    if($state.current.name === "list.pending"){
+      buildNewTask(moment().add(1, 'day').startOf('hour'));
+      $scope.newItem.status.pending = true;
+    }
+    dataSvc.saveNewTask($scope.newItem).then(
+      function(res){
         console.log("saved", res);
         $scope.newItem = {};
         $scope.tasks.push(res.data);
-      }
-    });
+      },
+      function(err){ console.log(err); }
+    );
   };
 
   // PUT methods
@@ -197,4 +219,4 @@ export default function listCtrl($rootScope, $scope, dataSvc, PriorState, moment
   };
 }
 
-listCtrl.$inject = [`$rootScope`, `$scope`, `dataSvc`, `PriorState`, `moment`];
+listCtrl.$inject = [`$rootScope`, `$scope`, `$state`, `dataSvc`, `PriorState`, `moment`];

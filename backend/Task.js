@@ -5,30 +5,11 @@ var taskSchema = new mongoose.Schema({
   schedule: {
     startTime: {
       moment: {type: String, default: ''},
-      year: Number,
-      month: Number,
-      day: Number,
-      hour: Number,
-      minute: Number,
       top: Number
     },
-    duration: Number,
-    softDeadline: {
-      moment: {type: String, default: ''},
-      year: Number,
-      month: Number,
-      day: Number,
-      hour: Number,
-      minute: Number
-    },
-    hardDeadline: {
-      moment: {type: String, default: ''},
-      year: Number,
-      month: Number,
-      day: Number,
-      hour: Number,
-      minute: Number
-    },
+    duration: {type: Number, default: 0},
+    softDeadline: {type: String, default: ''},
+    hardDeadline: {type: String, default: ''},
     availability: []
   },
   // desc: String,
@@ -64,7 +45,7 @@ var taskSchema = new mongoose.Schema({
     active: {type: Boolean, default: false},
     pending: {type: Boolean, default: false},
     inactive: {type: Boolean, default: true},
-    complete: {type: Boolean, default: false},
+    completed: {type: Boolean, default: false},
     incomplete: {type: Boolean, default: false},
     scheduled: {type: Boolean, default: false},
     highPriority: {type: Boolean, default: false},

@@ -3,54 +3,7 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
   $scope.user = dataSvc.user;
   console.log('Tasks: ', $scope.tasks);
   console.log(`User: `, $scope.user);
-
-  // let agenda = buildAgenda();
-  //
-  // function buildAgenda(){
-  //   let active = [],
-  //       pending = [],
-  //       now = moment();
-  //   for (let i = 0; i < $scope.tasks.length; i++) {
-  //     let status = $scope.tasks[i].status;
-  //     if(!status.completed){
-  //       if(status.active) active.push($scope.tasks[i]);
-  //       if(status.pending) pending.push($scope.tasks[i]);
-  //     }
-  //   }
-  //   // Update any active tasks
-  //   for (let i = 0; i < active.length; i++) {
-  //     let schedule = active[i].schedule;
-  //     if(schedule.softDeadline.moment && moment(schedule.softDeadline.moment).isSameOrBefore(now)){
-  //       active[i].status.pastDue = true;
-  //       active[i].status.needsAttention = true;
-  //       if(schedule.hardDeadline.moment) active[i].status.highPriority = true;
-  //     }
-  //     if(schedule.hardDeadline.moment && moment(schedule.hardDeadline.moment).isSameOrBefore(now)){
-  //       active[i].status.active = false;
-  //       active[i].status.scheduled = false;
-  //       active[i].status.incomplete = true;
-  //     }
-  //   }
-  //   // Update any pending tasks
-  //   for (let i = 0; i < pending.length; i++) {
-  //     let schedule = pending[i].schedule,
-  //         status = pending[i].status;
-  //     if(status.scheduled && moment(schedule.startTime.moment).isSameOrBefore(now)){
-  //       status.active = true;
-  //       status.pending = false;
-  //     }
-  //     if(!status.scheduled){
-  //       // Check to see if all of the prerequisits have been met, and if so, schedule the task
-  //     }
-  //   }
-  //   let scheduled = [];
-  //   for (var i = 0; i < $scope.tasks.length; i++) {
-  //     if($scope.tasks[i].status.scheduled) scheduled.push($scope.tasks[i]);
-  //   }
-  //   return scheduled;
-  // }
-  //
-  // console.log('Tasks: ', $scope.tasks);
+  
 
   $scope.now = moment();
   $scope.currentMinute = 5 + ($scope.now.hour()*60) + ($scope.now.minute()) + 'px';

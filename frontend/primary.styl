@@ -18,6 +18,7 @@ lightish(alpha = 1)
 $shadow = 0 1px 10px #515151
 $star = rgb(241, 196, 15)
 $sky = rgb(102,204,255)
+$primary2 = red
 
 //POSITIONING
 center(n, n1 = false)
@@ -319,7 +320,7 @@ div.calendarHead
   box-shadow $shadow
   center(vert)
   justify-content space-between
-  background-color red
+  background-color $primary2
   b
     font-size 24px
 section.calendar
@@ -501,9 +502,10 @@ div.edit-item-pane.container, div.new-item-pane.container
     box-sizing border-box
     background-color $light
     form
-      font-size 1.5em
       div.form.row
         display flex
+        span.label
+          font-size 1.5em
         input
           flex-grow 1
           margin 0 1em
@@ -511,6 +513,29 @@ div.edit-item-pane.container, div.new-item-pane.container
           font-size: 20px
           &:focus
             outline none
+        &.schedule
+          flex-direction column
+          div.title.row
+            display flex
+            justify-content space-between
+            span
+              display flex
+              align-items center
+            button
+              background none
+              color $selected
+              border 1px solid transparent
+          div.tempSchedule
+            display flex
+            padding 5px 10px
+            background-color rgba(200,200,200,0.1)
+            box-shadow inset 2px 3px rgba(0,0,0,.3), inset -1px -1px 15px rgba(0,0,0,.2), inset -2px -1px rgba(0,0,0,.1)
+            div.column
+              display flex
+              flex-direction column
+              &:first-child
+                font-weight bold
+                margin-right 15px
 
 // Quick Scheduler
 div.directive.scheduler.container
@@ -564,7 +589,7 @@ div.directive.scheduler.container
 
 // Quick Scheduler
 div.directive.quickScheduler.container
-  z-index 400
+  z-index 600
   background-color darkish(.3)
   div.quickScheduler.body
     z-index 25
@@ -633,6 +658,18 @@ div.directive.quickScheduler.container
           flex-direction column
           input
             font-size 1em
+          div.hour.checkbox.items
+            span
+              cursor pointer
+            div.am, div.pm
+              center(vert)
+              &>span
+                width 10%
+              div.labels
+                center(vert)
+                flex-direction column
+                margin 0 10px
+
     div#qsSaveButton
       position absolute
       z-index 50
@@ -674,7 +711,7 @@ div.item.row
 // listHeader
 div.list.header, div.new-item-pane.header, div.edit-item-pane.header
   width 100vw
-  div.title.row, div.icon.row
+  div.title.row, div.icon.row, div.delete.row
     center(vert)
     justify-content space-between
     height 2em
@@ -689,12 +726,23 @@ div.list.header, div.new-item-pane.header, div.edit-item-pane.header
     div.search.column
       center(vert, h)
       width 1em
-  div.title.row
-    background-color $selected
-    color $light
   div.icon.row
     background-color $light
     color $dark
+  div.title.row
+    background-color $selected
+    color $light
+  div.delete.row
+    position absolute
+    top 0
+    width 100%
+    background-color $primary2
+    color $light
+    button
+      background: none;
+      color: #fff;
+      border: 1px solid transparent;
+      border-radius: 4px;
   div.tabs.row
     display flex
     height 2em

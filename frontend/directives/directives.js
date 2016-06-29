@@ -61,7 +61,13 @@ export function calendar() {
 export function listHeader() {
   return {
     restrict: 'E',
-    template: require('./listHeader.html')
+    template: require('./listHeader.html'),
+    link(scope, element, attrs, ctrl) {
+      scope.verifyDelete = () => {
+        let message = (scope.editableItems === 1) ? "Delete task?" : "Delete tasks?";
+        if(confirm(message)) scope.deleteTask();
+      };
+    }
   };
 }
 //this directive makes up the task rows that exist on each of the List Views
@@ -79,12 +85,52 @@ export function addItem() {
   };
 }
 //the form that allows you to fully edit an existing task
-export function editItemPane() {
+export function editItemPane(moment, dataSvc) {
   return {
     restrict: 'E',
-    template: require('./editItemPane.html')
+    template: require('./editItemPane.html'),
+    link(scope, element, attrs, ctrl) {
+      scope.toggleTempSchedule = () => {
+        if(scope.tempScheduleFlag) scope.tempScheduleFlag = false;
+        else {
+          let task = scope.tasks[scope.editPaneIndx],
+              schedule = task.schedule,
+              duration;
+          if(schedule.duration >= 60){
+            duration = `${schedule.duration/60} Hour`;
+            if(schedule.duration > 60) duration += `s`;
+          } else duration = schedule.duration ? `${schedule.duration} Minutes` : `None`;
+          task.scheduleNames = {
+            duration,
+            startTime: schedule.startTime.moment ? moment(schedule.startTime.moment).calendar() : `None`,
+            softDeadline: schedule.softDeadline ? moment(schedule.softDeadline).calendar() : `None`,
+            hardDeadline: schedule.hardDeadline ? moment(schedule.hardDeadline).calendar() : `None`,
+            availability: `Custom`
+          };
+          scope.editSchedule = () => {
+            dataSvc.scheduleNames = {};
+            for(let i in task.scheduleNames){ dataSvc.scheduleNames[i] = task.scheduleNames[i]; }
+            dataSvc.schedule = {
+              duration: schedule.duration,
+              startTime: {
+                  moment: '',
+                  top: schedule.startTime.top },
+              softDeadline: schedule.softDeadline,
+              hardDeadline: schedule.hardDeadline,
+              availability: []
+            };
+            if(schedule.startTime.moment) dataSvc.schedule.startTime.moment = moment(schedule.startTime.moment);
+            for (let i = 0; i < 7; i++) {
+              dataSvc.schedule.availability.push(schedule.availability[i].slice());
+            }
+            scope.toggleQuickScheduler();
+          };
+          scope.tempScheduleFlag = true;
+        }
+      };
+    }
   };
-}
+} editItemPane.$inject = [`moment`, `dataSvc`];
 //the form that allows you to fully edit a new item
 export function newItemPane() {
   return {
