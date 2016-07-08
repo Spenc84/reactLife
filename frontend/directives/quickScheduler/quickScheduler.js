@@ -7,8 +7,8 @@ export function quickScheduler(moment, dataSvc) {
       scope.moment = moment;
       scope.hour = moment().hour();
       scope.day = moment().day();
-      console.log(scope.hour, scope.day);
-      console.log(scope.editPaneIndx);
+      console.log(scope.hour, scope.day); //testing
+      console.log(scope.task); //testing
 
       // If one doesn't already exist, build a new schedule object
       // which can then be assigned to a task
@@ -344,15 +344,14 @@ scope.setCustomAvailability = () => {
             keysToChange = 'schedule,status.active,status.pending,status.scheduled,status.inactive',
             newValues = [scope.schedule, active, pending, scheduled, inactive];
 
-        if(scope.editPaneIndx){
-          let i = scope.editPaneIndx;
-          scope.tasks[i].schedule = scope.schedule;
-          scope.tasks[i].scheduleNames = scope.scheduleNames;
-          scope.tasks[i].status.active = active;
-          scope.tasks[i].status.pending = pending;
-          scope.tasks[i].status.scheduled = scheduled;
-          scope.tasks[i].status.inactive = inactive;
-          taskIds.push(scope.tasks[i]._id);
+        if(scope.task){
+          scope.task.schedule = scope.schedule;
+          scope.task.scheduleNames = scope.scheduleNames;
+          scope.task.status.active = active;
+          scope.task.status.pending = pending;
+          scope.task.status.scheduled = scheduled;
+          scope.task.status.inactive = inactive;
+          taskIds.push(scope.task._id);
         }
         else for (let i = 0; i < scope.tasks.length; i++) {
           if(scope.tasks[i].status.editable) {
@@ -374,8 +373,7 @@ scope.setCustomAvailability = () => {
           function( err ){ console.log("Error while saving: ", err); }
         );
         createNewSchedule();
-        scope.toggleQuickScheduler();
-        scope.toggleEditOff();
+        scope.closeQuickScheduler(true);
       };
 ////////////////////////////////////////////////////////////////////////////////
     }

@@ -1,43 +1,17 @@
 //////////////   CALENDAR DIRECTIVES   /////////////////////////////////////////
 // The header on the Calendar side
-export function calHeader ($state) {
+export function calHeader () {
   return {
     restrict: 'E',
     template: require('./calHeader.html'),
-    scope: {
-      icon: '@',
-      view: '@',
-      month: '=',
-      optionFlag: '=flag1',
-      monthFlag: '=flag2'
-    },
     link(scope, element, attrs, ctrl) {
-      scope.eyeFlag = true;
-      scope.monthFlag = false;
-      if($state.params.optionFlag) scope.optionFlag = $state.params.optionFlag;
-      else scope.optionFlag = false;
-      console.log($state.params);
-
-      scope.toggleOption = function() {
-        scope.optionFlag = !scope.optionFlag;
-      };
-      scope.toggleMonth = function() {
-        scope.monthFlag = !scope.monthFlag;
-      };
-      scope.toggleEye = function() {
-        scope.eyeFlag = !scope.eyeFlag;
-      };
-      scope.clear = () => {
-        scope.optionFlag = false;
-        scope.monthFlag = false;
-      };
-      scope.clearOption = () => {
-        scope.optionFlag = false;
-      };
-    },
+      scope.toggleOption = function() { scope.optionFlag = !scope.optionFlag; };
+      scope.toggleMonth = function() { scope.monthFlag = !scope.monthFlag; };
+      scope.clearOption = () => { scope.optionFlag = false; };
+      scope.clear = () => { scope.optionFlag = false; scope.monthFlag = false; };
+    }
   };
 }
-calHeader.$inject = [`$state`];
 
 // The navigational option pane that expands from the right side of the screen
 export function optionPane() {
@@ -74,7 +48,15 @@ export function listHeader() {
 export function taskItems() {
   return {
     restrict: 'E',
-    template: require('./taskItems.html')
+    template: require('./taskItems.html'),
+    link(scope, element, attrs, ctrl) {
+      scope.saveTask = (task) => {
+        dataSvc.saveTask(task).then(
+          function(res){ console.log("saved", res); },
+          function(err){ console.log("error", err); }
+        );
+      };
+    }
   };
 }
 //the last row on each view which allows you to quickly create a new item
@@ -90,10 +72,16 @@ export function editItemPane(moment, dataSvc) {
     restrict: 'E',
     template: require('./editItemPane.html'),
     link(scope, element, attrs, ctrl) {
+      scope.saveTask = (task) => {
+        dataSvc.saveTask(task).then(
+          function(res){ console.log("saved", res); },
+          function(err){ console.log("error", err); }
+        );
+      };
       scope.toggleTempSchedule = () => {
         if(scope.tempScheduleFlag) scope.tempScheduleFlag = false;
         else {
-          let task = scope.tasks[scope.editPaneIndx],
+          let task = scope.task,
               schedule = task.schedule,
               duration;
           if(schedule.duration >= 60){
@@ -113,19 +101,50 @@ export function editItemPane(moment, dataSvc) {
             dataSvc.schedule = {
               duration: schedule.duration,
               startTime: {
-                  moment: '',
+                  moment: schedule.startTime.moment ? moment(schedule.startTime.moment) : '',
                   top: schedule.startTime.top },
-              softDeadline: schedule.softDeadline,
-              hardDeadline: schedule.hardDeadline,
+              softDeadline: schedule.softDeadline ? moment(schedule.softDeadline) : '',
+              hardDeadline: schedule.hardDeadline ? moment(schedule.hardDeadline) : '',
               availability: []
             };
-            if(schedule.startTime.moment) dataSvc.schedule.startTime.moment = moment(schedule.startTime.moment);
             for (let i = 0; i < 7; i++) {
               dataSvc.schedule.availability.push(schedule.availability[i].slice());
             }
-            scope.toggleQuickScheduler();
+            scope.openQuickScheduler();
           };
           scope.tempScheduleFlag = true;
+        }
+      };
+      scope.toggleViewAvailability = () => {
+        scope.editAvailabilityFlag = false;
+        if(scope.viewAvailabilityFlag) scope.viewAvailabilityFlag = false;
+        else {
+          let {availability} = scope.task.schedule;
+          scope.tempDayArray = [true, true, true, true, true, true, true];
+          scope.availabilityGrid = [];
+          for(let day in availability){ scope.availabilityGrid.push(availability[day].slice()); }
+          scope.viewAvailabilityFlag = true;
+          scope.editAvailability = () => {
+            scope.editAvailabilityFlag = true;
+            scope.toggleDays = (day) => { scope.tempDayArray[day] = !scope.tempDayArray[day]; };
+            scope.toggleHours = (x,y) => {
+              for (let i = 0; i < 7; i++)
+                if(scope.tempDayArray[i])
+                  for (let j = x; j < y; j++)
+                    scope.availabilityGrid[i][j] = !scope.availabilityGrid[i][j];
+            };
+            scope.saveAvailability = () => {
+              for(let day in scope.availabilityGrid){ availability[day] = scope.availabilityGrid[day].slice(); }
+              let taskIds = scope.task._id,
+                  keysToChange = 'schedule.availability',
+                  newValues = [scope.availabilityGrid];
+              dataSvc.editTasks(taskIds, keysToChange, newValues).then(
+                function( res ){ console.log("item(s) saved", res); },
+                function( err ){ console.log("Error while saving: ", err); }
+              );
+              scope.editAvailabilityFlag = false;
+            };
+          };
         }
       };
     }

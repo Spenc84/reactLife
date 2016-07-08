@@ -18,6 +18,7 @@ lightish(alpha = 1)
 $shadow = 0 1px 10px #515151
 $star = rgb(241, 196, 15)
 $sky = rgb(102,204,255)
+$burntOrange = rgb(249, 131, 5)
 $primary2 = red
 
 //POSITIONING
@@ -56,8 +57,22 @@ html, body
 
 //***************  CALENDAR STYLING  ***************
 // ----------------VIEWS---------------
+div.calendar.view.container, div.week.container, div.day.container, div.agenda.container
+  height calc(100vh - 70px)
+  top 70px
+
+// Agenda
+div.agenda.container
+  div.task.item
+    margin 5px
+    border-radius 5px
+    padding 6px
+    box-sizing border-box
+    min-height 50px
+  div.date.item
+    margin 15px 5px
 // Month
-div.calendar.view
+div.calendar.view.container
   box-shadow none
   z-index 0
   .row
@@ -186,20 +201,20 @@ div.day.container, div.week.container
 // ----------------DIRECTIVES---------------
 // calHeader
 nav.calHeader
+  z-index 10
   position fixed
-  z-index: 10
-  width 100%
-  height 70px
-  top 0
-  font-size 30px
-  box-shadow $shadow
-  padding 0 .3em
   display flex
-  justify-content space-between
+  width 100vw
+  height 70px
+  padding 0 .3em
+  box-sizing border-box
+  box-shadow $shadow
   background-color white
+  justify-content space-between
+  font-size 30px
   div
     width 33%
-    margin 0 .5em
+    margin 0 0 0 .5em
     display inline-flex
     align-items center
     &.right
@@ -219,7 +234,7 @@ div.spacer2
   height 230px
   width 100vw
 div.weekViewSpacer
-  height 130px
+  height 60px
   width 100vw
 
 //Grey Overlay
@@ -478,6 +493,7 @@ div.edit-item-pane.container, div.new-item-pane.container
   top 0
   left 0
   z-index 500
+  background-color $light
   div.edit-item-pane.header, div.new-item-pane.header
     div.title.row
       div.title.column
@@ -504,16 +520,24 @@ div.edit-item-pane.container, div.new-item-pane.container
     form
       div.form.row
         display flex
+        margin-bottom 10px
         span.label
           font-size 1.5em
-        input
+        input[type=text]
           flex-grow 1
           margin 0 1em
           border none
           font-size: 20px
           &:focus
             outline none
-        &.schedule
+        input[type=color]
+          margin-left 10px
+          align-self center
+        textarea
+          width 100%
+          height 50px
+          border none
+        &.togglable
           flex-direction column
           div.title.row
             display flex
@@ -525,11 +549,69 @@ div.edit-item-pane.container, div.new-item-pane.container
               background none
               color $selected
               border 1px solid transparent
-          div.tempSchedule
+          div.toggleBox
             display flex
             padding 5px 10px
             background-color rgba(200,200,200,0.1)
             box-shadow inset 2px 3px rgba(0,0,0,.3), inset -1px -1px 15px rgba(0,0,0,.2), inset -2px -1px rgba(0,0,0,.1)
+            div.row
+              display flex
+            div.col
+              display flex
+              flex-direction column
+            &.availability
+              position relative
+              flex-direction column
+              span
+                cursor pointer
+              div.ghost
+                position absolute
+                top 0
+                bottom 0
+                left 0
+                right 0
+              .locked
+                opacity .2
+              div.r1c1
+                display flex
+                width 20%
+                justify-content center
+                font-weight bold
+                font-size 1.2em
+                span
+                  text-align center
+              div.r1c2
+                flex-grow 1
+                div.r1c2r1
+                  flex-grow 1
+                  &.spacer
+                    margin-left 15%
+                  span
+                    width (100%/7)
+                    text-align center
+              div.r2c1
+                width 5%
+                justify-content space-around
+                span
+                  font-weight bold
+                  line-height .85em
+                  font-family monospace
+                  &:first-child
+                    margin-top 10em
+              div.r2c2
+                width 15%
+                span
+                  height 19px
+                  text-align right
+              div.r2c3
+                flex-grow 1
+                div.r2c3r1
+                  flex-grow 1
+                  div.col
+                    width (100%/7)
+                    div.row
+                      justify-content center
+
             div.column
               display flex
               flex-direction column

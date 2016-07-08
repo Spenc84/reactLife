@@ -10,24 +10,24 @@ export default function routes ($stateProvider, $urlRouterProvider) {
     //CALENDAR VIEWS
     .state('calendar', {
       controller: 'calendarCtrl',
-      template: '<ui-view></ui-view>',
+      template: '<cal-header></cal-header><ui-view></ui-view><quick-scheduler ng-if="quickSchedulerFlag"></quick-scheduler><edit-item-pane ng-if="editItemPaneFlag"></edit-item-pane>',
       abstract: true,
       resolve: { Tasks: getTasks, User: getUser }
     })
     .state('calendar.agenda', {
-      url: '/calendar/agenda::optionFlag',
-      template: require('./calendar/agenda.html')
+      url: '/calendar/agenda',
+      template: require('./calendar/agendaView.html')
     })
     .state('calendar.day', {
-      url: '/calendar/day:optionFlag',
-      template: require('./calendar/day.html')
+      url: '/calendar/day',
+      template: require('./calendar/dayView.html')
     })
     .state('calendar.week', {
-      url: '/calendar/week:optionFlag',
-      template: require('./calendar/week.html')
+      url: '/calendar/week',
+      template: require('./calendar/weekView.html')
     })
     .state('calendar.month', {
-      url: '/calendar/month:optionFlag',
+      url: '/calendar/month',
       template: require('./calendar/month.html')
     })
     //LIST VIEWS
@@ -82,6 +82,7 @@ export default function routes ($stateProvider, $urlRouterProvider) {
         dataSvc.getTasks().then(
           function(tasks){
             dataSvc.tasks = tasks.data;
+            dataSvc.buildAgenda();
             deferred.resolve("Tasks aquired");
           },
           function(rejected){ alert("Failed to aquire tasks"); deferred.reject("Failed to aquire tasks"); $state.go("home");}

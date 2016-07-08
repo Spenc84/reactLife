@@ -5,21 +5,17 @@
 <nav class="calHeader">
   <div class="left">
     <i ng-click="toggleOption()" class="material-icons md-dark md-36">menu</i>
-    <span ng-if="view !== 'month'" ui-sref="calendar.month">
+    <span ui-sref="calendar.month">
       {{month.name}}
     </span>
     <i ng-if="!monthFlag" ng-click="toggleMonth()" class="material-icons md-dark md-36">arrow_drop_down</i>
     <i ng-if="monthFlag" ng-click="toggleMonth()" class="material-icons md-dark md-36">arrow_drop_up</i>
-    <span ng-if="view === 'month'">{{month.name}}</span>
   </div>
   <div class="right">
-    <i ng-if="icon === 'eye' && eyeFlag" ng-click="toggleEye()" class="material-icons md-dark md-24" style="border-right: 2px solid black">visibility</i>
-    <i ng-if="icon === 'eye' && !eyeFlag" ng-click="toggleEye()" class="material-icons md-dark md-24" style="border-right: 2px solid black">visibility_off</i>
-    <i ui-sref="list.star" ng-if="icon === 'list'" class="material-icons md-dark md-24" style="border-right: 2px solid black">list</i>
+    <i ui-sref="list.star" class="material-icons md-dark md-24" style="border-right: 2px solid black">list</i>
     <i class="material-icons md-dark md-24"></i>
     <i ng-click="month.rebuild()" class="material-icons md-dark md-24">today</i>
   </div>
 </nav>
 
-<!-- <div class="spacer2" ng-if="monthFlag"></div> test -->
 <calendar class="header" ng-if="monthFlag"></calendar>

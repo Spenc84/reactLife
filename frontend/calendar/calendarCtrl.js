@@ -1,15 +1,17 @@
 export default function calendarCtrl($scope, dataSvc, moment, $interval) {
   $scope.tasks = dataSvc.tasks;
+  $scope.agenda = dataSvc.agenda;
   $scope.user = dataSvc.user;
-  console.log('Tasks: ', $scope.tasks);
-  console.log(`User: `, $scope.user);
-  
+  console.log('Tasks: ', $scope.tasks); //test
+  console.log(`User: `, $scope.user); //test
 
+  $scope.moment = moment;
   $scope.now = moment();
   $scope.currentMinute = 5 + ($scope.now.hour()*60) + ($scope.now.minute()) + 'px';
+
   $scope.month = buildMonth();
-  console.log($scope.now);
-  console.log($scope.currentMinute);
+  console.log($scope.now); //test
+  console.log($scope.currentMinute); //test
 
   //Update $scope.now with the current time once every 60 seconds
   let minuteIteration = $interval(function(){
@@ -24,8 +26,8 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
       for (let i = 0; i <= hour; i++) { $scope.month.hours[i] = false; }
       for (let i = hour +1; i < 24; i++) { $scope.month.hours[i] = true; }
     }
-    console.log($scope.now);
-    console.log($scope.currentMinute);
+    console.log($scope.now); //test
+    console.log($scope.currentMinute); //test
   }, 60000);
   $scope.$on('$destroy', function () { $interval.cancel(minuteIteration); });
 
@@ -68,13 +70,7 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
     let week = [],
         day = moment.clone().startOf('week');
     for (let i = 0; i < 7; i++) {
-      let newDay = day.clone(),
-          tasks = [];
-      for (let i = 0; i < $scope.tasks.length; i++) {
-        let start = $scope.tasks[i].schedule.startTime.moment;
-        if(day.isSame(start, 'day')) tasks.push($scope.tasks[i]);
-      }
-      newDay.tasks = tasks;
+      let newDay = day.clone();
       week.push(newDay);
       day = day.add(1, 'days');
     }
@@ -97,6 +93,14 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
     }
     return hours;
   }
-}
 
-calendarCtrl.$inject = [`$scope`, `dataSvc`, `moment`, `$interval`];
+  //OTHER STUFF
+  // toggle the main edit panes
+      $scope.toggleEditItemPane = (task) => {
+        if(task){ $scope.editItemPaneFlag = true; $scope.task = task; }
+        else { $scope.editItemPaneFlag = false; $scope.task = null; }
+      };
+      $scope.openQuickScheduler = () => { $scope.quickSchedulerFlag = true; };
+      $scope.closeQuickScheduler = (completed) => { $scope.quickSchedulerFlag = false; };
+
+} calendarCtrl.$inject = [`$scope`, `dataSvc`, `moment`, `$interval`];

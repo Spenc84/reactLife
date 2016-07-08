@@ -1,6 +1,3 @@
-<!-- Header -->
-<cal-header icon="list" month="month" flag1="optionFlag" flag2="monthFlag"></cal-header>
-<!-- Body -->
 <div class="week container" ng-class="{noScroll: optionFlag}">
   <!-- Spacers -->
   <div class="weekViewSpacer"></div>
@@ -14,7 +11,7 @@
   </div>
   <!-- Left column containing the hours of the day -->
   <div class="hour column">
-    <div ng-repeat="hour in month.hours track by $index" ng-class="{inactive: !month.hours[$index]}">{{month.moment.hour($index).format("h A")}}</div>
+    <div ng-repeat="hour in month.hours track by $index" id="{{month.moment.hour($index).format('hA')}}" ng-class="{inactive: !month.hours[$index]}">{{month.moment.hour($index).format("h A")}}</div>
   </div>
   <!-- Horizontal HR dividers -->
   <div class="dividers column"><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr></div>
@@ -28,9 +25,10 @@
     </svg>
     <!-- Seven Day columns -->
     <div class="col7" ng-repeat="day in month.currentWeek">
-      <div ng-repeat="task in day.tasks"
+      <div ng-repeat="task in tasks | filter: {schedule:{startTime:{moment: day.format('YYYY-MM-DD')}}} : compare"
            ng-if="task.schedule.duration"
-           style="top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px"
+           ng-click="toggleEditItemPane(task)"
+           style="top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px; background-color: {{task.color}}"
            class="week calendarItem">
            {{task.name}}
       </div>

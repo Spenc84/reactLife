@@ -47,17 +47,9 @@ export default function listCtrl($rootScope, $scope, $state, dataSvc, PriorState
   };
   // toggle the main edit panes
       // existing item
-  $scope.editItemPaneFlag = false;
-  $scope.editPaneIndx = null;
-  $scope.toggleEditItemPane = (indx) => {
-    if(indx || indx === 0){
-      $scope.editItemPaneFlag = true;
-      $scope.editPaneIndx = indx;
-    }
-    else {
-      $scope.editItemPaneFlag = false;
-      $scope.editPaneIndx = null;
-    }
+  $scope.toggleEditItemPane = (task) => {
+    if(task){ $scope.editItemPaneFlag = true; $scope.task = task; }
+    else { $scope.editItemPaneFlag = false; $scope.task = null; }
   };
       // new item
   $scope.newItemPaneFlag = false;
@@ -66,15 +58,12 @@ export default function listCtrl($rootScope, $scope, $state, dataSvc, PriorState
       $scope.newItemPaneFlag = !$scope.newItemPaneFlag;
   };
 
-  // toggle the scheduler window on and off
-  $scope.toggleScheduler = () => {
-      $scope.schedulerFlag = !$scope.schedulerFlag;
-      console.log("schedulerFlag: ", $scope.schedulerFlag);
-  };
   // quickScheduler flags
   // main modal
-  $scope.toggleQuickScheduler = () => {
-      $scope.quickSchedulerFlag = !$scope.quickSchedulerFlag;
+  $scope.openQuickScheduler = () => { $scope.quickSchedulerFlag = true; };
+  $scope.closeQuickScheduler = (completed) => {
+    $scope.quickSchedulerFlag = false;
+    if(completed) $scope.toggleEditOff();
   };
 
   // toggle the individual statuses
@@ -172,15 +161,6 @@ export default function listCtrl($rootScope, $scope, $state, dataSvc, PriorState
   };
 
   // PUT methods
-  $scope.saveTask = (index) => {
-    dataSvc.saveTask($scope.tasks[index]).then(
-      function(res){
-        console.log("saved", res);
-        if($scope.tasks[index].status.editable) $scope.toggleEdit(index);
-      },
-      function(err){ console.log(err); }
-    );
-  };
   $scope.editTasks = (keysToChange, newValues) => {
     let tasksToChange = [],
         {tasks} = $scope;

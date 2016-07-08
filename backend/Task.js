@@ -12,8 +12,8 @@ var taskSchema = new mongoose.Schema({
     hardDeadline: {type: String, default: ''},
     availability: []
   },
-  // desc: String,
-  // color: String,
+  color: {type: String, default: '#0078ff'},
+  description: {type: String, default: ''},
   // users: {},
   // history: [{}],
   // prereq: {},

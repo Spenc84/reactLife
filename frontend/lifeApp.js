@@ -19,8 +19,11 @@ import dataSvc from './dataSvc';
 
 // Import directives
 import {calHeader, optionPane, calendar, listHeader, taskItems, addItem,
-        editItemPane, newItemPane, scheduler} from './directives/directives';
+        editItemPane, newItemPane} from './directives/directives';
 import {quickScheduler} from './directives/quickScheduler/quickScheduler';
+import {agenda} from './directives/agenda/agenda';
+import {day} from './directives/day/day';
+import {week} from './directives/week/week';
 
 // Instantiate App
 angular.module('lifeApp', ['ui.router', 'angularMoment'])
@@ -36,5 +39,13 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
   .directive(`addItem`, addItem)
   .directive(`editItemPane`, editItemPane)
   .directive(`newItemPane`, newItemPane)
-  .directive(`scheduler`, scheduler)
-  .directive(`quickScheduler`, quickScheduler);
+  .directive(`quickScheduler`, quickScheduler)
+  .directive(`agenda`, agenda)
+  .directive(`day`, day)
+  .directive(`week`, week)
+  .run(function($rootScope, $location, $anchorScroll) {
+    //when the route is changed scroll to the proper element.
+    $rootScope.$on('$routeChangeSuccess', function(newRoute, oldRoute) {
+      if($location.hash()) $anchorScroll();
+    });
+  });

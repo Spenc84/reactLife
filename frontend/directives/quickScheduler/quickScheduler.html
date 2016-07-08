@@ -1,5 +1,5 @@
 <div class="directive quickScheduler container">
-  <fade ng-click="toggleQuickScheduler()"></fade>
+  <fade ng-click="closeQuickScheduler()"></fade>
   <div class="quickScheduler body">
 
     <!--__________________ ITEM MODALS __________________-->
@@ -14,7 +14,6 @@
         <div class="duration item" ng-click="setDuration(['None', 0])">None</div>
         <div class="duration item" ng-click="setDuration(['30 Minutes', 30])">30 Minutes</div>
         <div class="duration item" ng-click="setDuration(['1 Hour', 60])">1 Hour</div>
-        <!-- <div class="duration item" ng-click="setDuration(['2 Hours', 120])">2 Hours</div> -->
         <div class="duration item" ng-click="setDuration(['4 Hours', 240])">4 Hours</div>
         <div class="duration item" ng-click="setDuration(['Work Day', 480, 1])">Work Day</div>
         <div class="duration item" ng-click="setDuration(['Evening', 240, 2])">Evening</div>
@@ -72,11 +71,6 @@
               Not a valid date!</span>
           </div>
           <p><input type="submit" ng-disabled="myForm.input.$invalid"></p>
-          <!-- <tt>value = {{customDate | date: "yyyy-MM-ddTHH:mm:ss"}}</tt>
-          <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt>
-          <tt>myForm.input.$error = {{myForm.input.$error}}</tt>
-          <tt>myForm.$valid = {{myForm.$valid}}</tt>
-          <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt> -->
         </form>
       </div>
     </div>

@@ -1,4 +1,4 @@
-export default function dataSvc ($http) {
+export default function dataSvc ($http, moment) {
 
   let self = this;
   ///// VARIABLES THAT WILL BE ADDED TO dataSvc LATER //////////////
@@ -8,6 +8,30 @@ export default function dataSvc ($http) {
   //  self.schedule
   //  self.scheduleNames
   //////////////////////////////////////////////////////////////////
+
+  /////////////////////////////////  USERS  //////////////////////////////////////
+    this.getUsers = function(){
+      return $http.get("/api/users");
+    };
+    this.getUser = function(id){
+      // return $http.get("/api/user/"+id);
+      return $http.get("/api/user/575350c7b8833bf5125225a5");  // TEMP
+    };
+    this.saveNewUser = function(user){
+      console.log("sending " + user);
+      return $http.post('/api/users', user);
+    };
+    this.saveUser = function(user){
+      return $http.put('/api/user/'+user._id, user);
+    };
+    this.editUsers = function(itemsToBeChanged, keysToChange, newValues){
+      console.log(itemsToBeChanged, keysToChange, newValues);
+      return $http.put('/api/users/'+itemsToBeChanged+"/"+keysToChange+"/"+JSON.stringify(newValues));
+    };
+    this.deleteUsers = function(id){
+      return $http.delete('/api/user/'+id);
+    };
+  //----------------------------------------------------------------------------//
 
 /////////////////////////////////  TASKS  //////////////////////////////////////
   this.getTasks = function(){
@@ -33,40 +57,32 @@ export default function dataSvc ($http) {
 //----------------------------------------------------------------------------//
 
 ////////////////////////////////  AGENDA  ////////////////////////////////////// //test
-  // this.getAgenda = function(){
-  //   return $http.get(`/api/user/${self.user._id}/agenda`);
-  // };
-  // this.updateAgenda = function(yr, mo, day, hr, min, key, ids){
-  //   // $http.put(`/api/cron/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
-  //   console.log(`ID of User to be updated: ${self.user._id}`);
-  //   return $http.put(`/api/user/${self.user._id}/agenda/${yr}/${mo}/${day}/${hr}/${min}/${key}/${ids}`);
-  // };
-//----------------------------------------------------------------------------//
+  this.buildAgenda = () => {
+    let agenda = {},
+        today = moment().startOf('day').format('x'),
+        agendaMap = [today];
+        agenda[today] = [];
 
-/////////////////////////////////  USERS  //////////////////////////////////////
-  this.getUsers = function(){
-    return $http.get("/api/users");
+    for (let i = 0; i < this.tasks.length; i++) {
+      let task = this.tasks[i];
+      if(task.status.scheduled) {
+        let sDate = moment(task.schedule.startTime.moment).startOf('day').format('x');
+        if(agenda[sDate]) agenda[sDate].push(task);
+        else { agenda[sDate] = [task]; agendaMap.push(sDate); }
+      }
+    }
+    console.log('Agends built: ', agenda); //test
+    this.agenda = agenda;
+    this.agenda.map = agendaMap;
   };
-  this.getUser = function(id){
-    // return $http.get("/api/user/"+id);
-    return $http.get("/api/user/575350c7b8833bf5125225a5");  // TEMP
-  };
-  this.saveNewUser = function(user){
-    console.log("sending " + user);
-    return $http.post('/api/users', user);
-  };
-  this.saveUser = function(user){
-    return $http.put('/api/user/'+user._id, user);
-  };
-  this.editUsers = function(itemsToBeChanged, keysToChange, newValues){
-    console.log(itemsToBeChanged, keysToChange, newValues);
-    return $http.put('/api/users/'+itemsToBeChanged+"/"+keysToChange+"/"+JSON.stringify(newValues));
-  };
-  this.deleteUsers = function(id){
-    return $http.delete('/api/user/'+id);
-  };
+  // this.updateAgenda = (task, date) => {
+  //   if()
+  //   for (let i = 0; i < this.agenda[date].length; i++) {
+  //     this.agenda[date][i]
+  //   }
+  // };
 //----------------------------------------------------------------------------//
 
 }
 
-dataSvc.$inject = [`$http`];
+dataSvc.$inject = [`$http`, `moment`];

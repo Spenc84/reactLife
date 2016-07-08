@@ -3,7 +3,7 @@
   <!-- ***** HEADER ***** -->
     <div class="edit-item-pane header">
       <!-- 1ST ROW - TOP LAYER: Title -->
-      <div class="title row">
+      <div class="title row" style="background-color: {{task.color}}">
         <!-- Column 1 of 2 - 'close icon' and 'title' -->
         <div class="title column">
           <!-- close icon -->
@@ -11,11 +11,11 @@
             <i class="material-icons">close</i>
           </div>
           <!-- title -->
-          <div>{{tasks[editPaneIndx].name}}</div>
+          <div>{{task.name}}</div>
         </div>
         <!-- Column 2 of 2 - save link -->
         <div class="title column">
-          <button ng-click="saveTask(editPaneIndx); toggleEditItemPane()" ng-disabled="editItemForm.$invalid" form="editItemForm">SAVE</button>
+          <button ng-click="saveTask(task); toggleEditItemPane()" ng-disabled="editItemForm.$invalid" form="editItemForm">SAVE</button>
         </div>
       </div>
     </div>
@@ -23,11 +23,19 @@
   <!-- ***** BODY ***** -->
     <div class="edit-item-pane body">
       <form id="editItemForm" name="editItemForm" novalidate>
-        <div class="form row">
+
+        <!-- NAME row -->
+        <div class="name form row">
           <span class="label">Name:</span>
-          <input id="name" name="name" type="text" ng-model="tasks[editPaneIndx].name" autocomplete="off" autofocus required />
+          <input id="name" name="name" type="text" ng-model="task.name" autocomplete="off" autofocus required />
         </div>
-        <div class="schedule form row">
+        <!-- DESCRIPTION row -->
+        <div class="description form row">
+          <textarea ng-model="task.description" placeholder="Add description here..."></textarea>
+          <!-- <div contenteditable>{{task.description}}</div> -->
+        </div>
+        <!-- SCHEDULE row -->
+        <div class="togglable form row">
           <div class="title row">
             <span class="label" ng-click="toggleTempSchedule()">Schedule
               <i class="material-icons" ng-if="!tempScheduleFlag">arrow_drop_down</i>
@@ -35,7 +43,7 @@
             </span>
             <button ng-if="tempScheduleFlag" ng-click="editSchedule()">EDIT</button>
           </div>
-          <div class="tempSchedule" ng-if="tempScheduleFlag" ng-click="toggleTempSchedule()">
+          <div class="toggleBox" ng-if="tempScheduleFlag" ng-click="toggleTempSchedule()">
             <div class="column">
               <span>Duration:</span>
               <span>Starts:</span>
@@ -44,14 +52,86 @@
               <span>Hard Deadline:</span>
             </div>
             <div class="column">
-              <span>{{tasks[editPaneIndx].scheduleNames.duration}}</span>
-              <span>{{tasks[editPaneIndx].scheduleNames.startTime}}</span>
-              <span>{{tasks[editPaneIndx].scheduleNames.startTime}}</span>
-              <span>{{tasks[editPaneIndx].scheduleNames.softDeadline}}</span>
-              <span>{{tasks[editPaneIndx].scheduleNames.hardDeadline}}</span>
+              <span>{{task.scheduleNames.duration}}</span>
+              <span>{{task.scheduleNames.startTime}}</span>
+              <span>{{task.scheduleNames.startTime}}</span>
+              <span>{{task.scheduleNames.softDeadline}}</span>
+              <span>{{task.scheduleNames.hardDeadline}}</span>
             </div>
           </div>
         </div>
+        <!-- AVAILABILITY row -->
+        <div class="togglable form row">
+          <div class="title row">
+            <span class="label" ng-click="toggleViewAvailability()">Availability
+              <i class="material-icons" ng-if="!viewAvailabilityFlag">arrow_drop_down</i>
+              <i class="material-icons" ng-if="viewAvailabilityFlag">arrow_drop_up</i>
+            </span>
+            <button ng-if="viewAvailabilityFlag && !editAvailabilityFlag" ng-click="editAvailability()">EDIT</button>
+            <button ng-if="viewAvailabilityFlag && editAvailabilityFlag" ng-click="saveAvailability()">SAVE</button>
+          </div>
+          <div class="availability toggleBox" ng-if="viewAvailabilityFlag">
+            <div class="ghost" ng-if="!editAvailabilityFlag" ng-click="toggleViewAvailability()"></div>
+            <div class="row r1">
+              <div class="col r1c1" ng-click="toggleHours(0,24)" ng-if="editAvailabilityFlag"><span>ALL</span></div>
+              <div class="col r1c2">
+                <div class="row r1c2r1" ng-class="{spacer: !editAvailabilityFlag}">
+                  <span ng-click="toggleDays(0)" ng-class="{locked: !tempDayArray[0]}">Sun</span>
+                  <span ng-click="toggleDays(1)" ng-class="{locked: !tempDayArray[1]}">Mon</span>
+                  <span ng-click="toggleDays(2)" ng-class="{locked: !tempDayArray[2]}">Tue</span>
+                  <span ng-click="toggleDays(3)" ng-class="{locked: !tempDayArray[3]}">Wed</span>
+                  <span ng-click="toggleDays(4)" ng-class="{locked: !tempDayArray[4]}">Thu</span>
+                  <span ng-click="toggleDays(5)" ng-class="{locked: !tempDayArray[5]}">Fri</span>
+                  <span ng-click="toggleDays(6)" ng-class="{locked: !tempDayArray[6]}">Sat</span>
+                </div>
+              </div>
+            </div>
+            <div class="row r2">
+              <div class="col r2c1" ng-if="editAvailabilityFlag">
+                <span ng-click="toggleHours(8,17)">D A Y</span><span ng-click="toggleHours(17,22)">E V E N I N G</span>
+              </div>
+              <div class="col r2c2">
+                <span ng-click="toggleHours(0,1)">12am</span><span ng-click="toggleHours(1,2)">1am</span>
+                <span ng-click="toggleHours(2,3)">2am</span><span ng-click="toggleHours(3,4)">3am</span>
+                <span ng-click="toggleHours(4,5)">4am</span><span ng-click="toggleHours(5,6)">5am</span>
+                <span ng-click="toggleHours(6,7)">6am</span><span ng-click="toggleHours(7,8)">7am</span>
+                <span ng-click="toggleHours(8,9)">8am</span><span ng-click="toggleHours(9,10)">9am</span>
+                <span ng-click="toggleHours(10,11)">10am</span><span ng-click="toggleHours(11,12)">11am</span>
+                <span ng-click="toggleHours(12,13)">12pm</span><span ng-click="toggleHours(13,14)">1pm</span>
+                <span ng-click="toggleHours(14,15)">2pm</span><span ng-click="toggleHours(15,16)">3pm</span>
+                <span ng-click="toggleHours(16,17)">4pm</span><span ng-click="toggleHours(17,18)">5pm</span>
+                <span ng-click="toggleHours(18,19)">6pm</span><span ng-click="toggleHours(19,20)">7pm</span>
+                <span ng-click="toggleHours(20,21)">8pm</span><span ng-click="toggleHours(21,22)">9pm</span>
+                <span ng-click="toggleHours(22,23)">10pm</span><span ng-click="toggleHours(23,24)">11pm</span>
+              </div>
+              <div class="col r2c3">
+                <div class="row r2c3r1">
+                  <div class="col r2c3r1c{{$index+1}}" ng-repeat="day in task.schedule.availability track by $index" ng-init="outerIndex = $index" ng-class="{locked: !tempDayArray[$index]}">
+                    <div class="row r2c3r1c{{outerIndex+1}}r{{$index+1}}" ng-repeat="hour in day track by $index">
+                      <input type="checkbox" ng-model="availabilityGrid[outerIndex][$index]" ng-disabled="!tempDayArray[outerIndex]">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- COLOR row -->
+        <div class="form row">
+          <span class="label">Color:</span>
+          <input id="color" name="color" type="color" ng-model="task.color" />
+        </div>
+        <!-- USERS row -->
+        <div class="form row">
+          <span class="label">Users:</span>
+          <input id="users" name="users" type="text" ng-model="task.users" />
+        </div>
+        <!-- COMMENTS row -->
+        <div class="form row">
+          <span class="label">Comments:</span>
+          <input id="comments" name="comments" type="textbox" ng-model="task.comments" />
+        </div>
+
       </form>
     </div>
 
