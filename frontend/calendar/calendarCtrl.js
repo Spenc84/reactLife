@@ -1,17 +1,31 @@
 export default function calendarCtrl($scope, dataSvc, moment, $interval) {
+//////////  AQUIRE DATA ////////////////////////////////////////////////////////
+    // Fetch Data from the data service
   $scope.tasks = dataSvc.tasks;
   $scope.agenda = dataSvc.agenda;
   $scope.user = dataSvc.user;
-  console.log('Tasks: ', $scope.tasks); //test
-  console.log(`User: `, $scope.user); //test
+  $scope.map = dataSvc.map;
+  console.log('Tasks: ', $scope.tasks); // __DEV__
+  console.log(`User: `, $scope.user); // __DEV__
+
+  // Register and eventlistener that will refresh the data any time it changes
+  const removeListener = dataSvc.addListener(()=>{
+      $scope.tasks = dataSvc.tasks;
+      $scope.agenda = dataSvc.agenda;
+      $scope.user = dataSvc.user;
+      $scope.map = dataSvc.map;
+      console.log('listCtrl: updated Tasks and User'); // __DEV__
+  });
+  $scope.$on('$destroy', ()=>removeListener());
+  //////////////////////////////////////////////////////////////////////////////
 
   $scope.moment = moment;
   $scope.now = moment();
   $scope.currentMinute = 5 + ($scope.now.hour()*60) + ($scope.now.minute()) + 'px';
 
   $scope.month = buildMonth();
-  console.log($scope.now); //test
-  console.log($scope.currentMinute); //test
+  console.log($scope.now); // __DEV__
+  console.log($scope.currentMinute); // __DEV__
 
   //Update $scope.now with the current time once every 60 seconds
   let minuteIteration = $interval(function(){
@@ -26,8 +40,8 @@ export default function calendarCtrl($scope, dataSvc, moment, $interval) {
       for (let i = 0; i <= hour; i++) { $scope.month.hours[i] = false; }
       for (let i = hour +1; i < 24; i++) { $scope.month.hours[i] = true; }
     }
-    console.log($scope.now); //test
-    console.log($scope.currentMinute); //test
+    console.log($scope.now); // __DEV__
+    console.log($scope.currentMinute); // __DEV__
   }, 60000);
   $scope.$on('$destroy', function () { $interval.cancel(minuteIteration); });
 

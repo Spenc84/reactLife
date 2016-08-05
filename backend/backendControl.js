@@ -57,45 +57,104 @@ import User from './User';
 ////////////////////////////////////////////////////////////////////////////////
 
 let cb = function(res){
-  return function(error, response){
-    if(error) res.status(500).json(error);
-    else res.status(200).json(response);
-  };
+    return function(error, response){
+        if(error) res.status(500).json(error);
+        else res.status(200).json(response);
+    };
 };
 
 module.exports = {
-  getTest( req, res ){
-    console.log(req.query);
-    Task.find(req.query, cb(res));
-  },
-  // ----- USERS -----
-  postUser: function( req, res ){
-    User.create(req.body, cb(res));
-  },
-  getUsers: function( req, res ){
-    User.find({}, cb(res));
-  },
-  getUser: function( req, res ){
-    User.findById(req.params.id, cb(res));
-  },
-  editUser: function( req, res ){
-    User.findByIdAndUpdate(req.params.id, req.body, cb(res));
-  },
-  editUsers: function( req, res ){
-    console.log(req.params);
-    let set = {},
-        items = req.params.ids.split(','),
-        keys = req.params.keys.split(','),
-        values = JSON.parse(req.params.values);
-    console.log(items);
-    console.log(keys);
-    console.log(values);
-    for (let i = 0; i < keys.length; i++) {
-      set[keys[i]] = values[i];
-    }
-    console.log(set);
-    User.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
-  },
+    // updateUsers( req, res ){
+    //     let id = '575350c7b8833bf5125225a5';
+    //     User.findById(id, (err, user)=>{
+    //         Task.update({}, { users: [{user: id, access: 30}] }, {multi: true}).exec();
+    //         Task.find({}, (err, tasks)=>{
+    //             let taskIds = [],
+    //                 newAgenda = [];
+    //
+    //             tasks.forEach(task => {
+    //                 let start = task.schedule.startTime.moment,
+    //                     soft = task.schedule.softDeadline,
+    //                     hard = task.schedule.hardDeadline;
+    //
+    //                 if(start) {
+    //                     let indx = newAgenda.findIndex((day)=>{
+    //                         return moment(day.date).isSame(moment(start), 'day');
+    //                     });
+    //                     if(indx ===  -1) {
+    //                         newAgenda.push({
+    //                             date: moment(start).startOf('day').toJSON(),
+    //                             start: [task._id],
+    //                             soft: [],
+    //                             hard: []
+    //                         });
+    //                     } else newAgenda[indx].start.push(task._id);
+    //                 }
+    //                 if(soft) {
+    //                     let indx = newAgenda.findIndex((day)=>{
+    //                         return moment(day.date).isSame(moment(soft), 'day');
+    //                     });
+    //                     if(indx ===  -1) {
+    //                         newAgenda.push({
+    //                             date: moment(soft).startOf('day').toJSON(),
+    //                             start: [],
+    //                             soft: [task._id],
+    //                             hard: []
+    //                         });
+    //                     } else newAgenda[indx].soft.push(task._id);
+    //                 }
+    //                 if(hard) {
+    //                     let indx = newAgenda.findIndex((day)=>{
+    //                         return moment(day.date).isSame(moment(hard), 'day');
+    //                     });
+    //                     if(indx ===  -1) {
+    //                         newAgenda.push({
+    //                             date: moment(hard).startOf('day').toJSON(),
+    //                             start: [],
+    //                             soft: [],
+    //                             hard: [task._id]
+    //                         });
+    //                     } else newAgenda[indx].hard.push(task._id);
+    //                 }
+    //             });
+    //
+    //             user.agenda = newAgenda;
+    //             user.save(cb(res));
+    //         });
+    //     });
+    // },
+    getTest( req, res ){
+        console.log(req.query);
+        Task.find(req.query, cb(res));
+    },
+    // ----- USERS -----
+    postUser: function( req, res ){
+        User.create(req.body, cb(res));
+    },
+    getUsers: function( req, res ){
+        User.find({}, cb(res));
+    },
+    getUser: function( req, res ){
+        User.findById(req.params.id, cb(res)).populate('tasks');
+    },
+    editUser: function( req, res ){
+        User.findByIdAndUpdate(req.params.id, req.body, cb(res));
+    },
+    editUsers: function( req, res ){
+        console.log(req.params);
+        let set = {},
+            items = req.params.ids.split(','),
+            keys = req.params.keys.split(','),
+            values = JSON.parse(req.params.values);
+        console.log(items);
+        console.log(keys);
+        console.log(values);
+        for (let i = 0; i < keys.length; i++) {
+          set[keys[i]] = values[i];
+        }
+        console.log(set);
+        User.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
+    },
   deleteUser: function( req, res ){
     User.findByIdAndRemove(req.params.id, cb(res));
   },
@@ -137,25 +196,4 @@ module.exports = {
   deleteTask: function( req, res ){
     Task.findByIdAndRemove(req.params.id, cb(res));
   }
-
-  // ----- AGENDA ----- //test
-  // getAgenda: function( req, res ){
-  //   // User.findById(req.params.id, function(error, response){
-  //   //   if(error) res.status(500).json(error);
-  //   //   else res.status(200).json(response.agenda);
-  //   // });
-  //   res.status(200).send();  // REMOVE ME
-  // },
-  // updateAgenda: function( req, res ){
-  //   User.findById(req.params.id, function(error, response){
-  //     if(error) res.status(500).json(error);
-  //
-  //     else res.status(200).json(response.agenda);
-  //   });
-  //   res.status(200).send();   // REMOVE ME
-  // },
-  // updateCron: function( req, res ){
-  //   // Task.create(req.body, cb(res));
-  //   res.status(200).send();   // REMOVE ME
-  // }
 };

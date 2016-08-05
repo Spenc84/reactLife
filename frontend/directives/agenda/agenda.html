@@ -1,17 +1,18 @@
 <div class="agenda container" ng-class="{noScroll: optionFlag}">
-  <!-- Spacers -->
-  <div class="spacer2" ng-if="monthFlag"></div>
-  <!-- Task list -->
-  <div ng-repeat="day in agenda.map | orderBy: $index track by $index" class="date item">
-       <!-- ng-click="toggleEditItemPane(task)"> -->
-       <span id='{{day}}'>{{agenda[day][0].schedule.startTime.moment | date:'EEEE, MMM d, y'}}<br/></span>
-       <div ng-repeat="task in agenda[day] track by $index"
-            ng-click="toggleEditItemPane(task)"
-            class="task item"
-            style="height: {{task.schedule.duration}}px; background-color: {{task.color}};"
-            ng-init="sTime = moment(task.schedule.startTime.moment); eTime = moment(task.schedule.startTime.moment).add(task.schedule.duration, 'minutes')">
-         <strong>{{task.name}}</strong><br/>
-         <span ng-if="task.schedule.duration">{{sTime.format('h')}}<span ng-if="sTime.minute() !== 0">{{sTime.format(':mm')}}</span><span ng-if="sTime.format('A') !== eTime.format('A')">{{sTime.format(' A')}}</span> - </span>{{eTime.format('h')}}<span ng-if="eTime.minute() !== 0">{{eTime.format(':mm')}}</span>{{eTime.format(' A')}}
-       </div>
-  </div>
+    <!-- Spacers -->
+    <div class="spacer2" ng-if="monthFlag"></div>
+    <!-- Task list -->
+    <div ng-repeat="day in agenda | orderBy: 'date' track by $index" class="date item">
+        <!-- ng-click="toggleEditItemPane(task)"> -->
+        <span id='{{day.date}}'></span>
+        <span ng-if='day.start.length'>{{day.date | date:'EEEE, MMM d, y'}}<br/></span>
+        <div ng-repeat="taskId in day.start track by $index"
+             ng-init="task = tasks[map[taskId]]; sTime = moment(task.schedule.startTime.moment); eTime = moment(task.schedule.startTime.moment).add(task.schedule.duration, 'minutes')"
+             ng-click="toggleEditItemPane(task)"
+             class="task item"
+             style="height: {{task.schedule.duration}}px; background-color: {{task.color}};">
+            <strong>{{task.name}}</strong><br/>
+            <span ng-if="task.schedule.duration">{{sTime.format('h')}}<span ng-if="sTime.minute() !== 0">{{sTime.format(':mm')}}</span><span ng-if="sTime.format('A') !== eTime.format('A')">{{sTime.format(' A')}}</span> - </span>{{eTime.format('h')}}<span ng-if="eTime.minute() !== 0">{{eTime.format(':mm')}}</span>{{eTime.format(' A')}}
+        </div>
+    </div>
 </div>

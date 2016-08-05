@@ -5,6 +5,8 @@ export function week(moment, dataSvc, $location, $anchorScroll, $timeout) {
     template: require('./week.html'),
     link(scope, element, attrs, ctrl) {
       $location.hash(moment().format('hA'));
+      // Function used to evaluate what should show on the calendar.
+      // Evaluates against string dates and moment objects
       scope.compare = (actual, expected)=>{
         if(typeof actual === 'object' && actual.isSame(moment(expected), 'day')) return true;
         else if(typeof actual === 'string' && actual.includes(expected)) return true;

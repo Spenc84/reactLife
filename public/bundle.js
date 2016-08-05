@@ -89,17 +89,28 @@
 
 	var _directives = __webpack_require__(128);
 
-	var _quickScheduler = __webpack_require__(141);
+	var _editItemPane = __webpack_require__(148);
 
-	var _agenda = __webpack_require__(144);
+	var _quickScheduler = __webpack_require__(140);
 
-	var _day = __webpack_require__(150);
+	var _agenda = __webpack_require__(142);
 
-	var _week = __webpack_require__(148);
+	var _day = __webpack_require__(144);
+
+	var _week = __webpack_require__(146);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	// Instantiate App
+
+
+	// Import directives
+
+
+	// Import states and views
+	_angular2.default.module('lifeApp', ['ui.router', 'angularMoment']).config(_config2.default).controller('calendarCtrl', _calendarCtrl2.default).controller('listCtrl', _listCtrl2.default).service('dataSvc', _dataSvc2.default).directive('calHeader', _directives.calHeader).directive('optionPane', _directives.optionPane).directive('calendar', _directives.calendar).directive('listHeader', _directives.listHeader).directive('taskItems', _directives.taskItems).directive('addItem', _directives.addItem).directive('editItemPane', _editItemPane.editItemPane).directive('newItemPane', _directives.newItemPane).directive('quickScheduler', _quickScheduler.quickScheduler).directive('agenda', _agenda.agenda).directive('day', _day.day).directive('week', _week.week).run(onAppStart);
+
+	// This will be run upon initiating the app
 
 
 	// Import data services
@@ -109,18 +120,21 @@
 
 
 	// Import stylesheets
-	// Import Node Module dependencies
-	_angular2.default.module('lifeApp', ['ui.router', 'angularMoment']).config(_config2.default).controller('calendarCtrl', _calendarCtrl2.default).controller('listCtrl', _listCtrl2.default).service('dataSvc', _dataSvc2.default).directive('calHeader', _directives.calHeader).directive('optionPane', _directives.optionPane).directive('calendar', _directives.calendar).directive('listHeader', _directives.listHeader).directive('taskItems', _directives.taskItems).directive('addItem', _directives.addItem).directive('editItemPane', _directives.editItemPane).directive('newItemPane', _directives.newItemPane).directive('quickScheduler', _quickScheduler.quickScheduler).directive('agenda', _agenda.agenda).directive('day', _day.day).directive('week', _week.week).run(function ($rootScope, $location, $anchorScroll) {
-	  //when the route is changed scroll to the proper element.
-	  $rootScope.$on('$routeChangeSuccess', function (newRoute, oldRoute) {
-	    if ($location.hash()) $anchorScroll();
-	  });
-	});
-
-	// Import directives
-
-
-	// Import states and views
+	// Import dependencies
+	function onAppStart($rootScope, $state, $location, $anchorScroll) {
+	    //when the route is changed scroll to the proper element.
+	    $rootScope.$on('$routeChangeSuccess', function (newRoute, oldRoute) {
+	        if ($location.hash()) $anchorScroll();
+	    });
+	    /* If the user trys to access a protected page without proper Authentication
+	    they will be instructed to login first and redirected to the login page */
+	    $rootScope.$on('$stateChangeError', function (evt, to, toParams, from, fromParams, error) {
+	        if (error.redirectTo) {
+	            alert('Login Required.');
+	            $state.go(error.redirectTo);
+	        } else alert('error: ', error.status);
+	    });
+	}onAppStart.$inject = ['$rootScope', '$state', '$location', '$anchorScroll'];
 
 /***/ },
 /* 2 */
@@ -50482,23 +50496,24 @@
 	  //SPLASH SCREEN
 	  .state('home', {
 	    url: '/',
-	    template: __webpack_require__(114)
+	    template: __webpack_require__(114),
+	    resolve: { dataServices: 'dataSvc' }
 	  })
 	  //CALENDAR VIEWS
 	  .state('calendar', {
 	    controller: 'calendarCtrl',
 	    template: '<cal-header></cal-header><ui-view></ui-view><quick-scheduler ng-if="quickSchedulerFlag"></quick-scheduler><edit-item-pane ng-if="editItemPaneFlag"></edit-item-pane>',
-	    abstract: true,
-	    resolve: { Tasks: getTasks, User: getUser }
-	  }).state('calendar.agenda', {
+	    abstract: true
+	  }). //   resolve: { Authenticate: checkSession }
+	  state('calendar.agenda', {
 	    url: '/calendar/agenda',
-	    template: __webpack_require__(143)
+	    template: '<agenda />'
 	  }).state('calendar.day', {
 	    url: '/calendar/day',
-	    template: __webpack_require__(146)
+	    template: '<day />'
 	  }).state('calendar.week', {
 	    url: '/calendar/week',
-	    template: __webpack_require__(147)
+	    template: '<week />'
 	  }).state('calendar.month', {
 	    url: '/calendar/month',
 	    template: __webpack_require__(118)
@@ -50509,6 +50524,7 @@
 	    template: '<list-header></list-header><ui-view></ui-view><edit-item-pane ng-if="editItemPaneFlag"></edit-item-pane><new-item-pane ng-if="newItemPaneFlag"></new-item-pane>',
 	    abstract: true,
 	    resolve: {
+	      // Authenticate: checkSession,
 	      PriorState: ['$state', function ($state) {
 	        var currentStateData = {
 	          Name: $state.current.name,
@@ -50516,9 +50532,7 @@
 	          URL: $state.href($state.current.name, $state.params)
 	        };
 	        return currentStateData;
-	      }],
-	      Tasks: getTasks,
-	      User: getUser
+	      }]
 	    }
 	  }).state('list.search', {
 	    url: '/list/search',
@@ -50540,36 +50554,15 @@
 	    template: __webpack_require__(124)
 	  }).state('user', {});
 
-	  /// Aquire task data before loading views ///
-	  function getTasks($state, $q, dataSvc) {
+	  /// Check for active session ///
+	  function checkSession($q, dataSvc) {
 	    var deferred = $q.defer();
-	    if (dataSvc.tasks) deferred.resolve('Tasks already loaded');else dataSvc.getTasks().then(function (tasks) {
-	      dataSvc.tasks = tasks.data;
-	      dataSvc.buildAgenda();
-	      deferred.resolve("Tasks aquired");
-	    }, function (rejected) {
-	      alert("Failed to aquire tasks");deferred.reject("Failed to aquire tasks");$state.go("home");
-	    });
-	    return deferred.promise;
-	  }
-	  getTasks.$inject = ['$state', '$q', 'dataSvc'];
 
-	  /////////////////////////////  TEMPORARY  //////////////////////////////////////
-	  function getUser($state, $q, dataSvc) {
-	    var deferred = $q.defer();
-	    if (dataSvc.user) deferred.resolve('User already loaded');else dataSvc.getUser().then(function (user) {
-	      dataSvc.user = user.data;console.log('User aquired: ', user.data);
-	      deferred.resolve("User aquired");
-	    }, function (rejected) {
-	      alert("Failed to aquire user");deferred.reject("Failed to aquire user");$state.go("home");
-	    });
-	    return deferred.promise;
-	  }
-	  getUser.$inject = ['$state', '$q', 'dataSvc'];
-	  ////////////////////////////////////////////////////////////////////////////////
-	}
+	    if (dataSvc.loaded) deferred.resolve('User Authenticated.');else deferred.reject({ redirectTo: 'home' });
 
-	routes.$inject = ['$stateProvider', '$urlRouterProvider'];
+	    return deferred.promise;
+	  }checkSession.$inject = ['$q', 'dataSvc'];
+	}routes.$inject = ['$stateProvider', '$urlRouterProvider'];
 
 /***/ },
 /* 114 */
@@ -50633,19 +50626,35 @@
 	});
 	exports.default = calendarCtrl;
 	function calendarCtrl($scope, dataSvc, moment, $interval) {
+	  //////////  AQUIRE DATA ////////////////////////////////////////////////////////
+	  // Fetch Data from the data service
 	  $scope.tasks = dataSvc.tasks;
 	  $scope.agenda = dataSvc.agenda;
 	  $scope.user = dataSvc.user;
-	  console.log('Tasks: ', $scope.tasks); //test
-	  console.log('User: ', $scope.user); //test
+	  $scope.map = dataSvc.map;
+	  console.log('Tasks: ', $scope.tasks); // __DEV__
+	  console.log('User: ', $scope.user); // __DEV__
+
+	  // Register and eventlistener that will refresh the data any time it changes
+	  var removeListener = dataSvc.addListener(function () {
+	    $scope.tasks = dataSvc.tasks;
+	    $scope.agenda = dataSvc.agenda;
+	    $scope.user = dataSvc.user;
+	    $scope.map = dataSvc.map;
+	    console.log('listCtrl: updated Tasks and User'); // __DEV__
+	  });
+	  $scope.$on('$destroy', function () {
+	    return removeListener();
+	  });
+	  //////////////////////////////////////////////////////////////////////////////
 
 	  $scope.moment = moment;
 	  $scope.now = moment();
 	  $scope.currentMinute = 5 + $scope.now.hour() * 60 + $scope.now.minute() + 'px';
 
 	  $scope.month = buildMonth();
-	  console.log($scope.now); //test
-	  console.log($scope.currentMinute); //test
+	  console.log($scope.now); // __DEV__
+	  console.log($scope.currentMinute); // __DEV__
 
 	  //Update $scope.now with the current time once every 60 seconds
 	  var minuteIteration = $interval(function () {
@@ -50663,8 +50672,8 @@
 	        $scope.month.hours[_i] = true;
 	      }
 	    }
-	    console.log($scope.now); //test
-	    console.log($scope.currentMinute); //test
+	    console.log($scope.now); // __DEV__
+	    console.log($scope.currentMinute); // __DEV__
 	  }, 60000);
 	  $scope.$on('$destroy', function () {
 	    $interval.cancel(minuteIteration);
@@ -50866,15 +50875,25 @@
 	  };
 
 	  // When you leave the current view, change any editable task items back to uneditable
-	  $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
+	  var listener = $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
 	    $scope.toggleEditOff();
 	  });
+	  $scope.$on('$destroy', listener);
 
 	  //------------------------------  DATA TRANSFERS ------------------------------
 	  // Data transfer variables
 	  var modified = {};
 	  $scope.tasks = dataSvc.tasks;
 	  $scope.user = dataSvc.user;
+
+	  var removeListener = dataSvc.addListener(function () {
+	    $scope.tasks = dataSvc.tasks;
+	    $scope.user = dataSvc.user;
+	    console.log('listCtrl: updated Tasks and User'); // __DEV__
+	  });
+	  $scope.$on('$destroy', function () {
+	    return removeListener();
+	  });
 
 	  // GET Methods
 	  $scope.getTasks = function () {
@@ -50983,98 +51002,195 @@
 	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.default = dataSvc;
-	function dataSvc($http, moment) {
-	  var _this = this;
+	function dataSvc($http, $q, moment) {
+	    var _this2 = this;
 
-	  var self = this;
-	  ///// VARIABLES THAT WILL BE ADDED TO dataSvc LATER //////////////
-	  //  self.user = {The User currently logged in}
-	  //          .tasks = [All tasks belonging to this user]
-	  //          .agenda = [All scheduled tasks organized by date]
-	  //  self.schedule
-	  //  self.scheduleNames
-	  //////////////////////////////////////////////////////////////////
+	    /* DATA STRUCTURE--
+	        user = {userObject}
+	        agenda = [
+	            {
+	                date: "String",
+	                start: [taskIds],
+	                soft: [taskIds],
+	                hard: [taskIds]
+	            }
+	        ]
+	        tasks = [taskObjects]
+	        map = { ${taskIds}: ${index in task array} }
+	    */
 
-	  /////////////////////////////////  USERS  //////////////////////////////////////
-	  this.getUsers = function () {
-	    return $http.get("/api/users");
-	  };
-	  this.getUser = function (id) {
-	    // return $http.get("/api/user/"+id);
-	    return $http.get("/api/user/575350c7b8833bf5125225a5"); // TEMP
-	  };
-	  this.saveNewUser = function (user) {
-	    console.log("sending " + user);
-	    return $http.post('/api/users', user);
-	  };
-	  this.saveUser = function (user) {
-	    return $http.put('/api/user/' + user._id, user);
-	  };
-	  this.editUsers = function (itemsToBeChanged, keysToChange, newValues) {
-	    console.log(itemsToBeChanged, keysToChange, newValues);
-	    return $http.put('/api/users/' + itemsToBeChanged + "/" + keysToChange + "/" + JSON.stringify(newValues));
-	  };
-	  this.deleteUsers = function (id) {
-	    return $http.delete('/api/user/' + id);
-	  };
-	  //----------------------------------------------------------------------------//
+	    this.loaded = false;
+	    this.user = {};
+	    this.tasks = [];
+	    this.agenda = [];
+	    this.map = {};
 
-	  /////////////////////////////////  TASKS  //////////////////////////////////////
-	  this.getTasks = function () {
-	    return $http.get("/api/tasks");
-	  };
-	  this.getTask = function (id) {
-	    return $http.get("/api/task/" + id);
-	  };
-	  this.saveNewTask = function (task) {
-	    console.log("sending ", task);
-	    return $http.post('/api/tasks', task);
-	  };
-	  this.saveTask = function (task) {
-	    return $http.put('/api/task/' + task._id, task);
-	  };
-	  this.editTasks = function (itemsToBeChanged, keysToChange, newValues) {
-	    console.log(itemsToBeChanged, keysToChange, newValues);
-	    return $http.put('/api/tasks/' + itemsToBeChanged + "/" + keysToChange + "/" + JSON.stringify(newValues));
-	  };
-	  this.deleteTasks = function (id) {
-	    return $http.delete('/api/task/' + id);
-	  };
-	  //----------------------------------------------------------------------------//
+	    var _changeListeners = [];
 
-	  ////////////////////////////////  AGENDA  ////////////////////////////////////// //test
-	  this.buildAgenda = function () {
-	    var agenda = {},
-	        today = moment().startOf('day').format('x'),
-	        agendaMap = [today];
-	    agenda[today] = [];
+	    init.call(this); // TEMP
 
-	    for (var i = 0; i < _this.tasks.length; i++) {
-	      var task = _this.tasks[i];
-	      if (task.status.scheduled) {
-	        var sDate = moment(task.schedule.startTime.moment).startOf('day').format('x');
-	        if (agenda[sDate]) agenda[sDate].push(task);else {
-	          agenda[sDate] = [task];agendaMap.push(sDate);
-	        }
-	      }
+	    // Aquire data from the server
+	    function init(id, password) {
+	        var _this = this;
+
+	        var deferred = $q.defer();
+	        // $http.get(`/api/user/${id}/${password}`).then(
+	        $http.get("/api/user/575350c7b8833bf5125225a5").then( // TEMP
+	        function (incoming) {
+	            _this.loaded = true;
+	            _this.user = incoming.data || {};
+	            _this.tasks = _this.user.tasks || [];
+	            _this.agenda = _this.user.agenda || [];
+	            _this.map = _this.tasks ? buildMap(_this.tasks) : {};
+	            console.log("User Authenticated: ", _this.user);
+	            deferred.resolve("User Authenticated.");
+	            notifyChange();
+	        }, function (rejected) {
+	            alert("Failed to aquire user");
+	            deferred.reject("Failed to aquire user");
+	        });
+	        return deferred.promise;
 	    }
-	    console.log('Agends built: ', agenda); //test
-	    _this.agenda = agenda;
-	    _this.agenda.map = agendaMap;
-	  };
-	  // this.updateAgenda = (task, date) => {
-	  //   if()
-	  //   for (let i = 0; i < this.agenda[date].length; i++) {
-	  //     this.agenda[date][i]
-	  //   }
-	  // };
-	  //----------------------------------------------------------------------------//
-	}
 
-	dataSvc.$inject = ["$http", "moment"];
+	    // Used to index the tasks array by tasks._id
+	    function buildMap(array) {
+	        var newMap = {};
+	        array.forEach(function (e, i) {
+	            return newMap[e._id] = i;
+	        });
+	        return newMap;
+	    }
+
+	    // Used to add, call, and remove custom event listeners
+	    function notifyChange() {
+	        _changeListeners.forEach(function (listener) {
+	            return listener();
+	        });
+	    }
+	    this.addListener = function (listener) {
+	        _changeListeners.push(listener);
+	        return _this2.removeListener.bind(_this2, listener);
+	    };
+	    this.removeListener = function (listener) {
+	        _changeListeners = _changeListeners.filter(function (l) {
+	            return listener !== l;
+	        });
+	    };
+
+	    /////////////////////////////////  USERS  //////////////////////////////////////
+	    this.getUsers = function () {
+	        return $http.get("/api/users");
+	    };
+	    this.getUser = function (id) {
+	        // return $http.get("/api/user/"+id);
+	        return $http.get("/api/user/575350c7b8833bf5125225a5"); // TEMP
+	    };
+	    this.saveNewUser = function (user) {
+	        console.log("sending " + user);
+	        return $http.post('/api/users', user);
+	    };
+	    this.saveUser = function (user) {
+	        return $http.put('/api/user/' + user._id, user);
+	    };
+	    this.editUsers = function (itemsToBeChanged, keysToChange, newValues) {
+	        console.log(itemsToBeChanged, keysToChange, newValues);
+	        return $http.put('/api/users/' + itemsToBeChanged + "/" + keysToChange + "/" + JSON.stringify(newValues));
+	    };
+	    this.deleteUsers = function (id) {
+	        return $http.delete('/api/user/' + id);
+	    };
+	    //----------------------------------------------------------------------------//
+
+	    ///////////////////////////////  NEW TASKS  ////////////////////////////////////
+	    this.addTask = function (task) {
+	        console.log("sending ", task);
+	        $http.post('/api/tasks', task).then(function (res) {
+	            if (task.status.scheduled) updateAgenda.addItem(task);
+	            tasks.push(task);
+	            map[task._id] = tasks.length - 1;
+	            notifyChange();
+	        }, function (err) {
+	            return alert(err);
+	        });
+	    };
+	    this.deleteTasks = function (ids) {
+	        if (typeof ids === 'string') ids = [ids];
+	        $http.delete("/api/task/" + ids).then(function (res) {
+	            for (var id in ids) {
+	                var indx = map[ids[id]],
+	                    task = tasks[indx];
+	                if (task.status.scheduled) updateAgenda.removeItem(task);
+	                tasks.splice(indx, 1);
+	            }
+	            map = buildMap(tasks);
+	            notifyChange();
+	        }, function (err) {
+	            return alert(err);
+	        });
+	    };
+	    this.updateTask = function (task) {
+	        $http.put("/api/task/" + task._id, task).then(function (res) {
+	            tasks[map[task.id]] = task;
+	            notifyChange();
+	        }, function (err) {
+	            return alert(err);
+	        });
+	    };
+	    ///////////////////////////////  OLD TASKS  ////////////////////////////////////
+	    this.getTasks = function () {
+	        return $http.get("/api/tasks");
+	    };
+	    this.getTask = function (id) {
+	        return $http.get("/api/task/" + id);
+	    };
+	    this.saveNewTask = function (task) {
+	        console.log("sending ", task);
+	        return $http.post('/api/tasks', task);
+	    };
+	    this.saveTask = function (task) {
+	        return $http.put('/api/task/' + task._id, task);
+	    };
+	    this.editTasks = function (itemsToBeChanged, keysToChange, newValues) {
+	        console.log(itemsToBeChanged, keysToChange, newValues);
+	        return $http.put('/api/tasks/' + itemsToBeChanged + "/" + keysToChange + "/" + JSON.stringify(newValues));
+	    };
+	    // this.deleteTasks = function(id){
+	    //   return $http.delete('/api/task/'+id);
+	    // };
+	    //----------------------------------------------------------------------------//
+
+	    ////////////////////////////////  AGENDA  ////////////////////////////////////// //test
+	    this.buildAgenda = function () {
+	        var agenda = {},
+	            today = moment().startOf('day').format('x'),
+	            agendaMap = [today];
+	        agenda[today] = [];
+
+	        for (var i = 0; i < _this2.tasks.length; i++) {
+	            var task = _this2.tasks[i];
+	            if (task.status.scheduled) {
+	                var sDate = moment(task.schedule.startTime.moment).startOf('day').format('x');
+	                if (agenda[sDate]) agenda[sDate].push(task);else {
+	                    agenda[sDate] = [task];agendaMap.push(sDate);
+	                }
+	            }
+	        }
+	        console.log('Agenda built: ', agenda); //test
+	        _this2.agenda = agenda;
+	        _this2.agenda.map = agendaMap;
+	    };
+	    function displayAgenda() {
+	        for (var day in agenda) {
+	            console.log(day.date);
+	            for (var task in day.start) {
+	                console.log(task.name);
+	            }
+	        }
+	    }
+	}dataSvc.$inject = ["$http", "$q", "moment"];
 
 /***/ },
 /* 128 */
@@ -51091,7 +51207,6 @@
 	exports.listHeader = listHeader;
 	exports.taskItems = taskItems;
 	exports.addItem = addItem;
-	exports.editItemPane = editItemPane;
 	exports.newItemPane = newItemPane;
 	exports.scheduler = scheduler;
 	//////////////   CALENDAR DIRECTIVES   /////////////////////////////////////////
@@ -51171,104 +51286,6 @@
 	    template: __webpack_require__(136)
 	  };
 	}
-	//the form that allows you to fully edit an existing task
-	function editItemPane(moment, dataSvc) {
-	  return {
-	    restrict: 'E',
-	    template: __webpack_require__(137),
-	    link: function link(scope, element, attrs, ctrl) {
-	      scope.saveTask = function (task) {
-	        dataSvc.saveTask(task).then(function (res) {
-	          console.log("saved", res);
-	        }, function (err) {
-	          console.log("error", err);
-	        });
-	      };
-	      scope.toggleTempSchedule = function () {
-	        if (scope.tempScheduleFlag) scope.tempScheduleFlag = false;else {
-	          (function () {
-	            var task = scope.task,
-	                schedule = task.schedule,
-	                duration = void 0;
-	            if (schedule.duration >= 60) {
-	              duration = schedule.duration / 60 + ' Hour';
-	              if (schedule.duration > 60) duration += 's';
-	            } else duration = schedule.duration ? schedule.duration + ' Minutes' : 'None';
-	            task.scheduleNames = {
-	              duration: duration,
-	              startTime: schedule.startTime.moment ? moment(schedule.startTime.moment).calendar() : 'None',
-	              softDeadline: schedule.softDeadline ? moment(schedule.softDeadline).calendar() : 'None',
-	              hardDeadline: schedule.hardDeadline ? moment(schedule.hardDeadline).calendar() : 'None',
-	              availability: 'Custom'
-	            };
-	            scope.editSchedule = function () {
-	              dataSvc.scheduleNames = {};
-	              for (var i in task.scheduleNames) {
-	                dataSvc.scheduleNames[i] = task.scheduleNames[i];
-	              }
-	              dataSvc.schedule = {
-	                duration: schedule.duration,
-	                startTime: {
-	                  moment: schedule.startTime.moment ? moment(schedule.startTime.moment) : '',
-	                  top: schedule.startTime.top },
-	                softDeadline: schedule.softDeadline ? moment(schedule.softDeadline) : '',
-	                hardDeadline: schedule.hardDeadline ? moment(schedule.hardDeadline) : '',
-	                availability: []
-	              };
-	              for (var _i = 0; _i < 7; _i++) {
-	                dataSvc.schedule.availability.push(schedule.availability[_i].slice());
-	              }
-	              scope.openQuickScheduler();
-	            };
-	            scope.tempScheduleFlag = true;
-	          })();
-	        }
-	      };
-	      scope.toggleViewAvailability = function () {
-	        scope.editAvailabilityFlag = false;
-	        if (scope.viewAvailabilityFlag) scope.viewAvailabilityFlag = false;else {
-	          (function () {
-	            var availability = scope.task.schedule.availability;
-
-	            scope.tempDayArray = [true, true, true, true, true, true, true];
-	            scope.availabilityGrid = [];
-	            for (var day in availability) {
-	              scope.availabilityGrid.push(availability[day].slice());
-	            }
-	            scope.viewAvailabilityFlag = true;
-	            scope.editAvailability = function () {
-	              scope.editAvailabilityFlag = true;
-	              scope.toggleDays = function (day) {
-	                scope.tempDayArray[day] = !scope.tempDayArray[day];
-	              };
-	              scope.toggleHours = function (x, y) {
-	                for (var i = 0; i < 7; i++) {
-	                  if (scope.tempDayArray[i]) for (var j = x; j < y; j++) {
-	                    scope.availabilityGrid[i][j] = !scope.availabilityGrid[i][j];
-	                  }
-	                }
-	              };
-	              scope.saveAvailability = function () {
-	                for (var _day in scope.availabilityGrid) {
-	                  availability[_day] = scope.availabilityGrid[_day].slice();
-	                }
-	                var taskIds = scope.task._id,
-	                    keysToChange = 'schedule.availability',
-	                    newValues = [scope.availabilityGrid];
-	                dataSvc.editTasks(taskIds, keysToChange, newValues).then(function (res) {
-	                  console.log("item(s) saved", res);
-	                }, function (err) {
-	                  console.log("Error while saving: ", err);
-	                });
-	                scope.editAvailabilityFlag = false;
-	              };
-	            };
-	          })();
-	        }
-	      };
-	    }
-	  };
-	}editItemPane.$inject = ['moment', 'dataSvc'];
 	//the form that allows you to fully edit a new item
 	function newItemPane() {
 	  return {
@@ -51280,7 +51297,7 @@
 	function scheduler(moment) {
 	  return {
 	    restrict: 'E',
-	    template: __webpack_require__(140),
+	    template: __webpack_require__(139),
 	    link: function link(scope, element, attrs, ctrl) {}
 	  };
 	}scheduler.$inject = ['moment'];
@@ -51335,26 +51352,20 @@
 	module.exports = "<div class=\"row add item\">\n  <div class=\"col add item\" ng-click=\"toggleNewItemPane()\">\n    <svg width=\"3em\" height=\"3em\">\n      <line x1=\"1.5em\" x2=\"1.5em\" y1=\"0.75em\" y2=\"2.25em\" />\n      <line x1=\"0.75em\" x2=\"2.25em\" y1=\"1.5em\" y2=\"1.5em\" />\n    </svg>\n  </div>\n  <div class=\"col add item\">\n    <form ng-submit=\"saveNew()\">\n      <input type=\"text\" ng-model=\"newItem.name\">\n    </form>\n  </div>\n</div>\n";
 
 /***/ },
-/* 137 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"edit-item-pane container\">\n\n  <!-- ***** HEADER ***** -->\n    <div class=\"edit-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\" style=\"background-color: {{task.color}}\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleEditItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{task.name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"saveTask(task); toggleEditItemPane()\" ng-disabled=\"editItemForm.$invalid\" form=\"editItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"edit-item-pane body\">\n      <form id=\"editItemForm\" name=\"editItemForm\" novalidate>\n\n        <!-- NAME row -->\n        <div class=\"name form row\">\n          <span class=\"label\">Name:</span>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"task.name\" autocomplete=\"off\" autofocus required />\n        </div>\n        <!-- DESCRIPTION row -->\n        <div class=\"description form row\">\n          <textarea ng-model=\"task.description\" placeholder=\"Add description here...\"></textarea>\n          <!-- <div contenteditable>{{task.description}}</div> -->\n        </div>\n        <!-- SCHEDULE row -->\n        <div class=\"togglable form row\">\n          <div class=\"title row\">\n            <span class=\"label\" ng-click=\"toggleTempSchedule()\">Schedule\n              <i class=\"material-icons\" ng-if=\"!tempScheduleFlag\">arrow_drop_down</i>\n              <i class=\"material-icons\" ng-if=\"tempScheduleFlag\">arrow_drop_up</i>\n            </span>\n            <button ng-if=\"tempScheduleFlag\" ng-click=\"editSchedule()\">EDIT</button>\n          </div>\n          <div class=\"toggleBox\" ng-if=\"tempScheduleFlag\" ng-click=\"toggleTempSchedule()\">\n            <div class=\"column\">\n              <span>Duration:</span>\n              <span>Starts:</span>\n              <span>Scheduled For:</span>\n              <span>Soft Deadline:</span>\n              <span>Hard Deadline:</span>\n            </div>\n            <div class=\"column\">\n              <span>{{task.scheduleNames.duration}}</span>\n              <span>{{task.scheduleNames.startTime}}</span>\n              <span>{{task.scheduleNames.startTime}}</span>\n              <span>{{task.scheduleNames.softDeadline}}</span>\n              <span>{{task.scheduleNames.hardDeadline}}</span>\n            </div>\n          </div>\n        </div>\n        <!-- AVAILABILITY row -->\n        <div class=\"togglable form row\">\n          <div class=\"title row\">\n            <span class=\"label\" ng-click=\"toggleViewAvailability()\">Availability\n              <i class=\"material-icons\" ng-if=\"!viewAvailabilityFlag\">arrow_drop_down</i>\n              <i class=\"material-icons\" ng-if=\"viewAvailabilityFlag\">arrow_drop_up</i>\n            </span>\n            <button ng-if=\"viewAvailabilityFlag && !editAvailabilityFlag\" ng-click=\"editAvailability()\">EDIT</button>\n            <button ng-if=\"viewAvailabilityFlag && editAvailabilityFlag\" ng-click=\"saveAvailability()\">SAVE</button>\n          </div>\n          <div class=\"availability toggleBox\" ng-if=\"viewAvailabilityFlag\">\n            <div class=\"ghost\" ng-if=\"!editAvailabilityFlag\" ng-click=\"toggleViewAvailability()\"></div>\n            <div class=\"row r1\">\n              <div class=\"col r1c1\" ng-click=\"toggleHours(0,24)\" ng-if=\"editAvailabilityFlag\"><span>ALL</span></div>\n              <div class=\"col r1c2\">\n                <div class=\"row r1c2r1\" ng-class=\"{spacer: !editAvailabilityFlag}\">\n                  <span ng-click=\"toggleDays(0)\" ng-class=\"{locked: !tempDayArray[0]}\">Sun</span>\n                  <span ng-click=\"toggleDays(1)\" ng-class=\"{locked: !tempDayArray[1]}\">Mon</span>\n                  <span ng-click=\"toggleDays(2)\" ng-class=\"{locked: !tempDayArray[2]}\">Tue</span>\n                  <span ng-click=\"toggleDays(3)\" ng-class=\"{locked: !tempDayArray[3]}\">Wed</span>\n                  <span ng-click=\"toggleDays(4)\" ng-class=\"{locked: !tempDayArray[4]}\">Thu</span>\n                  <span ng-click=\"toggleDays(5)\" ng-class=\"{locked: !tempDayArray[5]}\">Fri</span>\n                  <span ng-click=\"toggleDays(6)\" ng-class=\"{locked: !tempDayArray[6]}\">Sat</span>\n                </div>\n              </div>\n            </div>\n            <div class=\"row r2\">\n              <div class=\"col r2c1\" ng-if=\"editAvailabilityFlag\">\n                <span ng-click=\"toggleHours(8,17)\">D A Y</span><span ng-click=\"toggleHours(17,22)\">E V E N I N G</span>\n              </div>\n              <div class=\"col r2c2\">\n                <span ng-click=\"toggleHours(0,1)\">12am</span><span ng-click=\"toggleHours(1,2)\">1am</span>\n                <span ng-click=\"toggleHours(2,3)\">2am</span><span ng-click=\"toggleHours(3,4)\">3am</span>\n                <span ng-click=\"toggleHours(4,5)\">4am</span><span ng-click=\"toggleHours(5,6)\">5am</span>\n                <span ng-click=\"toggleHours(6,7)\">6am</span><span ng-click=\"toggleHours(7,8)\">7am</span>\n                <span ng-click=\"toggleHours(8,9)\">8am</span><span ng-click=\"toggleHours(9,10)\">9am</span>\n                <span ng-click=\"toggleHours(10,11)\">10am</span><span ng-click=\"toggleHours(11,12)\">11am</span>\n                <span ng-click=\"toggleHours(12,13)\">12pm</span><span ng-click=\"toggleHours(13,14)\">1pm</span>\n                <span ng-click=\"toggleHours(14,15)\">2pm</span><span ng-click=\"toggleHours(15,16)\">3pm</span>\n                <span ng-click=\"toggleHours(16,17)\">4pm</span><span ng-click=\"toggleHours(17,18)\">5pm</span>\n                <span ng-click=\"toggleHours(18,19)\">6pm</span><span ng-click=\"toggleHours(19,20)\">7pm</span>\n                <span ng-click=\"toggleHours(20,21)\">8pm</span><span ng-click=\"toggleHours(21,22)\">9pm</span>\n                <span ng-click=\"toggleHours(22,23)\">10pm</span><span ng-click=\"toggleHours(23,24)\">11pm</span>\n              </div>\n              <div class=\"col r2c3\">\n                <div class=\"row r2c3r1\">\n                  <div class=\"col r2c3r1c{{$index+1}}\" ng-repeat=\"day in task.schedule.availability track by $index\" ng-init=\"outerIndex = $index\" ng-class=\"{locked: !tempDayArray[$index]}\">\n                    <div class=\"row r2c3r1c{{outerIndex+1}}r{{$index+1}}\" ng-repeat=\"hour in day track by $index\">\n                      <input type=\"checkbox\" ng-model=\"availabilityGrid[outerIndex][$index]\" ng-disabled=\"!tempDayArray[outerIndex]\">\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n        <!-- COLOR row -->\n        <div class=\"form row\">\n          <span class=\"label\">Color:</span>\n          <input id=\"color\" name=\"color\" type=\"color\" ng-model=\"task.color\" />\n        </div>\n        <!-- USERS row -->\n        <div class=\"form row\">\n          <span class=\"label\">Users:</span>\n          <input id=\"users\" name=\"users\" type=\"text\" ng-model=\"task.users\" />\n        </div>\n        <!-- COMMENTS row -->\n        <div class=\"form row\">\n          <span class=\"label\">Comments:</span>\n          <input id=\"comments\" name=\"comments\" type=\"textbox\" ng-model=\"task.comments\" />\n        </div>\n\n      </form>\n    </div>\n\n</div>\n\n<!-- Overlaid option panes -->\n<!-- <quick-scheduler ng-if=\"quickSchedulerFlag\"></quick-scheduler> -->\n";
-
-/***/ },
+/* 137 */,
 /* 138 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"new-item-pane container\">\n  <!-- ***** HEADER ***** -->\n    <div class=\"new-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleNewItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{newItem.name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"toggleNewItemPane(); saveNew()\" ng-disabled=\"newItemForm.$invalid\" form=\"newItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"new-item-pane body\">\n      <form id=\"newItemForm\" name=\"newItemForm\" novalidate>\n        <div class=\"form row\">\n          <label for=\"name\">Name:</label>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"newItem.name\" autocomplete=\"off\" autofocus required />\n        </div>\n      </form>\n    </div>\n</div>\n";
 
 /***/ },
-/* 139 */,
-/* 140 */
+/* 139 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"directive scheduler container\">\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n    <div class=\"question row\"></div>\n    <div class=\"data row\"></div>\n</div>\n";
 
 /***/ },
-/* 141 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51367,7 +51378,7 @@
 	function quickScheduler(moment, dataSvc) {
 	  return {
 	    restrict: 'E',
-	    template: __webpack_require__(142),
+	    template: __webpack_require__(141),
 	    link: function link(scope, element, attrs, ctrl) {
 	      scope.moment = moment;
 	      scope.hour = moment().hour();
@@ -51817,16 +51828,61 @@
 	}quickScheduler.$inject = ['moment', 'dataSvc'];
 
 /***/ },
-/* 142 */
+/* 141 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"directive quickScheduler container\">\n  <fade ng-click=\"closeQuickScheduler()\"></fade>\n  <div class=\"quickScheduler body\">\n\n    <!--__________________ ITEM MODALS __________________-->\n    <!-- Duration -->\n    <div class=\"duration modal\" ng-if=\"durationModalFlag\">\n      <div class=\"top row\" ng-click=\"closeDurationModal()\">\n        <span>Duration</span>\n        <div class=\"duration item\">{{scheduleNames.duration}}</div>\n      </div><div class=\"spacer\"></div>\n      <!-- Defaults -->\n      <div class=\"bottom row\" ng-if=\"!customDurationFlag\">\n        <div class=\"duration item\" ng-click=\"setDuration(['None', 0])\">None</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['30 Minutes', 30])\">30 Minutes</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['1 Hour', 60])\">1 Hour</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['4 Hours', 240])\">4 Hours</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Work Day', 480, 1])\">Work Day</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['Evening', 240, 2])\">Evening</div>\n        <div class=\"duration item\" ng-click=\"setDuration(['All Day', 1440, 3])\">All Day</div>\n        <div class=\"duration item\" ng-click=\"openCustomDuration()\">Custom</div>\n      </div>\n      <!-- Custom -->\n      <div class=\"custom row\" ng-if=\"customDurationFlag\">\n        <form name=\"custDurationForm\" ng-submit=\"setCustomDuration(durationHours, durationMinutes)\">\n          <span>Hours: <input type=\"number\" id=\"hours\" name=\"hours\" ng-model=\"durationHours\"\n            value=\"0\" min=\"0\" max=\"24\" required /></span>\n          <div role=\"alert\" style=\"color:red\">\n            <span class=\"error\" ng-show=\"custDurationForm.hours.$error.min || custDurationForm.hours.$error.max || custDurationForm.hours.$error.required\">\n              Please pick a number between 0 and 24</span>\n          </div>\n          <span>Minutes: <input type=\"number\" id=\"minutes\" name=\"minutes\" ng-model=\"durationMinutes\"\n            value=\"0\" min=\"0\" max=\"45\" step=\"15\" required /></span>\n          <div role=\"alert\" style=\"color:red\">\n            <span class=\"error\" ng-show=\"custDurationForm.minutes.$error.min || custDurationForm.minutes.$error.max || custDurationForm.minutes.$error.required\">\n              Minutes should be 0, 15, 30, or 45</span>\n          </div>\n          <p><input type=\"submit\" ng-disabled=\"custDurationForm.hours.$invalid || custDurationForm.minutes.$invalid\"></p>\n        </form>\n      </div>\n    </div>\n    <!-- Start Time -->\n    <div class=\"startTime modal\" ng-if=\"startTimeModalFlag\">\n      <!-- Defaults -->\n      <div class=\"top row\" ng-click=\"closeStartTimeModal()\">\n          <span>Start Time</span>\n          <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n      </div><div class=\"spacer\"></div>\n      <div class=\"bottom row\" ng-if=\"!customDateFlag\">\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Now', moment().startOf('hour')])\">Now</div>\n          <div class=\"startTime item\" ng-if=\"hour < 17\" ng-click=\"setStartTime(['Tonight', moment().hour(18).startOf('hour')])\">Tonight</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow', moment().add(1, 'day').hour(8).startOf('hour')])\">Tomorrow</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Tomorrow Evening', moment().add(1, 'day').hour(18).startOf('hour')])\">Tomorrow Evening</div>\n          <div class=\"startTime item\" ng-if=\"day < 5\" ng-click=\"setStartTime(['This Weekend', moment().day(6).hour(8).startOf('hour')])\">This Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Week', moment().add(1, 'week').day(1).hour(8).startOf('hour')])\">Next Week</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Weekend', moment().add(1, 'week').day(6).hour(8).startOf('hour')])\">Next Weekend</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Next Month', moment().add(1, 'month').date(1).hour(8).startOf('hour')])\">Next Month</div>\n          <div class=\"startTime item\" ng-click=\"setStartTime(['Someday', ''])\">Someday</div>\n          <div class=\"startTime item\" ng-click=\"openCustomDate()\">Custom</div>\n      </div>\n      <!-- Custom -->\n      <div class=\"custom row\" ng-if=\"customDateFlag\">\n        <form name=\"myForm\" ng-submit=\"setCustomDate([moment(customDate).calendar(), moment(customDate)], true)\">\n          <label for=\"customStartDateInput\">Pick a date and time:</label>\n          <input type=\"datetime-local\" id=\"customStartDateInput\" name=\"input\" ng-model=\"customDate\"\n            min=\"{{minCustomDate}}\" max=\"2020-12-31T00:00:00\" step=\"900\" required />\n          <div role=\"alert\" style=\"color:red\">\n            <span class=\"error\" ng-show=\"myForm.input.$error.required\">\n              Required!</span>\n            <span class=\"error\" ng-show=\"myForm.input.$error.datetimelocal\">\n              Not a valid date!</span>\n          </div>\n          <p><input type=\"submit\" ng-disabled=\"myForm.input.$invalid\"></p>\n        </form>\n      </div>\n    </div>\n    <!-- Deadline -->\n    <div class=\"deadline modal\" ng-if=\"deadlineModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleDeadlineModal()\">\n          <span>Deadline is realative to start time</span>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'softDeadline'\">{{scheduleNames.softDeadline}}</div>\n          <div class=\"deadline item\" ng-if=\"deadlineType == 'hardDeadline'\">{{scheduleNames.hardDeadline}}</div>\n      </div><div class=\"spacer\"></div>\n      <!-- Defaults -->\n      <div class=\"bottom row\" ng-if=\"!customDateFlag\">\n          <div class=\"deadline item\" ng-click=\"setDeadline(['None', ''])\">None</div>\n          <div class=\"deadline item\" ng-if=\"schedule.duration && !durationTemplate\" ng-click=\"setDeadline([scheduleNames.duration, tempDeadline.add(schedule.duration, 'minute')])\">{{scheduleNames.duration}}</div>\n          <div class=\"deadline item\" ng-if=\"startToday && schedule.startTime.moment.hour() < 17\" ng-click=\"setDeadline(['5:00 PM Today', tempDeadline.hour(17).startOf('hour')])\">5:00 PM Today</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight', tempDeadline.add(1, 'day').startOf('day')])\">Midnight</div>\n          <div class=\"deadline item\" ng-if=\"startToday\" ng-click=\"setDeadline(['Midnight Tomorrow', tempDeadline.add(2, 'day').startOf('day')])\">Midnight Tomorrow</div>\n          <div class=\"deadline item\" ng-if=\"!startToday && schedule.startTime.moment.hour() < 17\" ng-click=\"setDeadline(['End of Workday', tempDeadline.hour(17).startOf('hour')])\">End of Workday</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of the Day', tempDeadline.add(1, 'day').startOf('day')])\">End of Day</div>\n          <div class=\"deadline item\" ng-if=\"!startToday\" ng-click=\"setDeadline(['End of Following Day', tempDeadline.add(2, 'day').startOf('day')])\">End of Following Day</div>\n          <div class=\"deadline item\" ng-if=\"schedule.startTime.moment.day() < 5 || (schedule.startTime.moment.day() === 5 && schedule.startTime.moment.hour() < 17)\" ng-click=\"setDeadline(['End of Workweek', tempDeadline.day(5).hour(17).startOf('hour')])\">End of Workweek</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Week', tempDeadline.add(1, 'week').startOf('week')])\">End of Week</div>\n          <div class=\"deadline item\" ng-click=\"setDeadline(['End of Month', tempDeadline.add(1, 'month').startOf('month')])\">End of Month</div>\n          <div class=\"deadline item\" ng-click=\"openCustomDate()\">Custom</div>\n      </div>\n      <!-- Custom -->\n      <div class=\"custom row\" ng-if=\"customDateFlag\">\n        <form name=\"myForm\" ng-submit=\"setCustomDate([moment(customDate).calendar(), moment(customDate)])\">\n          <label for=\"customDeadlineInput\">Pick a date and time:</label>\n          <input type=\"datetime-local\" id=\"customDeadlineInput\" name=\"input\" ng-model=\"customDate\"\n            min={{minCustomDate}} max=\"2020-12-31T00:00:00\" step=\"900\" required />\n          <div role=\"alert\" style=\"color:red\">\n            <span class=\"error\" ng-show=\"myForm.input.$error.required\">\n              Required!</span>\n            <span class=\"error\" ng-show=\"myForm.input.$error.datetimelocal\">\n              Not a valid date!</span>\n          </div>\n          <p><input type=\"submit\" ng-disabled=\"myForm.input.$invalid\"></p>\n        </form>\n      </div>\n    </div>\n    <!-- Availability -->\n    <div class=\"availability modal\" ng-if=\"availabilityModalFlag\">\n      <div class=\"top row\" ng-click=\"toggleAvailabilityModal()\">\n          <span>Availability</span>\n          <div class=\"availability item\">{{scheduleNames.availability}}</div>\n      </div><div class=\"spacer\"></div>\n      <!-- Defaults -->\n      <div class=\"bottom row\" ng-if=\"!customAvailabilityFlag\">\n          <div class=\"availability item\" ng-click=\"setAvailability.anytime()\">Anytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.earlyBird()\">Early Bird</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.mornings()\">Mornings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.daytime()\">Daytime</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.afternoon()\">Afternoon</div>\n          <div class=\"availability item\" ng-click=\"setAvailability.evenings()\">Evenings</div>\n          <div class=\"availability item\" ng-click=\"setAvailability._24x7()\">24x7</div>\n          <div class=\"availability item\" ng-click=\"openCustomAvailability()\">Custom</div>\n      </div>\n      <!-- Custom -->\n      <div class=\"custom row\" ng-if=\"customAvailabilityFlag\">\n        <form name=\"custAvailabilityForm\" ng-submit=\"setCustomAvailability()\">\n          <span ng-click=\"toggleDays()\">Days: </span>\n          <div class=\"day checkbox items\">\n            S<input type=\"checkbox\" name=\"sunday\" ng-model=\"customAvailabilityDays[0]\">\n            M<input type=\"checkbox\" name=\"monday\" ng-model=\"customAvailabilityDays[1]\">\n            T<input type=\"checkbox\" name=\"tuesday\" ng-model=\"customAvailabilityDays[2]\">\n            W<input type=\"checkbox\" name=\"wednesday\" ng-model=\"customAvailabilityDays[3]\">\n            T<input type=\"checkbox\" name=\"thursday\" ng-model=\"customAvailabilityDays[4]\">\n            F<input type=\"checkbox\" name=\"friday\" ng-model=\"customAvailabilityDays[5]\">\n            S<input type=\"checkbox\" name=\"saturday\" ng-model=\"customAvailabilityDays[6]\">\n          </div><br/>\n          <span ng-click=\"toggleHours(0,24)\">Hours: </span>\n          <div class=\"hour checkbox items\">\n            <div class=\"am\">\n              <span ng-click=\"toggleHours(0,12)\">AM</span>\n              <div class=\"labels\">\n                <span ng-click=\"toggleHours(0,6)\">12-5</span>\n                <span ng-click=\"toggleHours(6,12)\">6-11</span>\n              </div>\n              <div class=\"checkboxes\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[0]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[1]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[2]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[3]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[4]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[5]\"><br/>\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[6]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[7]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[8]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[9]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[10]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[11]\">\n              </div>\n            </div>\n            <div class=\"pm\">\n              <span ng-click=\"toggleHours(12,24)\">PM</span>\n              <div class=\"labels\">\n                <span ng-click=\"toggleHours(12,18)\">12-5</span>\n                <span ng-click=\"toggleHours(18,24)\">6-11</span>\n              </div>\n              <div class=\"checkboxes\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[12]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[13]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[14]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[15]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[16]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[17]\"><br/>\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[18]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[19]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[20]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[21]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[22]\">\n                <input type=\"checkbox\" ng-model=\"customAvailabilityHours[23]\">\n              </div>\n            </div>\n          </div>\n          <p><input type=\"submit\"></p>\n        </form>\n      </div>\n    </div>\n\n    <!--_________________________________________________-->\n\n    <!-- ITEM ROWS -->\n    <div class=\"top row\" ng-click=\"toggleDurationModal()\">\n      <span>Duration</span>\n      <div class=\"duration item\">{{scheduleNames.duration}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-click=\"toggleStartTimeModal()\">\n      <span>Start Time</span>\n      <div class=\"startTime item\">{{scheduleNames.startTime}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('softDeadline')\">\n      <span>Soft Deadline</span>\n      <div class=\"softDeadline item\">{{scheduleNames.softDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"top row\" ng-class=\"{disabled: !schedule.startTime.moment}\" ng-click=\"toggleDeadlineModal('hardDeadline')\">\n      <span>Hard Deadline</span>\n      <div class=\"hardDeadline item\">{{scheduleNames.hardDeadline}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div class=\"last top row\" ng-click=\"toggleAvailabilityModal()\">\n      <span>Availability</span>\n      <div class=\"availability item\">{{scheduleNames.availability}}</div>\n    </div>\n    <div class=\"spacer\"></div>\n    <div id=\"qsSaveButton\">\n      <div class=\"item\" ng-click=\"quickSchedule()\">Save</div>\n    </div>\n  </div>\n</div>\n";
 
 /***/ },
+/* 142 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.agenda = agenda;
+	//the modal that allows you to quickly choose a time for your task
+	function agenda(moment, dataSvc, $location, $anchorScroll, $timeout) {
+	    return {
+	        restrict: 'E',
+	        template: __webpack_require__(143),
+	        link: function link(scope, element, attrs, ctrl) {
+	            var today = moment().startOf('day').toJSON();
+	            var addTodayAnchor = function addTodayAnchor() {
+	                if (scope.agenda.findIndex(function (day) {
+	                    return day.date === today;
+	                }) === -1) {
+	                    scope.agenda.push({
+	                        date: today,
+	                        start: [],
+	                        soft: [],
+	                        hard: []
+	                    });
+	                }
+	            };
+	            addTodayAnchor();
+	            $location.hash(today);
+
+	            var removeListener = dataSvc.addListener(function () {
+	                addTodayAnchor();
+	                $timeout(function () {
+	                    return $anchorScroll();
+	                }, 0);
+	            });
+	            scope.$on('$destroy', function () {
+	                return removeListener();
+	            });
+	        }
+	    };
+	}agenda.$inject = ['moment', 'dataSvc', '$location', '$anchorScroll', '$timeout'];
+
+/***/ },
 /* 143 */
 /***/ function(module, exports) {
 
-	module.exports = "<agenda></agenda>\n";
+	module.exports = "<div class=\"agenda container\" ng-class=\"{noScroll: optionFlag}\">\n    <!-- Spacers -->\n    <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n    <!-- Task list -->\n    <div ng-repeat=\"day in agenda | orderBy: 'date' track by $index\" class=\"date item\">\n        <!-- ng-click=\"toggleEditItemPane(task)\"> -->\n        <span id='{{day.date}}'></span>\n        <span ng-if='day.start.length'>{{day.date | date:'EEEE, MMM d, y'}}<br/></span>\n        <div ng-repeat=\"taskId in day.start track by $index\"\n             ng-init=\"task = tasks[map[taskId]]; sTime = moment(task.schedule.startTime.moment); eTime = moment(task.schedule.startTime.moment).add(task.schedule.duration, 'minutes')\"\n             ng-click=\"toggleEditItemPane(task)\"\n             class=\"task item\"\n             style=\"height: {{task.schedule.duration}}px; background-color: {{task.color}};\">\n            <strong>{{task.name}}</strong><br/>\n            <span ng-if=\"task.schedule.duration\">{{sTime.format('h')}}<span ng-if=\"sTime.minute() !== 0\">{{sTime.format(':mm')}}</span><span ng-if=\"sTime.format('A') !== eTime.format('A')\">{{sTime.format(' A')}}</span> - </span>{{eTime.format('h')}}<span ng-if=\"eTime.minute() !== 0\">{{eTime.format(':mm')}}</span>{{eTime.format(' A')}}\n        </div>\n    </div>\n</div>\n";
 
 /***/ },
 /* 144 */
@@ -51837,41 +51893,34 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.agenda = agenda;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	exports.day = day;
 	//the modal that allows you to quickly choose a time for your task
-	function agenda(moment, dataSvc, $location, $anchorScroll, $timeout) {
+	function day(moment, dataSvc, $location, $anchorScroll, $timeout) {
 	  return {
 	    restrict: 'E',
 	    template: __webpack_require__(145),
 	    link: function link(scope, element, attrs, ctrl) {
-	      // $location.hash(null);
-	      // $timeout(()=>$location.hash(1466830800000),5);
-	      $location.hash(moment().startOf('day').format('x'));
-	      console.log(moment().startOf('day').toString());
+	      $location.hash(moment().format('ha'));
+	      // Function used to evaluate what should show on the calendar.
+	      // Evaluates against string dates and moment objects
+	      scope.compare = function (actual, expected) {
+	        if ((typeof actual === 'undefined' ? 'undefined' : _typeof(actual)) === 'object' && actual.isSame(moment(expected), 'day')) return true;else if (typeof actual === 'string' && actual.includes(expected)) return true;else return false;
+	      };
 	    }
 	  };
-	}agenda.$inject = ['moment', 'dataSvc', '$location', '$anchorScroll', '$timeout'];
+	}day.$inject = ['moment', 'dataSvc', '$location', '$anchorScroll', '$timeout'];
 
 /***/ },
 /* 145 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"agenda container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- Task list -->\n  <div ng-repeat=\"day in agenda.map | orderBy: $index track by $index\" class=\"date item\">\n       <!-- ng-click=\"toggleEditItemPane(task)\"> -->\n       <span id='{{day}}'>{{agenda[day][0].schedule.startTime.moment | date:'EEEE, MMM d, y'}}<br/></span>\n       <div ng-repeat=\"task in agenda[day] track by $index\"\n            ng-click=\"toggleEditItemPane(task)\"\n            class=\"task item\"\n            style=\"height: {{task.schedule.duration}}px; background-color: {{task.color}};\"\n            ng-init=\"sTime = moment(task.schedule.startTime.moment); eTime = moment(task.schedule.startTime.moment).add(task.schedule.duration, 'minutes')\">\n         <strong>{{task.name}}</strong><br/>\n         <span ng-if=\"task.schedule.duration\">{{sTime.format('h')}}<span ng-if=\"sTime.minute() !== 0\">{{sTime.format(':mm')}}</span><span ng-if=\"sTime.format('A') !== eTime.format('A')\">{{sTime.format(' A')}}</span> - </span>{{eTime.format('h')}}<span ng-if=\"eTime.minute() !== 0\">{{eTime.format(':mm')}}</span>{{eTime.format(' A')}}\n       </div>\n  </div>\n</div>\n";
+	module.exports = "<div class=\"day container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- Date icon in the top left corner -->\n  <div id=\"date\" ng-class=\"{inactive: month.moment.isBefore(moment(), 'day'), selected: month.moment.isSame(moment(), 'day'), spacer: monthFlag}\">\n    <div>{{ month.moment.format(\"ddd\") }}</div>\n    <div>{{ month.moment.date() }}</div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" id=\"{{month.moment.hour($index).format('ha')}}\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <!-- Task List (absolute) -->\n    <div ng-repeat=\"task in tasks | filter: {schedule:{startTime:{moment: month.moment.format('YYYY-MM-DD')}}} : compare\"\n         ng-if=\"task.schedule.duration\"\n         ng-click=\"toggleEditItemPane(task)\"\n         style=\"top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px; background-color: {{task.color}}\"\n         class=\"day calendarItem\">\n         {{task.name}}\n    </div>\n    <hr>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n  </div>\n</div>\n";
 
 /***/ },
 /* 146 */
-/***/ function(module, exports) {
-
-	module.exports = "<day></day>\n";
-
-/***/ },
-/* 147 */
-/***/ function(module, exports) {
-
-	module.exports = "<week></week>\n";
-
-/***/ },
-/* 148 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51887,9 +51936,11 @@
 	function week(moment, dataSvc, $location, $anchorScroll, $timeout) {
 	  return {
 	    restrict: 'E',
-	    template: __webpack_require__(149),
+	    template: __webpack_require__(147),
 	    link: function link(scope, element, attrs, ctrl) {
 	      $location.hash(moment().format('hA'));
+	      // Function used to evaluate what should show on the calendar.
+	      // Evaluates against string dates and moment objects
 	      scope.compare = function (actual, expected) {
 	        if ((typeof actual === 'undefined' ? 'undefined' : _typeof(actual)) === 'object' && actual.isSame(moment(expected), 'day')) return true;else if (typeof actual === 'string' && actual.includes(expected)) return true;else return false;
 	      };
@@ -51898,39 +51949,125 @@
 	}week.$inject = ['moment', 'dataSvc', '$location', '$anchorScroll', '$timeout'];
 
 /***/ },
-/* 149 */
+/* 147 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"week container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"weekViewSpacer\"></div>\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- 1ST ROW - Day titles and number -->\n  <div id=\"date\" ng-class=\"{spacer: monthFlag}\">\n    <div class=\"col7\" ng-repeat=\"day in month.currentWeek\" ng-click=\"month.rebuild(day)\" ui-sref=\"calendar.day\" ng-class=\"{inactive: day.isBefore(moment(), 'day'), selected: day.isSame(month.moment, 'day'), today: day.isSame(now, 'day')}\">\n      <div>{{ day.format(\"ddd\") }}</div>\n      <div>{{ day.date() }}</div>\n    </div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" id=\"{{month.moment.hour($index).format('hA')}}\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Horizontal HR dividers -->\n  <div class=\"dividers column\"><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr><hr></div>\n\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <!-- Current time marker -->\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <!-- Seven Day columns -->\n    <div class=\"col7\" ng-repeat=\"day in month.currentWeek\">\n      <div ng-repeat=\"task in tasks | filter: {schedule:{startTime:{moment: day.format('YYYY-MM-DD')}}} : compare\"\n           ng-if=\"task.schedule.duration\"\n           ng-click=\"toggleEditItemPane(task)\"\n           style=\"top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px; background-color: {{task.color}}\"\n           class=\"week calendarItem\">\n           {{task.name}}\n      </div>\n    </div>\n  </div>\n</div>\n";
 
 /***/ },
-/* 150 */
+/* 148 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
-	exports.day = day;
-	//the modal that allows you to quickly choose a time for your task
-	function day(moment, dataSvc, $location, $anchorScroll, $timeout) {
-	  return {
-	    restrict: 'E',
-	    template: __webpack_require__(151),
-	    link: function link(scope, element, attrs, ctrl) {
-	      // $location.hash(null);
-	      // $timeout(()=>$location.hash(1466830800000),5);
-	      $location.hash(moment().format('ha'));
-	    }
-	  };
-	}day.$inject = ['moment', 'dataSvc', '$location', '$anchorScroll', '$timeout'];
+	exports.editItemPane = editItemPane;
+	//the form that allows you to fully edit an existing task
+	function editItemPane(moment, dataSvc) {
+	    return {
+	        restrict: 'E',
+	        template: __webpack_require__(149),
+	        link: function link(scope, element, attrs, ctrl) {
+	            scope.saveTask = function (task) {
+	                dataSvc.saveTask(task).then(function (res) {
+	                    console.log("saved", res);
+	                }, function (err) {
+	                    console.log("error", err);
+	                });
+	            };
+	            scope.toggleTempSchedule = function () {
+	                if (scope.tempScheduleFlag) scope.tempScheduleFlag = false;else {
+	                    (function () {
+	                        var task = scope.task,
+	                            schedule = task.schedule,
+	                            duration = void 0;
+	                        if (schedule.duration >= 60) {
+	                            duration = schedule.duration / 60 + ' Hour';
+	                            if (schedule.duration > 60) duration += 's';
+	                        } else duration = schedule.duration ? schedule.duration + ' Minutes' : 'None';
+	                        task.scheduleNames = {
+	                            duration: duration,
+	                            startTime: schedule.startTime.moment ? moment(schedule.startTime.moment).calendar() : 'None',
+	                            softDeadline: schedule.softDeadline ? moment(schedule.softDeadline).calendar() : 'None',
+	                            hardDeadline: schedule.hardDeadline ? moment(schedule.hardDeadline).calendar() : 'None',
+	                            availability: 'Custom'
+	                        };
+	                        scope.editSchedule = function () {
+	                            dataSvc.scheduleNames = {};
+	                            for (var i in task.scheduleNames) {
+	                                dataSvc.scheduleNames[i] = task.scheduleNames[i];
+	                            }
+	                            dataSvc.schedule = {
+	                                duration: schedule.duration,
+	                                startTime: {
+	                                    moment: schedule.startTime.moment ? moment(schedule.startTime.moment) : '',
+	                                    top: schedule.startTime.top },
+	                                softDeadline: schedule.softDeadline ? moment(schedule.softDeadline) : '',
+	                                hardDeadline: schedule.hardDeadline ? moment(schedule.hardDeadline) : '',
+	                                availability: []
+	                            };
+	                            for (var _i = 0; _i < 7; _i++) {
+	                                dataSvc.schedule.availability.push(schedule.availability[_i].slice());
+	                            }
+	                            scope.openQuickScheduler();
+	                        };
+	                        scope.tempScheduleFlag = true;
+	                    })();
+	                }
+	            };
+	            scope.toggleViewAvailability = function () {
+	                scope.editAvailabilityFlag = false;
+	                if (scope.viewAvailabilityFlag) scope.viewAvailabilityFlag = false;else {
+	                    (function () {
+	                        var availability = scope.task.schedule.availability;
+
+	                        scope.tempDayArray = [true, true, true, true, true, true, true];
+	                        scope.availabilityGrid = [];
+	                        for (var day in availability) {
+	                            scope.availabilityGrid.push(availability[day].slice());
+	                        }
+	                        scope.viewAvailabilityFlag = true;
+	                        scope.editAvailability = function () {
+	                            scope.editAvailabilityFlag = true;
+	                            scope.toggleDays = function (day) {
+	                                scope.tempDayArray[day] = !scope.tempDayArray[day];
+	                            };
+	                            scope.toggleHours = function (x, y) {
+	                                for (var i = 0; i < 7; i++) {
+	                                    if (scope.tempDayArray[i]) for (var j = x; j < y; j++) {
+	                                        scope.availabilityGrid[i][j] = !scope.availabilityGrid[i][j];
+	                                    }
+	                                }
+	                            };
+	                            scope.saveAvailability = function () {
+	                                for (var _day in scope.availabilityGrid) {
+	                                    availability[_day] = scope.availabilityGrid[_day].slice();
+	                                }
+	                                var taskIds = scope.task._id,
+	                                    keysToChange = 'schedule.availability',
+	                                    newValues = [scope.availabilityGrid];
+	                                dataSvc.editTasks(taskIds, keysToChange, newValues).then(function (res) {
+	                                    console.log("item(s) saved", res);
+	                                }, function (err) {
+	                                    console.log("Error while saving: ", err);
+	                                });
+	                                scope.editAvailabilityFlag = false;
+	                            };
+	                        };
+	                    })();
+	                }
+	            };
+	        }
+	    };
+	}editItemPane.$inject = ['moment', 'dataSvc'];
 
 /***/ },
-/* 151 */
+/* 149 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"day container\" ng-class=\"{noScroll: optionFlag}\">\n  <!-- Spacers -->\n  <div class=\"spacer2\" ng-if=\"monthFlag\"></div>\n  <!-- Date icon in the top left corner -->\n  <div id=\"date\" ng-class=\"{inactive: month.moment.isBefore(moment(), 'day'), selected: month.moment.isSame(moment(), 'day'), spacer: monthFlag}\">\n    <div>{{ month.moment.format(\"ddd\") }}</div>\n    <div>{{ month.moment.date() }}</div>\n  </div>\n  <!-- Left column containing the hours of the day -->\n  <div class=\"hour column\">\n    <div ng-repeat=\"hour in month.hours track by $index\" id=\"{{month.moment.hour($index).format('ha')}}\" ng-class=\"{inactive: !month.hours[$index]}\">{{month.moment.hour($index).format(\"h A\")}}</div>\n  </div>\n  <!-- Right Column containing the events  -->\n  <div class=\"event column\">\n    <svg height=\"8\" width=\"105%\" style=\"top: {{currentMinute}}\" ng-if=\"now.isSame(month.moment, 'day')\" class=\"currentTime\">\n      <circle cx=\"4\" cy=\"4\" r=\"2.5\"/>\n      <line x1=\"4\" y1=\"4\" x2=\"100%\" y2=\"4\" style=\"stroke-width:1\"/>\n    </svg>\n    <!-- Task List (absolute) -->\n    <div ng-repeat=\"task in tasks | filter: {schedule:{startTime:{moment: month.moment.format('YYYY-MM-DD')}}}\"\n         ng-if=\"task.schedule.duration\"\n         ng-click=\"toggleEditItemPane(task)\"\n         style=\"top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px; background-color: {{task.color}}\"\n         class=\"day calendarItem\">\n         {{task.name}}\n    </div>\n    <hr>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n    <div><div></div></div>\n  </div>\n</div>\n";
+	module.exports = "<div class=\"edit-item-pane container\">\n\n  <!-- ***** HEADER ***** -->\n    <div class=\"edit-item-pane header\">\n      <!-- 1ST ROW - TOP LAYER: Title -->\n      <div class=\"title row\" style=\"background-color: {{task.color}}\">\n        <!-- Column 1 of 2 - 'close icon' and 'title' -->\n        <div class=\"title column\">\n          <!-- close icon -->\n          <div ng-click=\"toggleEditItemPane()\">\n            <i class=\"material-icons\">close</i>\n          </div>\n          <!-- title -->\n          <div>{{task.name}}</div>\n        </div>\n        <!-- Column 2 of 2 - save link -->\n        <div class=\"title column\">\n          <button ng-click=\"saveTask(task); toggleEditItemPane()\" ng-disabled=\"editItemForm.$invalid\" form=\"editItemForm\">SAVE</button>\n        </div>\n      </div>\n    </div>\n\n  <!-- ***** BODY ***** -->\n    <div class=\"edit-item-pane body\">\n      <form id=\"editItemForm\" name=\"editItemForm\" novalidate>\n\n        <!-- NAME row -->\n        <div class=\"name form row\">\n          <span class=\"label\">Name:</span>\n          <input id=\"name\" name=\"name\" type=\"text\" ng-model=\"task.name\" autocomplete=\"off\" autofocus required />\n        </div>\n        <!-- DESCRIPTION row -->\n        <div class=\"description form row\">\n          <textarea ng-model=\"task.description\" placeholder=\"Add description here...\"></textarea>\n          <!-- <div contenteditable>{{task.description}}</div> -->\n        </div>\n        <!-- SCHEDULE row -->\n        <div class=\"togglable form row\">\n          <div class=\"title row\">\n            <span class=\"label\" ng-click=\"toggleTempSchedule()\">Schedule\n              <i class=\"material-icons\" ng-if=\"!tempScheduleFlag\">arrow_drop_down</i>\n              <i class=\"material-icons\" ng-if=\"tempScheduleFlag\">arrow_drop_up</i>\n            </span>\n            <button ng-if=\"tempScheduleFlag\" ng-click=\"editSchedule()\">EDIT</button>\n          </div>\n          <div class=\"toggleBox\" ng-if=\"tempScheduleFlag\" ng-click=\"toggleTempSchedule()\">\n            <div class=\"column\">\n              <span>Duration:</span>\n              <span>Starts:</span>\n              <span>Scheduled For:</span>\n              <span>Soft Deadline:</span>\n              <span>Hard Deadline:</span>\n            </div>\n            <div class=\"column\">\n              <span>{{task.scheduleNames.duration}}</span>\n              <span>{{task.scheduleNames.startTime}}</span>\n              <span>{{task.scheduleNames.startTime}}</span>\n              <span>{{task.scheduleNames.softDeadline}}</span>\n              <span>{{task.scheduleNames.hardDeadline}}</span>\n            </div>\n          </div>\n        </div>\n        <!-- AVAILABILITY row -->\n        <div class=\"togglable form row\">\n          <div class=\"title row\">\n            <span class=\"label\" ng-click=\"toggleViewAvailability()\">Availability\n              <i class=\"material-icons\" ng-if=\"!viewAvailabilityFlag\">arrow_drop_down</i>\n              <i class=\"material-icons\" ng-if=\"viewAvailabilityFlag\">arrow_drop_up</i>\n            </span>\n            <button ng-if=\"viewAvailabilityFlag && !editAvailabilityFlag\" ng-click=\"editAvailability()\">EDIT</button>\n            <button ng-if=\"viewAvailabilityFlag && editAvailabilityFlag\" ng-click=\"saveAvailability()\">SAVE</button>\n          </div>\n          <div class=\"availability toggleBox\" ng-if=\"viewAvailabilityFlag\">\n            <div class=\"ghost\" ng-if=\"!editAvailabilityFlag\" ng-click=\"toggleViewAvailability()\"></div>\n            <div class=\"row r1\">\n              <div class=\"col r1c1\" ng-click=\"toggleHours(0,24)\" ng-if=\"editAvailabilityFlag\"><span>ALL</span></div>\n              <div class=\"col r1c2\">\n                <div class=\"row r1c2r1\" ng-class=\"{spacer: !editAvailabilityFlag}\">\n                  <span ng-click=\"toggleDays(0)\" ng-class=\"{locked: !tempDayArray[0]}\">Sun</span>\n                  <span ng-click=\"toggleDays(1)\" ng-class=\"{locked: !tempDayArray[1]}\">Mon</span>\n                  <span ng-click=\"toggleDays(2)\" ng-class=\"{locked: !tempDayArray[2]}\">Tue</span>\n                  <span ng-click=\"toggleDays(3)\" ng-class=\"{locked: !tempDayArray[3]}\">Wed</span>\n                  <span ng-click=\"toggleDays(4)\" ng-class=\"{locked: !tempDayArray[4]}\">Thu</span>\n                  <span ng-click=\"toggleDays(5)\" ng-class=\"{locked: !tempDayArray[5]}\">Fri</span>\n                  <span ng-click=\"toggleDays(6)\" ng-class=\"{locked: !tempDayArray[6]}\">Sat</span>\n                </div>\n              </div>\n            </div>\n            <div class=\"row r2\">\n              <div class=\"col r2c1\" ng-if=\"editAvailabilityFlag\">\n                <span ng-click=\"toggleHours(8,17)\">D A Y</span><span ng-click=\"toggleHours(17,22)\">E V E N I N G</span>\n              </div>\n              <div class=\"col r2c2\">\n                <span ng-click=\"toggleHours(0,1)\">12am</span><span ng-click=\"toggleHours(1,2)\">1am</span>\n                <span ng-click=\"toggleHours(2,3)\">2am</span><span ng-click=\"toggleHours(3,4)\">3am</span>\n                <span ng-click=\"toggleHours(4,5)\">4am</span><span ng-click=\"toggleHours(5,6)\">5am</span>\n                <span ng-click=\"toggleHours(6,7)\">6am</span><span ng-click=\"toggleHours(7,8)\">7am</span>\n                <span ng-click=\"toggleHours(8,9)\">8am</span><span ng-click=\"toggleHours(9,10)\">9am</span>\n                <span ng-click=\"toggleHours(10,11)\">10am</span><span ng-click=\"toggleHours(11,12)\">11am</span>\n                <span ng-click=\"toggleHours(12,13)\">12pm</span><span ng-click=\"toggleHours(13,14)\">1pm</span>\n                <span ng-click=\"toggleHours(14,15)\">2pm</span><span ng-click=\"toggleHours(15,16)\">3pm</span>\n                <span ng-click=\"toggleHours(16,17)\">4pm</span><span ng-click=\"toggleHours(17,18)\">5pm</span>\n                <span ng-click=\"toggleHours(18,19)\">6pm</span><span ng-click=\"toggleHours(19,20)\">7pm</span>\n                <span ng-click=\"toggleHours(20,21)\">8pm</span><span ng-click=\"toggleHours(21,22)\">9pm</span>\n                <span ng-click=\"toggleHours(22,23)\">10pm</span><span ng-click=\"toggleHours(23,24)\">11pm</span>\n              </div>\n              <div class=\"col r2c3\">\n                <div class=\"row r2c3r1\">\n                  <div class=\"col r2c3r1c{{$index+1}}\" ng-repeat=\"day in task.schedule.availability track by $index\" ng-init=\"outerIndex = $index\" ng-class=\"{locked: !tempDayArray[$index]}\">\n                    <div class=\"row r2c3r1c{{outerIndex+1}}r{{$index+1}}\" ng-repeat=\"hour in day track by $index\">\n                      <input type=\"checkbox\" ng-model=\"availabilityGrid[outerIndex][$index]\" ng-disabled=\"!tempDayArray[outerIndex]\">\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n        <!-- COLOR row -->\n        <div class=\"form row\">\n          <span class=\"label\">Color:</span>\n          <input id=\"color\" name=\"color\" type=\"color\" ng-model=\"task.color\" />\n        </div>\n        <!-- USERS row -->\n        <div class=\"form row\">\n          <span class=\"label\">Users:</span>\n          <input id=\"users\" name=\"users\" type=\"text\" ng-model=\"task.users\" />\n        </div>\n        <!-- COMMENTS row -->\n        <div class=\"form row\">\n          <span class=\"label\">Comments:</span>\n          <input id=\"comments\" name=\"comments\" type=\"textbox\" ng-model=\"task.comments\" />\n        </div>\n\n      </form>\n    </div>\n\n</div>\n\n<!-- Overlaid option panes -->\n<!-- <quick-scheduler ng-if=\"quickSchedulerFlag\"></quick-scheduler> -->\n";
 
 /***/ }
 /******/ ]);

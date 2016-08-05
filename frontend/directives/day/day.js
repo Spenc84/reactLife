@@ -4,9 +4,14 @@ export function day(moment, dataSvc, $location, $anchorScroll, $timeout) {
     restrict: 'E',
     template: require('./day.html'),
     link(scope, element, attrs, ctrl) {
-      // $location.hash(null);
-      // $timeout(()=>$location.hash(1466830800000),5);
       $location.hash(moment().format('ha'));
+      // Function used to evaluate what should show on the calendar.
+      // Evaluates against string dates and moment objects
+      scope.compare = (actual, expected)=>{
+        if(typeof actual === 'object' && actual.isSame(moment(expected), 'day')) return true;
+        else if(typeof actual === 'string' && actual.includes(expected)) return true;
+        else return false;
+      };
     }
   };
 } day.$inject = [`moment`, `dataSvc`, `$location`, `$anchorScroll`, `$timeout`];

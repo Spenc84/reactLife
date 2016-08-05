@@ -1,4 +1,4 @@
-// Import Node Module dependencies
+// Import dependencies
 import angular from 'angular';
 import angularMoment from 'angular-moment';
 import uiRouter from 'angular-ui-router';
@@ -19,7 +19,8 @@ import dataSvc from './dataSvc';
 
 // Import directives
 import {calHeader, optionPane, calendar, listHeader, taskItems, addItem,
-        editItemPane, newItemPane} from './directives/directives';
+        newItemPane} from './directives/directives';
+import {editItemPane} from './directives/editItemPane/editItemPane';
 import {quickScheduler} from './directives/quickScheduler/quickScheduler';
 import {agenda} from './directives/agenda/agenda';
 import {day} from './directives/day/day';
@@ -43,9 +44,21 @@ angular.module('lifeApp', ['ui.router', 'angularMoment'])
   .directive(`agenda`, agenda)
   .directive(`day`, day)
   .directive(`week`, week)
-  .run(function($rootScope, $location, $anchorScroll) {
+  .run(onAppStart);
+
+// This will be run upon initiating the app
+function onAppStart($rootScope, $state, $location, $anchorScroll) {
     //when the route is changed scroll to the proper element.
     $rootScope.$on('$routeChangeSuccess', function(newRoute, oldRoute) {
-      if($location.hash()) $anchorScroll();
+        if($location.hash()) $anchorScroll();
     });
-  });
+    /* If the user trys to access a protected page without proper Authentication
+    they will be instructed to login first and redirected to the login page */
+    $rootScope.$on('$stateChangeError', function(evt, to, toParams, from, fromParams, error) {
+        if (error.redirectTo) {
+            alert(`Login Required.`);
+            $state.go(error.redirectTo);
+        }
+        else alert('error: ', error.status);
+    });
+} onAppStart.$inject = ['$rootScope', '$state', '$location', '$anchorScroll'];

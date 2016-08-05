@@ -94,27 +94,35 @@ export default function listCtrl($rootScope, $scope, $state, dataSvc, PriorState
   };
 
   // When you leave the current view, change any editable task items back to uneditable
-  $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
+  let listener = $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
     $scope.toggleEditOff();
   });
+  $scope.$on('$destroy', listener);
 
 
 
 
 
 //------------------------------  DATA TRANSFERS ------------------------------
-  // Data transfer variables
-  let modified = {};
-  $scope.tasks = dataSvc.tasks;
-  $scope.user = dataSvc.user;
+    // Data transfer variables
+    let modified = {};
+    $scope.tasks = dataSvc.tasks;
+    $scope.user = dataSvc.user;
 
-  // GET Methods
-  $scope.getTasks = function(){
-    dataSvc.getTasks().then(
-          function(result){console.log('list retrieve'); $scope.tasks = dataSvc.tasks = result.data;},
-          function(error){console.log("Failed to get tasks.", error);}
-    );
-  };
+    const removeListener = dataSvc.addListener(()=>{
+        $scope.tasks = dataSvc.tasks;
+        $scope.user = dataSvc.user;
+        console.log('listCtrl: updated Tasks and User'); // __DEV__
+    });
+    $scope.$on('$destroy', ()=>removeListener());
+
+    // GET Methods
+    $scope.getTasks = function(){
+        dataSvc.getTasks().then(
+            function(result){console.log('list retrieve'); $scope.tasks = dataSvc.tasks = result.data;},
+            function(error){console.log("Failed to get tasks.", error);}
+        );
+    };
 
   // POST Methods
   $scope.saveNew = () => {

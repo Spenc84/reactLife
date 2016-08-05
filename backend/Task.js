@@ -14,7 +14,10 @@ var taskSchema = new mongoose.Schema({
   },
   color: {type: String, default: '#0078ff'},
   description: {type: String, default: ''},
-  // users: {},
+  users: [{
+      user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+      access: Number
+  }],
   // history: [{}],
   // prereq: {},
   // context: {},

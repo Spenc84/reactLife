@@ -1,13 +1,65 @@
-export default function dataSvc ($http, moment) {
+export default function dataSvc ($http, $q, moment) {
+    /* DATA STRUCTURE--
+        user = {userObject}
+        agenda = [
+            {
+                date: "String",
+                start: [taskIds],
+                soft: [taskIds],
+                hard: [taskIds]
+            }
+        ]
+        tasks = [taskObjects]
+        map = { ${taskIds}: ${index in task array} }
+    */
 
-  let self = this;
-  ///// VARIABLES THAT WILL BE ADDED TO dataSvc LATER //////////////
-  //  self.user = {The User currently logged in}
-  //          .tasks = [All tasks belonging to this user]
-  //          .agenda = [All scheduled tasks organized by date]
-  //  self.schedule
-  //  self.scheduleNames
-  //////////////////////////////////////////////////////////////////
+    this.loaded = false;
+    this.user = {};
+    this.tasks = [];
+    this.agenda = [];
+    this.map = {};
+
+    let _changeListeners = [];
+
+    init.call(this);  // TEMP
+
+    // Aquire data from the server
+    function init(id, password) {
+        let deferred = $q.defer();
+        // $http.get(`/api/user/${id}/${password}`).then(
+        $http.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
+            incoming => {
+                this.loaded = true;
+                this.user = incoming.data || {};
+                this.tasks = this.user.tasks || [];
+                this.agenda = this.user.agenda || [];
+                this.map = (this.tasks) ? buildMap(this.tasks) : {};
+                console.log(`User Authenticated: `, this.user);
+                deferred.resolve(`User Authenticated.`);
+                notifyChange();
+            },
+            rejected => {
+                alert("Failed to aquire user");
+                deferred.reject("Failed to aquire user");
+            }
+        );
+        return deferred.promise;
+    }
+
+    // Used to index the tasks array by tasks._id
+    function buildMap(array) {
+        let newMap = {};
+        array.forEach((e,i)=>newMap[e._id] = i);
+        return newMap;
+    }
+
+    // Used to add, call, and remove custom event listeners
+    function notifyChange() { _changeListeners.forEach(listener=>listener()); }
+    this.addListener = (listener) => {
+        _changeListeners.push(listener);
+        return this.removeListener.bind(this, listener);
+    };
+    this.removeListener = function(listener) {_changeListeners = _changeListeners.filter(l=>listener !== l); };
 
   /////////////////////////////////  USERS  //////////////////////////////////////
     this.getUsers = function(){
@@ -33,7 +85,45 @@ export default function dataSvc ($http, moment) {
     };
   //----------------------------------------------------------------------------//
 
-/////////////////////////////////  TASKS  //////////////////////////////////////
+///////////////////////////////  NEW TASKS  ////////////////////////////////////
+this.addTask = (task) => {
+    console.log("sending ", task);
+    $http.post('/api/tasks', task).then(
+        res=>{
+            if(task.status.scheduled) updateAgenda.addItem(task);
+            tasks.push(task);
+            map[task._id] = tasks.length-1;
+            notifyChange();
+        },
+        err=>alert(err)
+    );
+};
+this.deleteTasks = (ids) => {
+    if(typeof ids === 'string') ids = [ids];
+    $http.delete(`/api/task/${ids}`).then(
+        res=>{
+            for(let id in ids) {
+                let indx = map[ids[id]],
+                    task = tasks[indx];
+                if(task.status.scheduled) updateAgenda.removeItem(task);
+                tasks.splice(indx, 1);
+            }
+            map = buildMap(tasks);
+            notifyChange();
+        },
+        err=>alert(err)
+    );
+};
+this.updateTask = (task) => {
+    $http.put(`/api/task/${task._id}`, task).then(
+        res=>{
+            tasks[map[task.id]] = task;
+            notifyChange();
+        },
+        err=>alert(err)
+    );
+};
+///////////////////////////////  OLD TASKS  ////////////////////////////////////
   this.getTasks = function(){
     return $http.get("/api/tasks");
   };
@@ -51,9 +141,9 @@ export default function dataSvc ($http, moment) {
     console.log(itemsToBeChanged, keysToChange, newValues);
     return $http.put('/api/tasks/'+itemsToBeChanged+"/"+keysToChange+"/"+JSON.stringify(newValues));
   };
-  this.deleteTasks = function(id){
-    return $http.delete('/api/task/'+id);
-  };
+  // this.deleteTasks = function(id){
+  //   return $http.delete('/api/task/'+id);
+  // };
 //----------------------------------------------------------------------------//
 
 ////////////////////////////////  AGENDA  ////////////////////////////////////// //test
@@ -71,18 +161,17 @@ export default function dataSvc ($http, moment) {
         else { agenda[sDate] = [task]; agendaMap.push(sDate); }
       }
     }
-    console.log('Agends built: ', agenda); //test
+    console.log('Agenda built: ', agenda); //test
     this.agenda = agenda;
     this.agenda.map = agendaMap;
   };
-  // this.updateAgenda = (task, date) => {
-  //   if()
-  //   for (let i = 0; i < this.agenda[date].length; i++) {
-  //     this.agenda[date][i]
-  //   }
-  // };
-//----------------------------------------------------------------------------//
+  function displayAgenda() {
+      for(let day in agenda){
+          console.log(day.date);
+          for(let task in day.start){
+              console.log(task.name);
+          }
+      }
+  }
 
-}
-
-dataSvc.$inject = [`$http`, `moment`];
+} dataSvc.$inject = [`$http`, `$q`, `moment`];

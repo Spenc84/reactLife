@@ -6,8 +6,8 @@ var userSchema = new mongoose.Schema({
   password: {type: String, required: true},
   email: {type: String, required: true, unique: true},
   role: String,
-  tasks: [{}],
-  agenda: []
+  tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
+  agenda: [{}]
 });
 
 module.exports = mongoose.model('User', userSchema);

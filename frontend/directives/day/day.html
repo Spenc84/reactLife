@@ -17,7 +17,7 @@
       <line x1="4" y1="4" x2="100%" y2="4" style="stroke-width:1"/>
     </svg>
     <!-- Task List (absolute) -->
-    <div ng-repeat="task in tasks | filter: {schedule:{startTime:{moment: month.moment.format('YYYY-MM-DD')}}}"
+    <div ng-repeat="task in tasks | filter: {schedule:{startTime:{moment: month.moment.format('YYYY-MM-DD')}}} : compare"
          ng-if="task.schedule.duration"
          ng-click="toggleEditItemPane(task)"
          style="top: {{task.schedule.startTime.top}}px; height: {{task.schedule.duration}}px; background-color: {{task.color}}"

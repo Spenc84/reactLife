@@ -5,26 +5,27 @@ export default function routes ($stateProvider, $urlRouterProvider) {
     //SPLASH SCREEN
     .state('home', {
       url: '/',
-      template: require('./splash.html')
+      template: require('./splash.html'),
+      resolve: { dataServices: 'dataSvc' }
     })
     //CALENDAR VIEWS
     .state('calendar', {
       controller: 'calendarCtrl',
       template: '<cal-header></cal-header><ui-view></ui-view><quick-scheduler ng-if="quickSchedulerFlag"></quick-scheduler><edit-item-pane ng-if="editItemPaneFlag"></edit-item-pane>',
       abstract: true,
-      resolve: { Tasks: getTasks, User: getUser }
+    //   resolve: { Authenticate: checkSession }
     })
     .state('calendar.agenda', {
       url: '/calendar/agenda',
-      template: require('./calendar/agendaView.html')
+      template: '<agenda />'
     })
     .state('calendar.day', {
       url: '/calendar/day',
-      template: require('./calendar/dayView.html')
+      template: '<day />'
     })
     .state('calendar.week', {
       url: '/calendar/week',
-      template: require('./calendar/weekView.html')
+      template: '<week />'
     })
     .state('calendar.month', {
       url: '/calendar/month',
@@ -36,6 +37,7 @@ export default function routes ($stateProvider, $urlRouterProvider) {
       template: '<list-header></list-header><ui-view></ui-view><edit-item-pane ng-if="editItemPaneFlag"></edit-item-pane><new-item-pane ng-if="newItemPaneFlag"></new-item-pane>',
       abstract: true,
       resolve: {
+        // Authenticate: checkSession,
         PriorState: ['$state', function($state){
           var currentStateData = {
               Name: $state.current.name,
@@ -43,9 +45,7 @@ export default function routes ($stateProvider, $urlRouterProvider) {
               URL: $state.href($state.current.name, $state.params)
           };
           return currentStateData;
-        }],
-        Tasks: getTasks,
-        User: getUser
+        }]
       }
     })
     .state('list.search', {
@@ -74,40 +74,15 @@ export default function routes ($stateProvider, $urlRouterProvider) {
     })
     .state('user', {});
 
-    /// Aquire task data before loading views ///
-      function getTasks($state, $q, dataSvc){
-        var deferred = $q.defer();
-        if(dataSvc.tasks) deferred.resolve('Tasks already loaded');
-        else
-        dataSvc.getTasks().then(
-          function(tasks){
-            dataSvc.tasks = tasks.data;
-            dataSvc.buildAgenda();
-            deferred.resolve("Tasks aquired");
-          },
-          function(rejected){ alert("Failed to aquire tasks"); deferred.reject("Failed to aquire tasks"); $state.go("home");}
-        );
+    /// Check for active session ///
+    function checkSession($q, dataSvc){
+        let deferred = $q.defer();
+
+        if(dataSvc.loaded) deferred.resolve(`User Authenticated.`);
+        else deferred.reject({redirectTo: 'home'});
+
         return deferred.promise;
-      }
-      getTasks.$inject = [`$state`, `$q`, `dataSvc`];
 
-/////////////////////////////  TEMPORARY  //////////////////////////////////////
-      function getUser($state, $q, dataSvc){
-        var deferred = $q.defer();
-        if(dataSvc.user) deferred.resolve('User already loaded');
-        else
-        dataSvc.getUser().then(
-          function(user){
-            dataSvc.user = user.data; console.log(`User aquired: `, user.data);
-            deferred.resolve("User aquired");
-          },
-          function(rejected){ alert("Failed to aquire user"); deferred.reject("Failed to aquire user"); $state.go("home");}
-        );
-        return deferred.promise;
-      }
-      getUser.$inject = [`$state`, `$q`, `dataSvc`];
-////////////////////////////////////////////////////////////////////////////////
+    } checkSession.$inject = [`$q`, `dataSvc`];
 
-}
-
-routes.$inject = [`$stateProvider`, `$urlRouterProvider`];
+} routes.$inject = [`$stateProvider`, `$urlRouterProvider`];
