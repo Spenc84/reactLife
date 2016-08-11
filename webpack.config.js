@@ -2,14 +2,14 @@ const webpack = require('webpack');
 
 module.exports = {
     entry: [
-        './frontend/lifeApp.js'
+        './frontend/lifeApp.jsx'
     ],
     module: {
         loaders: [
             {
-              test: /\.js$/,
+              test: /\.jsx$/,
               exclude: /node_modules/,
-              loader: 'babel'
+              loaders: ['react-hot', 'babel']
             },
             {
                 test: /\.styl$/,
@@ -30,16 +30,15 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['', '.js']
+        extensions: ['', '.js', '.jsx']
     },
     output: {
         path: __dirname + '/public',
-        publicPath: '/',
         filename: 'bundle.js'
-    },
-    devServer: {
-        contentBase: './public'
     }
+    // , devServer: {
+    //     contentBase: './public'
+    // }
     /////  MINIFIES THE ENTIRE PROJECT  //////////
      /// COMMENT OUT TO RENDER UNMINIFIED ////////
     // , plugins: [                                  //
