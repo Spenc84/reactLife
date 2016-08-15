@@ -5,8 +5,9 @@ export function Column(props) {
     return <div className="column" onClick={props.onClick}>{props.children}</div>;
 }
 export class Row extends React.Component {
-    shouldComponentUpdate() { return false; }
+    shouldComponentUpdate() { return this.props.fluid || false; }
     render() {
+        console.log(`RENDERED: Row`); // __DEV__
         const { style, className, padding, onClick, children } = this.props;
         let _className = (className) ? `row ${className}` : "row"
         let _style = style || {};
@@ -23,11 +24,13 @@ export class Row extends React.Component {
 }
 
 export class Icon extends React.Component {
-    shouldComponentUpdate() { return false; }
+    shouldComponentUpdate() { return this.props.fluid || false; }
     render() {
-        const { style, className, faded, size, onClick } = this.props;
+        console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
+        const { style, className, faded, padded, size, onClick } = this.props;
         let _className = (className) ? `material-icons ${className}` : "material-icons";
         if(faded) _className += ` faded`;
+        if(padded) _className += ` padded`;
         let _style = style || {};
         if(size) _style.fontSize = `${size}rem`;
 
@@ -42,8 +45,9 @@ export class Icon extends React.Component {
 }
 
 export class Span extends React.Component {
-    shouldComponentUpdate() { return false; }
+    shouldComponentUpdate() { return this.props.fluid || false; }
     render() {
+        console.log(`RENDERED: Span`); // __DEV__
         const { style, className, faded, size, children } = this.props;
         let _className = (className) ? `text ${className}` : "text";
         if(faded) _className += ` faded`;

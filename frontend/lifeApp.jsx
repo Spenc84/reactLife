@@ -23,10 +23,12 @@ export default class LifeApp extends React.Component {
             HEAD: '',
             BODY: 'SPLASH',
             date: moment(),
-            optionPane: false, // Cal only
+            showOptionPane: false, // Cal only
+            showDropCalendar: false // Cal only
         };
 
         this.toggleOptionPane = this.toggleOptionPane.bind(this);
+        this.toggleDropCalendar = this.toggleDropCalendar.bind(this);
     }
 
     componentDidMount() {
@@ -64,14 +66,15 @@ export default class LifeApp extends React.Component {
 	}
 
     getHeader() {
-        const { HEAD, date } = this.state;
+        const { HEAD, date, showDropCalendar } = this.state;
 
         switch(HEAD) {
             case 'CALENDAR': return (
                 <CalHeader
                     month={date.format('MMMM')}
+                    showDropCalendar={showDropCalendar}
                     toggleOptionPane={this.toggleOptionPane}
-
+                    toggleDropCalendar={this.toggleDropCalendar}
                 />
             );
             case 'LIST': return (
@@ -100,7 +103,8 @@ export default class LifeApp extends React.Component {
         }
     }
 
-    toggleOptionPane() { setState({optionPane: !this.state.optionPane}); }
+    toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
+    toggleDropCalendar() { this.setState({showDropCalendar: !this.state.showDropCalendar}); }
 }
 
 ReactDOM.render(<LifeApp/>, document.querySelector("App"));
