@@ -20,7 +20,7 @@ export default class LifeApp extends React.Component {
             tasks: [],
             agenda: [],
             map: {},
-            HEAD: '',
+            HEADER: '',
             BODY: 'SPLASH',
             date: moment(),
             showOptionPane: false, // Cal only
@@ -29,6 +29,11 @@ export default class LifeApp extends React.Component {
 
         this.toggleOptionPane = this.toggleOptionPane.bind(this);
         this.toggleDropCalendar = this.toggleDropCalendar.bind(this);
+        this.updateView = this.updateView.bind(this);
+        this.updateDate = this.updateDate.bind(this);
+        this.getPrior = this.getPrior.bind(this);
+        this.getToday = this.getToday.bind(this);
+        this.getNext = this.getNext.bind(this);
     }
 
     componentDidMount() {
@@ -41,8 +46,8 @@ export default class LifeApp extends React.Component {
                     tasks: incoming.data.tasks,
                     agenda: incoming.data.agenda,
                     // map: (incoming.data.tasks) ? this.buildMap(incoming.data.tasks) : {},
-                    HEAD: 'CALENDAR',
-                    BODY: 'CALENDAR'
+                    HEADER: 'CALENDAR',
+                    BODY: 'AGENDA'
                 })
                 console.log(`User Authenticated: `, this.state.user);
                 // notifyChange();
@@ -66,15 +71,20 @@ export default class LifeApp extends React.Component {
 	}
 
     getHeader() {
-        const { HEAD, date, showDropCalendar } = this.state;
+        const { HEADER, BODY, date, showDropCalendar } = this.state;
 
-        switch(HEAD) {
+        switch(HEADER) {
             case 'CALENDAR': return (
                 <CalHeader
                     month={date.format('MMMM')}
+                    view={BODY}
                     showDropCalendar={showDropCalendar}
                     toggleOptionPane={this.toggleOptionPane}
                     toggleDropCalendar={this.toggleDropCalendar}
+                    updateView={this.updateView}
+                    getPrior={this.getPrior}
+                    getToday={this.getToday}
+                    getNext={this.getNext}
                 />
             );
             case 'LIST': return (
@@ -85,26 +95,41 @@ export default class LifeApp extends React.Component {
     }
 
     getBody() {
-        const { HEAD } = this.state;
+        const { BODY, date } = this.state;
+        let body = null;
 
-        switch(HEAD) {
+        switch(BODY) {
             case 'SPLASH':
-                return <Splash />;
+                body = `SPLASH`; break;
             case 'LIST':
-                return <List />;
-            case 'CALENDAR':
-                return <Calendar />;
+                body = `LIST`; break;
+            case 'AGENDA':
+                body = `AGENDA`; break;
+            case 'DAY':
+                body = `DAY - ${date.toString()}`; break;
+            case 'WEEK':
+                body = `WEEK`; break;
+            case 'MONTH':
+                body = `MONTH`; break;
             default:
-                return (
-                    <div>
-                        <h1>Hello World</h1>
-                    </div>
-                );
+                body = `Hello World!!`; break;
         }
+
+        return (
+            <main style={{marginTop: `70px`, padding: `1rem`}}><h1>{body}</h1></main>
+        );
     }
 
     toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
     toggleDropCalendar() { this.setState({showDropCalendar: !this.state.showDropCalendar}); }
+    updateView(body, header) {
+        if(header) this.setState({BODY: body, HEADER: header});
+        else this.setState({BODY: body});
+    }
+    updateDate(newDate) { this.setState( {date: moment(newDate)} ); }
+    getPrior() { this.setState( {date: this.state.date.clone().subtract(1, this.state.BODY)} ); }
+    getToday() { this.setState( {date: moment()} ); }
+    getNext() { this.setState( {date: this.state.date.clone().add(1, this.state.BODY)} ); }
 }
 
 ReactDOM.render(<LifeApp/>, document.querySelector("App"));
