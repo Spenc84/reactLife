@@ -4,33 +4,49 @@ html, body
     padding 0
 
 // COLORS
-$background1 = rgb(255,255,255);
+_faded(alpha = .5)
+    rgba(0,0,0,alpha)
+$background1 = rgb(255,255,255)
+$selected = rgb(0, 120, 255)
+$inactive = rgba(0,0,0,.5)
+
+// colored items
+$hourDivider = _faded(.3)
+
 
 // GLOBALS
+html
+    width: 100vw
+    overflow-x: hidden
 .app.container *
     display flex
     box-sizing border-box
 
 // STYLES
 .faded
-    opacity .6
+    opacity .5
 .invisible
     opacity 0
+.inactive
+    color: $inactive
 nav .active
     background: #f4f4f4;
     box-shadow: inset 1px 1px 3px #666;
     transition: all 200ms ease-in-out
 
-// COMPONENTS
-.column
+/////////////////////////////   COMPONENTS   ////////////////////////////////
+////////// UI //////////
+.Column
     flex-direction column
     flex-grow 1
-.row
+.Row
     flex-grow 1
+
 i
     align-items center
     transition opacity 300ms ease-in-out
 header
+    z-index 50
     position fixed
     top 0
     left 0
@@ -41,24 +57,51 @@ nav span
     border-radius: 0.5rem;
     padding .2rem .5rem .1rem
 
+////////// COMPLEX //////////
+.hour-divider
+    flex-grow 1
+    .hours
+        font-size: 12px
+        margin-top: 4px
+        .Span
+            height: 60px
+            justify-content: center
+    .events
+        margin-top: 10px
+        border-top 1px solid $hourDivider
+        position: relative
+        svg
+          position absolute
+          fill $selected
+          stroke $selected
+          z-index 10
+        hr
+            margin 0
+            margin-top 28px
+            border-color: transparent
+            border-bottom: 1px dashed $hourDivider
+            &:nth-child(even)
+                border-style: solid
+
+// VIEWS
+main
+    transition: padding-top 200ms ease-in-out
 
 
 // ANIMATIONS / TRANSITIONS
 #dropNav
     margin-top -.5rem
-    &.dropNav-enter, &.dropNav-appear
+    &.dropNav-enter
         margin-top -2rem
         opacity 0
-        overflow hidden
+        transition margin-top 200ms ease-in-out, opacity 150ms 50ms ease-in-out
         &&-active
             margin-top -.5rem
             opacity 1
-            transition margin-top 200ms ease-in-out, opacity 150ms 50ms ease-in-out
 
     &.dropNav-leave
         margin-top -.5rem
         opacity 1
-        overflow hidden
         &&-active
             margin-top -2rem
             opacity 0

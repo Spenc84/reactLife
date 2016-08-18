@@ -3,11 +3,10 @@ import ReactDOM from 'react-dom';
 import SERVER from 'axios';
 import moment from 'moment';
 
-import CalHeader from './components/calHeader';
-import listHeader from './components/listHeader';
-import Splash from './splash/splash';
-import List from './list/list';
-import Calendar from './calendar/calendar';
+import CalHeader from './ui/calHeader';
+import ListHeader from './ui/listHeader';
+
+import Day from './views/day'
 
 
 export default class LifeApp extends React.Component {
@@ -24,11 +23,11 @@ export default class LifeApp extends React.Component {
             BODY: 'SPLASH',
             date: moment(),
             showOptionPane: false, // Cal only
-            showDropCalendar: false // Cal only
+            showDropNav: false // Cal only
         };
 
         this.toggleOptionPane = this.toggleOptionPane.bind(this);
-        this.toggleDropCalendar = this.toggleDropCalendar.bind(this);
+        this.toggleDropNav = this.toggleDropNav.bind(this);
         this.updateView = this.updateView.bind(this);
         this.updateDate = this.updateDate.bind(this);
         this.getPrior = this.getPrior.bind(this);
@@ -71,16 +70,16 @@ export default class LifeApp extends React.Component {
 	}
 
     getHeader() {
-        const { HEADER, BODY, date, showDropCalendar } = this.state;
+        const { HEADER, BODY, date, showDropNav } = this.state;
 
         switch(HEADER) {
             case 'CALENDAR': return (
                 <CalHeader
                     month={date.format('MMMM')}
                     view={BODY}
-                    showDropCalendar={showDropCalendar}
+                    showDropNav={showDropNav}
                     toggleOptionPane={this.toggleOptionPane}
-                    toggleDropCalendar={this.toggleDropCalendar}
+                    toggleDropNav={this.toggleDropNav}
                     updateView={this.updateView}
                     getPrior={this.getPrior}
                     getToday={this.getToday}
@@ -95,7 +94,7 @@ export default class LifeApp extends React.Component {
     }
 
     getBody() {
-        const { BODY, date } = this.state;
+        const { BODY, date, showDropNav } = this.state;
         let body = null;
 
         switch(BODY) {
@@ -105,8 +104,12 @@ export default class LifeApp extends React.Component {
                 body = `LIST`; break;
             case 'AGENDA':
                 body = `AGENDA`; break;
-            case 'DAY':
-                body = `DAY - ${date.toString()}`; break;
+            case 'DAY': return (
+                <Day dropNav={showDropNav}
+                        date={date.valueOf()}
+                        updateDate={this.updateDate}
+                />
+            );
             case 'WEEK':
                 body = `WEEK`; break;
             case 'MONTH':
@@ -121,7 +124,7 @@ export default class LifeApp extends React.Component {
     }
 
     toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
-    toggleDropCalendar() { this.setState({showDropCalendar: !this.state.showDropCalendar}); }
+    toggleDropNav() { this.setState({showDropNav: !this.state.showDropNav}); }
     updateView(body, header) {
         if(header) this.setState({BODY: body, HEADER: header});
         else this.setState({BODY: body});
