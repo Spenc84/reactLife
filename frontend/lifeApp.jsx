@@ -6,7 +6,8 @@ import moment from 'moment';
 import CalHeader from './ui/calHeader';
 import ListHeader from './ui/listHeader';
 
-import Day from './views/day'
+import Day from './views/day';
+import Week from './views/week';
 
 
 export default class LifeApp extends React.Component {
@@ -110,8 +111,12 @@ export default class LifeApp extends React.Component {
                         updateDate={this.updateDate}
                 />
             );
-            case 'WEEK':
-                body = `WEEK`; break;
+            case 'WEEK': return (
+                <Week dropNav={showDropNav}
+                        date={date.valueOf()}
+                        updateDate={this.updateDate}
+                />
+            );
             case 'MONTH':
                 body = `MONTH`; break;
             default:

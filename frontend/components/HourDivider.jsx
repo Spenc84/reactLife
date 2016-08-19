@@ -6,10 +6,10 @@ import {Column, Row, Span} from '../ui/ui';
 const DIVIDING_LINES = [];
 for(let i = 0; i < 48; i++) DIVIDING_LINES.push(<hr key={i}/>);
 
-const HOURS = [<Span key={0} static>12 AM</Span>];
-for(let i = 1; i < 12; i++) HOURS.push(<Span key={i} static>{i} AM</Span>);
-HOURS.push(<Span key={12} static>12 PM</Span>);
-for(let i = 1; i < 12; i++) HOURS.push(<Span key={i+12} static>{i} PM</Span>);
+const HOURS = [<Span key={0} id="AM12" static>12 AM</Span>];
+for(let i = 1; i < 12; i++) HOURS.push(<Span key={i} id={"AM"+i} static>{i} AM</Span>);
+HOURS.push(<Span key={12} id="PM12" static>12 PM</Span>);
+for(let i = 1; i < 12; i++) HOURS.push(<Span key={i+12} id={"PM"+i} static>{i} PM</Span>);
 
 export default class HourDivider extends React.Component {
     constructor(props) {
@@ -18,21 +18,32 @@ export default class HourDivider extends React.Component {
         this.state = {
             now: moment()
         }
-
+        console.log('***CONSTRUCTED***'); // __DEV__
         this.updateCurrentMinute = this.updateCurrentMinute.bind(this);
         this.intervalId = setInterval(this.updateCurrentMinute, 60000);
     }
 
+    componentDidMount() { document.body.scrollTop = this.state.now.hour()*60; }
     componentWillUnmount() { clearInterval(this.intervalId); }
 
     render() {
         const { now } = this.state;
+        const { prior, current } = this.props;
         const date = moment(this.props.date);
-        const currentHour = now.hour();
-        const minuteBarHeight = currentHour*60 + now.minute() + 10;
-        const hourClasses = (date.isBefore(now, 'day')) ? 'inactive hours' : 'hours';
-        const hourStyles = (date.isSame(now, 'day'))
-                ? (<style style={{display: 'none'}} dangerouslySetInnerHTML={{__html: [`.hours span:nth-child(-n+${currentHour}){ color: rgba(0,0,0,.5) }`].join('\n')}}></style>)
+        const hour = now.hour();
+        const minuteBarHeight = hour*60 + now.minute() - 5;
+        console.log(`${minuteBarHeight}px`);
+        const hourClasses = (prior) ? 'inactive hours' : 'hours';
+        const hourStyles = (current)
+                ? ( <style style={{display: 'none'}} dangerouslySetInnerHTML={{__html: [`.hours span:nth-child(-n+${hour}){ color: rgba(0,0,0,.5) }`].join('\n')}} /> )
+                : null;
+        const SVG = (current)
+                ? (
+                    <svg height="8" width="105%" style={{top: `${minuteBarHeight}px`}} className="currentTime">
+                        <circle cx="4" cy="4" r="2.5"/>
+                        <line x1="4" y1="4" x2="100%" y2="4" style={{strokeWidth: 1}}/>
+                    </svg>
+                )
                 : null;
 
         console.log('RENDERED:  *  HourDivider'); // __DEV__
@@ -43,10 +54,7 @@ export default class HourDivider extends React.Component {
                     {HOURS}
                 </Column>
                 <Row className="events">
-                    <svg height="8" width="105%" style={{top: `${minuteBarHeight}px`}} className="currentTime">
-                        <circle cx="4" cy="4" r="2.5"/>
-                        <line x1="4" y1="4" x2="100%" y2="4" style={{strokeWidth: 1}}/>
-                    </svg>
+                    {SVG}
                     <div className="eventArray" />
                     <Column className="dividingLines" static>
                         {DIVIDING_LINES}

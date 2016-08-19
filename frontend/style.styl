@@ -6,21 +6,26 @@ html, body
 // COLORS
 _faded(alpha = .5)
     rgba(0,0,0,alpha)
-$background1 = rgb(255,255,255)
-$selected = rgb(0, 120, 255)
+$primaryBG = rgb(255,255,255)
+$active = rgb(0, 120, 255)
 $inactive = rgba(0,0,0,.5)
 
 // colored items
 $hourDivider = _faded(.3)
+$dateDay = linear-gradient(to bottom, $primaryBG 0%, $primaryBG 75%, transparent 100%)
 
+// z-index
+$headerIndx = 50
+$minuteBarIndx = 10
 
 // GLOBALS
-html
-    width: 100vw
-    overflow-x: hidden
-.app.container *
+body *
     display flex
     box-sizing border-box
+.app.container
+    width 100vw
+    height 100vh
+    flex-direction column
 
 // STYLES
 .faded
@@ -29,10 +34,14 @@ html
     opacity 0
 .inactive
     color: $inactive
-nav .active
+.active
+    color: $active
+nav .selected
     background: #f4f4f4;
     box-shadow: inset 1px 1px 3px #666;
     transition: all 200ms ease-in-out
+
+
 
 /////////////////////////////   COMPONENTS   ////////////////////////////////
 ////////// UI //////////
@@ -42,23 +51,27 @@ nav .active
 .Row
     flex-grow 1
 
-i
+i.material-icons
+    display flex
     align-items center
     transition opacity 300ms ease-in-out
 header
-    z-index 50
-    position fixed
-    top 0
-    left 0
-    right 0
-    background-color $background1
+    z-index $headerIndx
+    background-color $primaryBG
     box-shadow 0 1px 10px #515151
+    flex 0 0 auto
+main
+    display: block
+    flex 1 1 auto
+    overflow-x: hidden
+    overflow-y: auto
+    // transition: padding-top 200ms ease-in-out
 nav span
     border-radius: 0.5rem;
     padding .2rem .5rem .1rem
 
 ////////// COMPLEX //////////
-.hour-divider
+section.hour-divider
     flex-grow 1
     .hours
         font-size: 12px
@@ -71,10 +84,11 @@ nav span
         border-top 1px solid $hourDivider
         position: relative
         svg
-          position absolute
-          fill $selected
-          stroke $selected
-          z-index 10
+            z-index $minuteBarIndx
+            position absolute
+            left -4px
+            fill $active
+            stroke $active
         hr
             margin 0
             margin-top 28px
@@ -83,12 +97,41 @@ nav span
             &:nth-child(even)
                 border-style: solid
 
-// VIEWS
-main
-    transition: padding-top 200ms ease-in-out
 
 
-// ANIMATIONS / TRANSITIONS
+////////////////////////////////     VIEWS     /////////////////////////////////
+.Day .date
+    position absolute
+    left 0
+    height 70px
+    width 50px
+    padding-top 10px
+    font-size 24px
+    flex-direction column
+    align-items center
+    background: $dateDay
+    &>div:first-child
+      font-size 10px
+
+.Week
+    .dateBar
+        position absolute
+        height 60px
+        padding-left 48px
+        width 100%
+        align-items: center
+    .date
+        flex-grow 1
+        font-size 24px
+        flex-direction column
+        align-items center
+        background: $dateDay
+        &>div:first-child
+          font-size 10px
+
+
+
+/////////////////////////   ANIMATIONS / TRANSITIONS   /////////////////////////
 #dropNav
     margin-top -.5rem
     &.dropNav-enter

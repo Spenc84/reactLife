@@ -49,10 +49,10 @@ export default class calHeader extends React.Component {
         const { view, getPrior, getNext } = this.props;
         let aClass, dClass, wClass, mClass, agenda = false;
         switch(view) {
-            case `DAY`: dClass = `active`; break;
-            case `WEEK`: wClass = `active`; break;
-            case `MONTH`: mClass = `active`; break;
-            default: aClass = `active`; agenda = true; break;
+            case `DAY`: dClass = `selected`; break;
+            case `WEEK`: wClass = `selected`; break;
+            case `MONTH`: mClass = `selected`; break;
+            default: aClass = `selected`; agenda = true; break;
         }
         return (
             <Row key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.5rem`}}>

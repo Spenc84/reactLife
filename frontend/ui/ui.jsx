@@ -84,13 +84,14 @@ export class Span extends React.Component {
     shouldComponentUpdate(nextProps) { return !this.props.static || !nextProps.static }
     render() {
         console.log(`RENDERED: Span`); // __DEV__
-        const { style, className, faded, size, content, children } = this.props;
+        const { id, style, className, faded, size, content, children } = this.props;
         let _className = (className) ? `Span ${className}` : "Span";
         if(faded) _className += ` faded`;
         let _style = style || {};
         if(size) _style.fontSize = `${size}rem`;
         return (
-            <span className={_className}
+            <span id={id}
+                className={_className}
                 style={_style}>
                 {(content) ? content : children}
             </span>
