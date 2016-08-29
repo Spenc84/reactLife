@@ -16,28 +16,35 @@ export default class HourDivider extends React.Component {
         super(props)
 
         this.state = {
-            now: moment()
+            now: moment().valueOf()
         }
         console.log('***CONSTRUCTED***'); // __DEV__
         this.updateCurrentMinute = this.updateCurrentMinute.bind(this);
         this.intervalId = setInterval(this.updateCurrentMinute, 60000);
     }
 
-    componentDidMount() { document.body.scrollTop = this.state.now.hour()*60; }
+    componentDidMount() { view_container.scrollTop = moment(this.state.now).hour()*60; }
+    shouldComponentUpdate(nextProps, nextState) {
+        return (
+            this.props.prior !== nextProps.prior ||
+            this.props.current !== nextProps.current ||
+            this.state.now !== nextState.now
+        );
+    }
     componentWillUnmount() { clearInterval(this.intervalId); }
 
     render() {
-        const { now } = this.state;
+        const now = moment(this.state.now);
         const { prior, current } = this.props;
-        const date = moment(this.props.date);
+
         const hour = now.hour();
         const minuteBarHeight = hour*60 + now.minute() - 5;
-        console.log(`${minuteBarHeight}px`);
+        console.log(`${minuteBarHeight}px`); // __DEV__
         const hourClasses = (prior) ? 'inactive hours' : 'hours';
         const hourStyles = (current)
                 ? ( <style style={{display: 'none'}} dangerouslySetInnerHTML={{__html: [`.hours span:nth-child(-n+${hour}){ color: rgba(0,0,0,.5) }`].join('\n')}} /> )
                 : null;
-        const SVG = (current)
+        const MINUTE_BAR = (current)
                 ? (
                     <svg height="8" width="105%" style={{top: `${minuteBarHeight}px`}} className="currentTime">
                         <circle cx="4" cy="4" r="2.5"/>
@@ -54,8 +61,7 @@ export default class HourDivider extends React.Component {
                     {HOURS}
                 </Column>
                 <Row className="events">
-                    {SVG}
-                    <div className="eventArray" />
+                    {MINUTE_BAR}
                     <Column className="dividingLines" static>
                         {DIVIDING_LINES}
                     </Column>
@@ -67,7 +73,7 @@ export default class HourDivider extends React.Component {
     updateCurrentMinute() {
         const now = moment();
         if(now.hour() === 0 && now.minute() === 0) this.props.updateDate(now);
-        else this.setState({now: moment()});
+        else this.setState({now: moment().valueOf()});
 
         console.log('Updated Minute: ', now.format(`LT`)); // __DEV__
     }

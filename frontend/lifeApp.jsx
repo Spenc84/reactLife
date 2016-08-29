@@ -5,6 +5,8 @@ import moment from 'moment';
 
 import CalHeader from './ui/calHeader';
 import ListHeader from './ui/listHeader';
+import HourDivider from './components/HourDivider';
+import { Span } from './ui/ui';
 
 import Day from './views/day';
 import Week from './views/week';
@@ -95,37 +97,55 @@ export default class LifeApp extends React.Component {
     }
 
     getBody() {
-        const { BODY, date, showDropNav } = this.state;
-        let body = null;
+        const { BODY, date } = this.state;
+        let body, dayWeekBackground;
 
         switch(BODY) {
             case 'SPLASH':
-                body = `SPLASH`; break;
+                body = <main id="view_container"><h1>SPLASH</h1></main>;
+            break;
+
             case 'LIST':
-                body = `LIST`; break;
-            case 'AGENDA':
-                body = `AGENDA`; break;
-            case 'DAY': return (
-                <Day dropNav={showDropNav}
-                        date={date.valueOf()}
-                        updateDate={this.updateDate}
-                />
-            );
-            case 'WEEK': return (
-                <Week dropNav={showDropNav}
-                        date={date.valueOf()}
-                        updateDate={this.updateDate}
-                />
-            );
+                body = <main id="view_container"><h1>LIST</h1></main>;
+            break;
+
+            case 'DAY':
+            case 'WEEK':
+                const dateValues = {
+                    date: date.valueOf(),
+                    prior: date.isBefore(moment(), 'day'),
+                    current: date.isSame(moment(), 'day')
+                }
+                dayWeekBackground = (
+                    <HourDivider
+                            updateDate={this.updateDate}
+                            {...dateValues}
+                    />
+                );
             case 'MONTH':
-                body = `MONTH`; break;
+            case 'AGENDA':
+                body = (
+                    <main id="view_container">
+                        <Span className={(BODY !== "AGENDA") ? "hidden" : null }>AGENDA</Span>
+                        <Day hidden={BODY !== "DAY"}
+                                updateDate={this.updateDate}
+                                {...dateValues}
+                        />
+                        <Week hidden={BODY !== "WEEK"}
+                                updateDate={this.updateDate}
+                                {...dateValues}
+                        />
+                        {dayWeekBackground}
+                        <Span className={(BODY !== "MONTH") ? "hidden" : null }>MONTH</Span>
+                    </main>
+                );
+            break;
+
             default:
-                body = `Hello World!!`; break;
+                body = <main id="view_container"><h1>Hello World!!</h1></main>;
         }
 
-        return (
-            <main style={{marginTop: `70px`, padding: `1rem`}}><h1>{body}</h1></main>
-        );
+        return body;
     }
 
     toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
