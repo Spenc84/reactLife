@@ -11,6 +11,8 @@ import { Span } from './ui/ui';
 import Day from './views/day';
 import Week from './views/week';
 
+import { buildMap, dateMapper } from './components/tools';
+
 
 export default class LifeApp extends React.Component {
     constructor(props) {
@@ -20,8 +22,9 @@ export default class LifeApp extends React.Component {
             authenticated: false,
             user: {},
             tasks: [],
-            agenda: [],
-            map: {},
+            dates: [],
+            tMap: {},
+            dMap: {},
             HEADER: '',
             BODY: 'SPLASH',
             date: moment(),
@@ -46,8 +49,9 @@ export default class LifeApp extends React.Component {
                     authenticated: true,
                     user: incoming.data,
                     tasks: incoming.data.tasks,
-                    agenda: incoming.data.agenda,
-                    // map: (incoming.data.tasks) ? this.buildMap(incoming.data.tasks) : {},
+                    tMap: (incoming.data.tasks) ? buildMap(incoming.data.tasks) : {},
+                    dates: incoming.data.agenda,
+                    dMap: (incoming.data.agenda) ? dateMapper(incoming.data.agenda) : {},
                     HEADER: 'CALENDAR',
                     BODY: 'AGENDA'
                 })
@@ -97,8 +101,10 @@ export default class LifeApp extends React.Component {
     }
 
     getBody() {
-        const { BODY, date } = this.state;
+        const { BODY, date, dates, dMap, tasks, tMap } = this.state;
         let body, dayWeekBackground;
+
+        const taskData = { dates, dMap, tasks, tMap };
 
         switch(BODY) {
             case 'SPLASH':
@@ -133,7 +139,8 @@ export default class LifeApp extends React.Component {
                         />
                         <Week hidden={BODY !== "WEEK"}
                                 updateDate={this.updateDate}
-                                {...dateValues}
+                                date={date.valueOf()}
+                                {...taskData}
                         />
                         {dayWeekBackground}
                         <Span className={(BODY !== "MONTH") ? "hidden" : null }>MONTH</Span>

@@ -8,6 +8,7 @@ _faded(alpha = .5)
     rgba(0,0,0,alpha)
 $primaryBG = rgb(255,255,255)
 $active = rgb(0, 120, 255)
+$current = rgba(0, 120, 255, .5)
 $inactive = rgba(0,0,0,.5)
 
 // colored items
@@ -36,6 +37,10 @@ body *
     display none
 .inactive
     color: $inactive
+.prior
+    color: $inactive
+.current
+    color: $current
 .active
     color: $active
 nav .selected
@@ -117,6 +122,7 @@ section.hour-divider
       font-size 10px
 
 .Week
+    z-index 1
     position: absolute
     flex-direction: column
     width 100%
