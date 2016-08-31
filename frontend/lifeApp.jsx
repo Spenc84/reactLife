@@ -10,6 +10,7 @@ import { Span } from './ui/ui';
 
 import Day from './views/day';
 import Week from './views/week';
+import Month from './views/month';
 
 import { buildMap, dateMapper } from './components/tools';
 
@@ -132,18 +133,34 @@ export default class LifeApp extends React.Component {
             case 'AGENDA':
                 body = (
                     <main id="view_container">
+
                         <Span className={(BODY !== "AGENDA") ? "hidden" : null }>AGENDA</Span>
-                        <Day hidden={BODY !== "DAY"}
-                                updateDate={this.updateDate}
-                                {...dateValues}
-                        />
-                        <Week hidden={BODY !== "WEEK"}
-                                updateDate={this.updateDate}
-                                date={date.valueOf()}
-                                {...taskData}
-                        />
+
+                        <div className="view" style={(BODY !== "DAY") ? {display: "none"} : null}>
+                            <Day hidden={BODY !== "DAY"}
+                                    updateDate={this.updateDate}
+                                    {...dateValues}
+                                    {...taskData}
+                            />
+                        </div>
+
+                        <div className="view" style={(BODY !== "WEEK") ? {display: "none"} : null}>
+                            <Week hidden={BODY !== "WEEK"}
+                                    updateDate={this.updateDate}
+                                    date={date.valueOf()}
+                                    {...taskData}
+                            />
+                        </div>
                         {dayWeekBackground}
-                        <Span className={(BODY !== "MONTH") ? "hidden" : null }>MONTH</Span>
+
+                        <div className="view" style={(BODY !== "MONTH") ? {display: "none"} : null}>
+                            <Month hidden={BODY !== "MONTH"}
+                                    updateDate={this.updateDate}
+                                    date={date.valueOf()}
+                                    {...taskData}
+                            />
+                        </div>
+
                     </main>
                 );
             break;

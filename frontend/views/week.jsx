@@ -2,13 +2,15 @@ import React from 'react';
 import moment from 'moment';
 import { Div } from '../ui/ui';
 
-export default class Day extends React.Component {
+export default class Week extends React.Component {
+    shouldComponentUpdate(nextProps) { return !nextProps.hidden; }
     render() {
         const { hidden, updateDate, dates, dMap, tasks, tMap } = this.props;
         let date = moment(this.props.date);
 
         // Hide this view if inactive
-        const weekClasses = (hidden) ? "hidden Week view" : "Week view";
+        // const weekClasses = (hidden) ? "hidden Week view" : "Week view";
+        const weekClasses = "Week view";
 
         // Style the weekday names of prior weeks as prior
         const dateBarClasses = ( date.isBefore(moment(), 'week') )
@@ -42,12 +44,23 @@ export default class Day extends React.Component {
                 </div>
             ));
 
-            let taskList = (dMap[date.valueOf()])
-                ? dates[dMap[date.valueOf()]].start.map(
-                    x=> {
+            // Build the task list for this particular day
+            let unix = date.valueOf();
+            let taskList = (dMap[unix] || dMap[unix] === 0)
+                ? dates[dMap[unix]].start.map(
+                    (x,i) => {
                         let task = tasks[tMap[x]];
                         return (
-                            <div style={{backgroundColor: task.color}}>{task.name}</div>
+                            <div key={`task_${i}`}
+                                className="task"
+                                style={{
+                                    backgroundColor: task.color,
+                                    top: task.schedule.startTime.top-5,
+                                    minHeight: task.schedule.duration,
+                                    maxHeight: task.schedule.duration
+                                }}>
+                                {task.name}
+                            </div>
                         );
                     }
                 )
