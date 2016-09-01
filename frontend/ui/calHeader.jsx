@@ -1,47 +1,52 @@
 import React from 'react';
 import Animator from 'react-addons-css-transition-group';
-import { Column, Row, Icon, Span } from './ui';
+import { Div, Icon } from './ui';
 
 export default class calHeader extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
+
+        this.state = { showDropNav: false };
 
         this.switchToAgendaView = this.switchToAgendaView.bind(this);
         this.switchToDayView = this.switchToDayView.bind(this);
         this.switchToWeekView = this.switchToWeekView.bind(this);
         this.switchToMonthView = this.switchToMonthView.bind(this);
         this.switchToListView = this.switchToListView.bind(this);
+        this.toggleDropNav = this.toggleDropNav.bind(this);
     }
-    shouldComponentUpdate(nextProps) {
+    shouldComponentUpdate(nextProps, nextState) {
         return (
-            (this.props.showDropNav && this.props.view !== nextProps.view) ||
-            this.props.showDropNav !== nextProps.showDropNav ||
+            (this.state.showDropNav && this.props.view !== nextProps.view) ||
+            this.state.showDropNav !== nextState.showDropNav ||
             this.props.month !== nextProps.month
         );
     }
     render() {
         console.log('RENDERED:  --- CALHEADER ---'); // __DEV__
-        const { month, showDropNav, toggleOptionPane, toggleDropNav, getToday } = this.props;
+        const { month, toggleOptionPane, getToday } = this.props;
+        const { showDropNav } = this.state;
+
         const dropIcon = (showDropNav) ? 'arrow_drop_up' : 'arrow_drop_down';
         const dropNav = (showDropNav) ? this.getDropNav() : null;
         return (
             <header>
-                <Column>
-                    <Row style={{height: '4.375rem', padding: '1rem'}}>
+                <div className="Column">
+                    <div className="Row" style={{height: '4.375rem', padding: '1rem'}}>
                         <div style={{flexGrow: 1}}>
                             <Icon i={'menu'} size={2} onClick={toggleOptionPane} faded />
-                            <Span size={2} style={{margin: "0 .5rem 0 1.5rem"}} content={month} />
-                            <Icon i={dropIcon} onClick={toggleDropNav} faded fluid />
+                            <span style={{margin: "0 .5rem 0 1.5rem", fontSize: "2rem"}}>{month}</span>
+                            <Icon i={dropIcon} size={2} onClick={this.toggleDropNav} faded fluid />
                         </div>
-                        <div style={{alignItems: 'center'}}>
+                        <Div style={{alignItems: 'center'}} static>
                             <Icon i={'today'} onClick={getToday} style={{borderRight: '2px solid black', paddingRight: '.5rem'}} faded />
                             <Icon i={'list'} onClick={this.switchToListView} style={{paddingLeft: '.5rem'}} faded />
-                        </div>
-                    </Row>
+                        </Div>
+                    </div>
                     <Animator transitionName="dropNav" transitionEnterTimeout={200} transitionLeaveTimeout={200} component={FirstChild}>
                         { dropNav }
                     </Animator>
-                </Column>
+                </div>
             </header>
         );
     }
@@ -49,22 +54,23 @@ export default class calHeader extends React.Component {
         const { view, getPrior, getNext } = this.props;
         let aClass, dClass, wClass, mClass, agenda = false;
         switch(view) {
-            case `DAY`: dClass = `selected`; break;
-            case `WEEK`: wClass = `selected`; break;
-            case `MONTH`: mClass = `selected`; break;
-            default: aClass = `selected`; agenda = true; break;
+            case 'AGENDA': aClass = 'selected'; agenda = true; break;
+            case 'DAY': dClass = 'selected'; break;
+            case 'WEEK': wClass = 'selected'; break;
+            case 'MONTH': mClass = 'selected'; break;
+            default: console.log("CALHEADER: View not recognized");
         }
         return (
-            <Row key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.5rem`}}>
+            <div className="Row" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.5rem`}}>
                 <Icon i={`chevron_left`} onClick={(agenda)?null:getPrior} invisible={agenda} fluid={agenda} />
                 <nav style={{padding: `0 1.5rem`, flexGrow: 1, alignItems: `center`, justifyContent: `space-around`, fontSize: `12px`}}>
-                    <span className={aClass} onClick={this.switchToAgendaView}>AGENDA</span>
-                    <span className={dClass} onClick={this.switchToDayView}>DAY</span>
-                    <span className={wClass} onClick={this.switchToWeekView}>WEEK</span>
-                    <span className={mClass} onClick={this.switchToMonthView}>MONTH</span>
+                    <span className={aClass} onClick={(aClass) ? null : this.switchToAgendaView}>AGENDA</span>
+                    <span className={dClass} onClick={(dClass) ? null : this.switchToDayView}>DAY</span>
+                    <span className={wClass} onClick={(wClass) ? null : this.switchToWeekView}>WEEK</span>
+                    <span className={mClass} onClick={(mClass) ? null : this.switchToMonthView}>MONTH</span>
                 </nav>
                 <Icon i={`chevron_right`} onClick={(agenda)?null:getNext} invisible={agenda} fluid={agenda} />
-            </Row>
+            </div>
         );
     }
     switchToAgendaView() {this.props.updateView(`AGENDA`);}
@@ -72,6 +78,7 @@ export default class calHeader extends React.Component {
     switchToWeekView() {this.props.updateView(`WEEK`);}
     switchToMonthView() {this.props.updateView(`MONTH`);}
     switchToListView() {this.props.updateView(`LIST`, 'LIST');}
+    toggleDropNav() { this.setState({showDropNav: !this.state.showDropNav}); }
 }
 
 function FirstChild(props) {

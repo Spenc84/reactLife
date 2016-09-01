@@ -1,5 +1,6 @@
 import '../style.styl';
 import React from 'react';
+import shallowCompare from 'react-addons-shallow-compare';
 
 export class Div extends React.Component {
     shouldComponentUpdate(nextProps) { return !this.props.static || !nextProps.static }
@@ -21,7 +22,11 @@ export class Div extends React.Component {
     }
 }
 export class Column extends React.Component {
-    shouldComponentUpdate(nextProps) { return !this.props.static || !nextProps.static }
+    shouldComponentUpdate(nextProps) {
+        if(this.props.static && nextProps.static) return false;
+        if(this.props.check !== undefined && this.props.check === nextProps.check) return false;
+        return true;
+    }
     render() {
         const { id, className, style, flex, onClick, children } = this.props;
         let _className = (className) ? `Column ${className}` : "Column"
@@ -40,7 +45,11 @@ export class Column extends React.Component {
     }
 }
 export class Row extends React.Component {
-    shouldComponentUpdate(nextProps) { return !this.props.static || !nextProps.static }
+    shouldComponentUpdate(nextProps) {
+        if(this.props.static && nextProps.static) return false;
+        if(this.props.check !== undefined && this.props.check === nextProps.check) return false;
+        return true;
+    }
     render() {
         const { id, className, style, flex, onClick, children } = this.props;
         let _className = (className) ? `Row ${className}` : "Row"
@@ -51,8 +60,8 @@ export class Row extends React.Component {
         return (
             <div id={id}
                 className={_className}
-                onClick={onClick}
-                style={_style}>
+                style={_style}
+                onClick={onClick}>
                 {children}
             </div>
         );
@@ -60,7 +69,10 @@ export class Row extends React.Component {
 }
 
 export class Icon extends React.Component {
-    shouldComponentUpdate(nextProps) { return this.props.fluid || nextProps.fluid || false; }
+    shouldComponentUpdate(nextProps, nextState) {
+        if(this.props.fluid || nextProps.fluid) return shallowCompare(this, nextProps, nextState);
+        return false;
+    }
     render() {
         console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
         const { style, className, faded, invisible, size, onClick } = this.props;
@@ -72,8 +84,8 @@ export class Icon extends React.Component {
 
         return (
             <i className={_className}
-                onClick={onClick}
-                style={_style}>
+                style={_style}
+                onClick={onClick}>
                 {this.props.i}
             </i>
         );
@@ -83,12 +95,13 @@ export class Icon extends React.Component {
 export class Span extends React.Component {
     shouldComponentUpdate(nextProps) { return !this.props.static || !nextProps.static }
     render() {
-        console.log(`RENDERED: Span`); // __DEV__
         const { id, style, className, faded, size, content, children } = this.props;
         let _className = (className) ? `Span ${className}` : "Span";
         if(faded) _className += ` faded`;
         let _style = style || {};
         if(size) _style.fontSize = `${size}rem`;
+
+        console.log(`RENDERED: ${_className}`); // __DEV__
         return (
             <span id={id}
                 className={_className}

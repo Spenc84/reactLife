@@ -29,17 +29,15 @@ export default class LifeApp extends React.Component {
             HEADER: '',
             BODY: 'SPLASH',
             date: moment(),
-            showOptionPane: false, // Cal only
-            showDropNav: false // Cal only
+            showOptionPane: false
         };
 
-        this.toggleOptionPane = this.toggleOptionPane.bind(this);
-        this.toggleDropNav = this.toggleDropNav.bind(this);
         this.updateView = this.updateView.bind(this);
         this.updateDate = this.updateDate.bind(this);
         this.getPrior = this.getPrior.bind(this);
         this.getToday = this.getToday.bind(this);
         this.getNext = this.getNext.bind(this);
+        this.toggleOptionPane = this.toggleOptionPane.bind(this);
     }
 
     componentDidMount() {
@@ -78,16 +76,14 @@ export default class LifeApp extends React.Component {
 	}
 
     getHeader() {
-        const { HEADER, BODY, date, showDropNav } = this.state;
+        const { HEADER, BODY, date } = this.state;
 
         switch(HEADER) {
             case 'CALENDAR': return (
                 <CalHeader
                     month={date.format('MMMM')}
                     view={BODY}
-                    showDropNav={showDropNav}
                     toggleOptionPane={this.toggleOptionPane}
-                    toggleDropNav={this.toggleDropNav}
                     updateView={this.updateView}
                     getPrior={this.getPrior}
                     getToday={this.getToday}
@@ -134,7 +130,7 @@ export default class LifeApp extends React.Component {
                 body = (
                     <main id="view_container">
 
-                        <Span className={(BODY !== "AGENDA") ? "hidden" : null }>AGENDA</Span>
+                        <Span className={(BODY !== "AGENDA") ? "hidden AGENDA" : "AGENDA" } static={BODY !== "AGENDA"}>AGENDA</Span>
 
                         <div className="view" style={(BODY !== "DAY") ? {display: "none"} : null}>
                             <Day hidden={BODY !== "DAY"}
@@ -153,7 +149,7 @@ export default class LifeApp extends React.Component {
                         </div>
                         {dayWeekBackground}
 
-                        <div className="view" style={(BODY !== "MONTH") ? {display: "none"} : null}>
+                        <div className="view" style={(BODY !== "MONTH") ? {display: "none"} : {height: "100%"}}>
                             <Month hidden={BODY !== "MONTH"}
                                     updateDate={this.updateDate}
                                     date={date.valueOf()}
@@ -172,8 +168,6 @@ export default class LifeApp extends React.Component {
         return body;
     }
 
-    toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
-    toggleDropNav() { this.setState({showDropNav: !this.state.showDropNav}); }
     updateView(body, header) {
         if(header) this.setState({BODY: body, HEADER: header});
         else this.setState({BODY: body});
@@ -182,6 +176,7 @@ export default class LifeApp extends React.Component {
     getPrior() { this.setState( {date: this.state.date.clone().subtract(1, this.state.BODY)} ); }
     getToday() { this.setState( {date: moment()} ); }
     getNext() { this.setState( {date: this.state.date.clone().add(1, this.state.BODY)} ); }
+    toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
 }
 
 ReactDOM.render(<LifeApp/>, document.querySelector("App"));

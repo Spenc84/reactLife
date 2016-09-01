@@ -15,10 +15,8 @@ export default class HourDivider extends React.Component {
     constructor(props) {
         super(props)
 
-        this.state = {
-            now: moment().valueOf()
-        }
-        console.log('***CONSTRUCTED***'); // __DEV__
+        this.state = { now: moment().valueOf() }
+
         this.updateCurrentMinute = this.updateCurrentMinute.bind(this);
         this.intervalId = setInterval(this.updateCurrentMinute, 60000);
     }
@@ -39,8 +37,6 @@ export default class HourDivider extends React.Component {
 
         const hour = now.hour();
         const minuteBarHeight = hour*60 + now.minute() - 5;
-        console.log(`${minuteBarHeight}px`); // __DEV__
-        const hourClasses = (prior) ? 'inactive hours' : 'hours';
         const hourStyles = (current)
                 ? ( <style style={{display: 'none'}} dangerouslySetInnerHTML={{__html: [`.hours span:nth-child(-n+${hour}){ color: rgba(0,0,0,.5) }`].join('\n')}} /> )
                 : null;
@@ -56,11 +52,13 @@ export default class HourDivider extends React.Component {
         console.log('RENDERED:  *  HourDivider'); // __DEV__
         return (
             <section className="hour-divider">
-                {hourStyles}
-                <Column className={hourClasses} flex={'0 0 3rem'}>
-                    {HOURS}
-                </Column>
-                <Row className="events">
+                <div className={(prior) ? "inactive Row" : "Row"} style={{flex: '0 0 3rem'}}>
+                    {hourStyles}
+                    <Column className="hours" flex={'0 0 3rem'} static>
+                        {HOURS}
+                    </Column>
+                </div>
+                <Row className="events" static={!current}>
                     {MINUTE_BAR}
                     <Column className="dividingLines" static>
                         {DIVIDING_LINES}
@@ -71,6 +69,7 @@ export default class HourDivider extends React.Component {
     }
 
     updateCurrentMinute() {
+        if(!this.props.current) return;
         const now = moment();
         if(now.hour() === 0 && now.minute() === 0) this.props.updateDate(now);
         else this.setState({now: moment().valueOf()});

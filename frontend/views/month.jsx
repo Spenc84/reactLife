@@ -4,13 +4,13 @@ import moment from 'moment';
 import { Column, Row } from '../ui/ui';
 
 // Build the weekdays title row
-const weekdayTitles = moment.weekdaysShort().map(x=><span className="weekday title">{x}</span>);
+const weekdayTitles = moment.weekdaysShort().map((x)=><span key={x} className="weekday title">{x}</span>);
 
 export default class Month extends React.Component {
     shouldComponentUpdate(nextProps) { return !nextProps.hidden; }
     render() {
         const { hidden, updateDate, date, dates, dMap, tasks, tMap } = this.props;
-        let day = moment(this.props.date).startOf('month');
+        let day = moment(date).startOf('month');
 
         // Hide this view if inactive
         // const monthClasses = (hidden) ? "hidden Month view" : "Month view";
@@ -24,13 +24,19 @@ export default class Month extends React.Component {
         //////   BUILD MONTH   //////
         let month = [];
         day.startOf('week');
-        for (let i = 0; i < numOfWeeks; i++) {
+        for (let w = 0; w < numOfWeeks; w++) {
             //////  BUILD WEEK  //////
             let week = [];
-            for (let i = 0; i < 7; i++) {
+            let currentWeek = false;
+            for (let d = 0; d < 7; d++) {
                 ////// BUILD DAY //////
-                let dayClasses = (day.month() === currentMonth) ? "day" : "prior day";
-                if(day.isSame(moment(this.props.date), 'day')) dayClasses = "active " + dayClasses;
+                let currentDay = false;
+                let dayClasses = (day.month() === currentMonth) ? "day Column" : "faded day Column";
+                if(day.isSame(moment(date), 'day')) {
+                    dayClasses = "active " + dayClasses;
+                    currentDay = true;
+                    currentWeek = true;
+                }
 
                 // Build the task list for this particular day
                 let unix = day.valueOf();
@@ -49,15 +55,15 @@ export default class Month extends React.Component {
                     : null;
 
                 week.push(
-                    <Column key={`day_${day.date()}`} className={dayClasses}>
+                    <div key={`${w}_day_${d}`} className={dayClasses} onClick={updateDate.bind(null, day.clone())}>
                         <span className="date">{day.date()}</span>
                         {taskList}
-                    </Column>
+                    </div>
                 );
                 day.add(1, 'day');
                 // END OF DAY -
             }
-            month.push(<Row key={`week_${i}`} className="week">{week}</Row>);
+            month.push(<div key={`week_${w}`} className="week Row">{week}</div>);
             // END OF WEEK --
         }
         // END OF MONTH ---
@@ -69,7 +75,7 @@ export default class Month extends React.Component {
                 <div className="weekday title row">
                     {weekdayTitles}
                 </div>
-                <Column className="month">
+                <Column className="month" check={date}>
                     {month}
                 </Column>
 

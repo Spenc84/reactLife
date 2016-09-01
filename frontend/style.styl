@@ -65,9 +65,9 @@ header
     background-color $primaryBG
     box-shadow 0 1px 10px #515151
     flex 0 0 auto
-main
+main#view_container
     display: block
-    flex 1 1 auto
+    flex 1 1 100%
     overflow-x: hidden
     overflow-y: auto
     position: relative
@@ -182,8 +182,23 @@ section.hour-divider
 
 .Month.view
     flex-direction: column
-    .day
+    width 100%
+    .weekday.title span, .day
         width: (100%/7)
+    .weekday.title.row
+        padding: .5rem 0
+        span
+            justify-content: center
+    .week
+        flex 1 1 0
+    .day
+        padding 3px
+        .date
+            align-self center
+        .task
+            height 10px
+            margin 1px 0
+            border-radius: 8px
 
 
 
