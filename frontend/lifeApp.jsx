@@ -8,6 +8,7 @@ import ListHeader from './ui/listHeader';
 import HourDivider from './components/HourDivider';
 import { Span } from './ui/ui';
 
+import Agenda from './views/agenda';
 import Day from './views/day';
 import Week from './views/week';
 import Month from './views/month';
@@ -50,7 +51,7 @@ export default class LifeApp extends React.Component {
                     tasks: incoming.data.tasks,
                     tMap: (incoming.data.tasks) ? buildMap(incoming.data.tasks) : {},
                     dates: incoming.data.agenda,
-                    dMap: (incoming.data.agenda) ? dateMapper(incoming.data.agenda) : {},
+                    dMap: (incoming.data.agenda) ? buildMap(incoming.data.agenda) : {},
                     HEADER: 'CALENDAR',
                     BODY: 'AGENDA'
                 })
@@ -130,7 +131,12 @@ export default class LifeApp extends React.Component {
                 body = (
                     <main id="view_container">
 
-                        <Span className={(BODY !== "AGENDA") ? "hidden AGENDA" : "AGENDA" } static={BODY !== "AGENDA"}>AGENDA</Span>
+                        <div className="view" style={(BODY !== "AGENDA") ? {display: "none"} : null}>
+                            <Agenda hidden={BODY !== "AGENDA"}
+                                    date={date.valueOf()}
+                                    {...taskData}
+                            />
+                        </div>
 
                         <div className="view" style={(BODY !== "DAY") ? {display: "none"} : null}>
                             <Day hidden={BODY !== "DAY"}

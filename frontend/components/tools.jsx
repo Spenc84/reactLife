@@ -6,8 +6,3 @@ export function buildMap(array) {
     array.forEach((e,i)=>newMap[e._id] = i);
     return newMap;
 }
-
-export function dateMapper(array) {
-    array.forEach((e,i)=>e._id = moment(e.date).valueOf());
-    return buildMap(array);
-}
