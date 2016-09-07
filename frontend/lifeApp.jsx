@@ -13,7 +13,7 @@ import Day from './views/day';
 import Week from './views/week';
 import Month from './views/month';
 
-import { buildMap, dateMapper } from './components/tools';
+import { buildMap } from './components/tools';
 
 
 export default class LifeApp extends React.Component {
@@ -27,9 +27,11 @@ export default class LifeApp extends React.Component {
             dates: [],
             tMap: {},
             dMap: {},
+            selectedTasks: [],
             HEADER: '',
             BODY: 'SPLASH',
-            date: moment(),
+            priorBODY: 'AGENDA',
+            date: moment().startOf('day'),
             showOptionPane: false
         };
 
@@ -77,7 +79,7 @@ export default class LifeApp extends React.Component {
 	}
 
     getHeader() {
-        const { HEADER, BODY, date } = this.state;
+        const { HEADER, BODY, priorView, date, selectedTasks } = this.state;
 
         switch(HEADER) {
             case 'CALENDAR': return (
@@ -92,7 +94,11 @@ export default class LifeApp extends React.Component {
                 />
             );
             case 'LIST': return (
-                <ListHeader />
+                <ListHeader
+                    priorBODY={this.state.priorBODY}
+                    updateView={this.updateView}
+                    selectedTasks={selectedTasks}
+                />
             );
             default: return null;
         }
@@ -133,6 +139,7 @@ export default class LifeApp extends React.Component {
 
                         <div className="view" style={(BODY !== "AGENDA") ? {display: "none"} : null}>
                             <Agenda hidden={BODY !== "AGENDA"}
+                                    updateDate={this.updateDate}
                                     date={date.valueOf()}
                                     {...taskData}
                             />
@@ -175,12 +182,12 @@ export default class LifeApp extends React.Component {
     }
 
     updateView(body, header) {
-        if(header) this.setState({BODY: body, HEADER: header});
+        if(header) this.setState({HEADER: header, BODY: body, priorBODY: this.state.BODY});
         else this.setState({BODY: body});
     }
-    updateDate(newDate) { this.setState( {date: moment(newDate)} ); }
+    updateDate(newDate) { this.setState( {date: moment(newDate).startOf('day')} ); }
     getPrior() { this.setState( {date: this.state.date.clone().subtract(1, this.state.BODY)} ); }
-    getToday() { this.setState( {date: moment()} ); }
+    getToday() { this.setState( {date: moment().startOf('day')} ); }
     getNext() { this.setState( {date: this.state.date.clone().add(1, this.state.BODY)} ); }
     toggleOptionPane() { this.setState({showOptionPane: !this.state.showOptionPane}); }
 }

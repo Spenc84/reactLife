@@ -9,9 +9,11 @@ _faded(alpha = .5)
 $primaryBG = rgb(255,255,255)
 $active = rgb(0, 120, 255)
 $current = rgba(0, 120, 255, .5)
-$inactive = rgba(0,0,0,.5)
+$inactive = _faded()
+$light = rgb(245,245,245)
 
 // colored items
+$listAccent = rgb(0, 120, 255)
 $hourDivider = _faded(.3)
 $dateDay = linear-gradient(to bottom, $primaryBG 0%, $primaryBG 75%, transparent 100%)
 
@@ -41,10 +43,8 @@ body *
     color: $current
 .active
     color: $active
-nav .selected
-    background: #f4f4f4;
-    box-shadow: inset 1px 1px 3px #666;
-    transition: all 200ms ease-in-out
+.light
+    color: $light
 
 
 
@@ -60,23 +60,105 @@ i.material-icons
     display flex
     align-items center
     transition opacity 300ms ease-in-out
-header
-    z-index $headerIndx
-    background-color $primaryBG
-    box-shadow 0 1px 10px #515151
-    flex 0 0 auto
 main#view_container
     display: block
     flex 1 1 100%
     overflow-x: hidden
     overflow-y: auto
     position: relative
-    // transition: padding-top 200ms ease-in-out
-nav span
-    border-radius: 0.5rem;
-    padding .2rem .5rem .1rem
 
 ////////// COMPLEX //////////
+header
+    z-index $headerIndx
+    flex 0 0 auto
+header.calendar
+    background-color $primaryBG
+    box-shadow 0 1px 10px #515151
+    nav span
+        border-radius: 0.5rem;
+        padding .2rem .5rem .1rem
+    nav .selected
+        background: #f4f4f4;
+        box-shadow: inset 1px 1px 3px #666;
+        transition: all 200ms ease-in-out
+header.list
+    flex-direction: column
+    & > div.Row
+        align-items center
+        height 70px
+        padding 0 1rem
+    div.default.Row
+        background-color $listAccent
+        color $light
+        transition: opacity .2s
+        &.hideaway
+            opacity: 0
+            height: 0
+            margin-bottom: 70px
+            overflow: hidden
+            transition: opacity .2s, height 0s .3s, margin-bottom 0s .3s
+    div.icon.Row
+        z-index: -1
+        position: absolute
+        width: 100%
+    nav.tab.Column
+        background-color $listAccent
+        color $inactive
+        .tab
+            position: relative
+            align-items: center
+            justify-content: center
+            flex: 2 1 0
+            padding 4px 8px
+            height 2rem
+            &:first-child span
+                border-left: none
+            &:last-child span
+                border-right: none
+            span
+                position: absolute;
+                background: rgb(240,240,240);
+                width: 100%;
+                height: 100%;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid $inactive
+                border-top-left-radius: 8px
+                border-top-right-radius: 8px
+            &.selected span
+                z-index: 5;
+                width: 110%;
+                height: 120%;
+                font-weight: 600;
+                font-size: 18px;
+                color: rgb(85,85,85);
+                background: white;
+                box-shadow: inset 0px 0px 4px #666
+                transition all .1s ease-in-out
+                & i.material-icons
+                    font-size 28px
+    div.query
+        z-index 5
+        flex-direction: column
+        background white
+        color $inactive
+        padding .5rem
+        flex 1
+        span
+            justify-content: center
+            padding .25rem .5rem
+            &.included
+                text-shadow: 0 3px 6px #048
+            &.excluded
+                text-shadow: 0 3px 6px #f00
+            &.included, &.excluded
+                color: black
+        input
+            margin .5rem
+            flex 1
+        &.spacer
+            background linear-gradient(to bottom, white 0%, white 50%, transparent 100%)
+
 section.hour-divider
     flex-grow 1
     .hours
@@ -108,7 +190,34 @@ section.hour-divider
 ////////////////////////////////     VIEWS     /////////////////////////////////
 .Agenda.view
     flex-direction: column
-    
+    width 100%
+    .month
+        height 5rem
+        justify-content: center
+        align-items: center
+        font-size 2rem
+    .day
+        margin .5rem 0
+    .date
+        flex-direction column
+        height 60px
+        width 50px
+        font-size 24px
+        align-items center
+        background: $dateDay
+        &>div:first-child
+          font-size 10px
+    .tasks
+        flex-direction: column
+        flex 1 1 auto
+    .task
+        padding .25rem .5rem
+        border-radius: .15rem
+        margin: .25rem 1rem .25rem 0
+        font-family: -apple-system,".SFNSText-Regular","San Francisco",Roboto,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+        font-size: 14px
+        color: white
+
 .Day.view
     z-index 1
     position: absolute

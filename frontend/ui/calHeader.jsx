@@ -30,7 +30,7 @@ export default class calHeader extends React.Component {
         const dropIcon = (showDropNav) ? 'arrow_drop_up' : 'arrow_drop_down';
         const dropNav = (showDropNav) ? this.getDropNav() : null;
         return (
-            <header>
+            <header className="calendar">
                 <div className="Column">
                     <div className="Row" style={{height: '4.375rem', padding: '1rem'}}>
                         <div style={{flexGrow: 1}}>

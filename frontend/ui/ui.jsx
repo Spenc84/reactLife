@@ -75,10 +75,11 @@ export class Icon extends React.Component {
     }
     render() {
         console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
-        const { style, className, faded, invisible, size, onClick } = this.props;
+        const { style, className, light, faded, invisible, size, onClick } = this.props;
         let _className = (className) ? `material-icons ${className}` : "material-icons";
         if(faded) _className += ` faded`;
         if(invisible) _className += ' invisible';
+        if(light) _className += ' light';
         let _style = style || {};
         if(size) _style.fontSize = `${size}rem`;
 
