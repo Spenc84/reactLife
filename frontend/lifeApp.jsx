@@ -12,8 +12,15 @@ import Agenda from './views/agenda';
 import Day from './views/day';
 import Week from './views/week';
 import Month from './views/month';
+import List from './views/list';
 
-import { buildMap } from './components/tools';
+import { buildMap, filterTasks } from './components/tools';
+
+const DEFAULT_QUERY = {
+    exclude: 0,
+    require: [],
+    include: ['active']
+}
 
 
 export default class LifeApp extends React.Component {
@@ -32,11 +39,13 @@ export default class LifeApp extends React.Component {
             BODY: 'SPLASH',
             priorBODY: 'AGENDA',
             date: moment().startOf('day'),
-            showOptionPane: false
+            showOptionPane: false,
+            query: DEFAULT_QUERY
         };
 
         this.updateView = this.updateView.bind(this);
         this.updateDate = this.updateDate.bind(this);
+        this.updateQuery = this.updateQuery.bind(this);
         this.getPrior = this.getPrior.bind(this);
         this.getToday = this.getToday.bind(this);
         this.getNext = this.getNext.bind(this);
@@ -98,6 +107,7 @@ export default class LifeApp extends React.Component {
                     priorBODY={this.state.priorBODY}
                     updateView={this.updateView}
                     selectedTasks={selectedTasks}
+                    updateQuery={this.updateQuery}
                 />
             );
             default: return null;
@@ -105,7 +115,7 @@ export default class LifeApp extends React.Component {
     }
 
     getBody() {
-        const { BODY, date, dates, dMap, tasks, tMap } = this.state;
+        const { BODY, date, dates, dMap, tasks, tMap, query } = this.state;
         let body, dayWeekBackground;
 
         const taskData = { dates, dMap, tasks, tMap };
@@ -116,7 +126,7 @@ export default class LifeApp extends React.Component {
             break;
 
             case 'LIST':
-                body = <main id="view_container"><h1>LIST</h1></main>;
+                body = <main id="view_container"><List taskList={filterTasks(tasks, query)} /></main>;
             break;
 
             case 'DAY':
@@ -186,6 +196,7 @@ export default class LifeApp extends React.Component {
         else this.setState({BODY: body});
     }
     updateDate(newDate) { this.setState( {date: moment(newDate).startOf('day')} ); }
+    updateQuery(newQuery) { this.setState( {query: newQuery} ) };
     getPrior() { this.setState( {date: this.state.date.clone().subtract(1, this.state.BODY)} ); }
     getToday() { this.setState( {date: moment().startOf('day')} ); }
     getNext() { this.setState( {date: this.state.date.clone().add(1, this.state.BODY)} ); }

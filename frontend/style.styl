@@ -71,6 +71,7 @@ main#view_container
 header
     z-index $headerIndx
     flex 0 0 auto
+    overflow-x: hidden
 header.calendar
     background-color $primaryBG
     box-shadow 0 1px 10px #515151
@@ -145,13 +146,14 @@ header.list
         padding .5rem
         flex 1
         span
+            -webkit-user-select: none
             justify-content: center
             padding .25rem .5rem
             &.included
                 text-shadow: 0 3px 6px #048
-            &.excluded
+            &.required
                 text-shadow: 0 3px 6px #f00
-            &.included, &.excluded
+            &.included, &.required
                 color: black
         input
             margin .5rem

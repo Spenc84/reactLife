@@ -16,6 +16,9 @@ export default class ListHeader extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
         return (true);
     }
+    componentDidMount() {
+
+    }
     render() {
         const { selectedTab } = this.state;
         const { selectedTasks } = this.props;
@@ -53,7 +56,7 @@ export default class ListHeader extends React.Component {
                     </div>
                 </nav>
                 <div style={(selectedTab === 'SEARCH')?null:{display: 'none'}}>
-                    <QueryBuilder />
+                    <QueryBuilder ref="QB" updateQuery={this.props.updateQuery} />
                 </div>
                 <div className="query spacer" style={(selectedTab === 'SEARCH')?{display: 'none'}:null} />
             </header>
@@ -62,5 +65,9 @@ export default class ListHeader extends React.Component {
 
     switchToCalendarView() { this.props.updateView(this.props.priorBODY, 'CALENDAR'); }
     toggleAdvancedQuery() { this.setState({showAdvancedQuery: !this.state.showAdvancedQuery}); }
-    selectTab(tab) { this.setState({selectedTab: tab}); }
+    selectTab(tab) { this.updateQuery(tab); this.setState({selectedTab: tab}); }
+    updateQuery(tab) {
+        if(tab && tab !== 'SEARCH') this.props.updateQuery({include: [tab.toLowerCase()]});
+        else this.refs.QB.updateQuery();
+    }
 }
