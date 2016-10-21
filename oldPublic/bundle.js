@@ -8937,7 +8937,7 @@
 	              // collect them up, compile them and store their transclusion functions
 	              $template = [];
 
-	              var slotMap = createMap();
+	              var slotIndx = createMap();
 	              var filledSlots = createMap();
 
 	              // Parse the element selectors
@@ -8946,7 +8946,7 @@
 	                var optional = (elementSelector.charAt(0) === '?');
 	                elementSelector = optional ? elementSelector.substring(1) : elementSelector;
 
-	                slotMap[elementSelector] = slotName;
+	                slotIndx[elementSelector] = slotName;
 
 	                // We explicitly assign `null` since this implies that a slot was defined but not filled.
 	                // Later when calling boundTransclusion functions with a slot name we only error if the
@@ -8960,7 +8960,7 @@
 
 	              // Add the matching elements into their slot
 	              forEach($compileNode.contents(), function(node) {
-	                var slotName = slotMap[directiveNormalize(nodeName_(node))];
+	                var slotName = slotIndx[directiveNormalize(nodeName_(node))];
 	                if (slotName) {
 	                  filledSlots[slotName] = true;
 	                  slots[slotName] = slots[slotName] || [];
@@ -28314,7 +28314,7 @@
 
 	        options = ngOptions.getOptions();
 
-	        var groupElementMap = {};
+	        var groupElementIndx = {};
 
 	        // Ensure that the empty option is always there if it was explicitly provided
 	        if (providedEmptyOption) {
@@ -28328,7 +28328,7 @@
 
 	            // This option is to live in a group
 	            // See if we have already created this group
-	            groupElement = groupElementMap[option.group];
+	            groupElement = groupElementIndx[option.group];
 
 	            if (!groupElement) {
 
@@ -28339,7 +28339,7 @@
 	              groupElement.label = option.group;
 
 	              // Store it for use later
-	              groupElementMap[option.group] = groupElement;
+	              groupElementIndx[option.group] = groupElement;
 	            }
 
 	            addOptionElement(option, groupElement);
@@ -51044,7 +51044,7 @@
 	            _this.user = incoming.data || {};
 	            _this.tasks = _this.user.tasks || [];
 	            _this.agenda = _this.user.agenda || [];
-	            _this.map = _this.tasks ? buildMap(_this.tasks) : {};
+	            _this.map = _this.tasks ? Index(_this.tasks) : {};
 	            console.log("User Authenticated: ", _this.user);
 	            deferred.resolve("User Authenticated.");
 	            notifyChange();
@@ -51056,7 +51056,7 @@
 	    }
 
 	    // Used to index the tasks array by tasks._id
-	    function buildMap(array) {
+	    function Index(array) {
 	        var newMap = {};
 	        array.forEach(function (e, i) {
 	            return newMap[e._id] = i;
@@ -51125,7 +51125,7 @@
 	                if (task.status.scheduled) updateAgenda.removeItem(task);
 	                tasks.splice(indx, 1);
 	            }
-	            map = buildMap(tasks);
+	            map = Index(tasks);
 	            notifyChange();
 	        }, function (err) {
 	            return alert(err);

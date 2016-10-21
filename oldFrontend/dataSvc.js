@@ -33,7 +33,7 @@ export default function dataSvc ($http, $q, moment) {
                 this.user = incoming.data || {};
                 this.tasks = this.user.tasks || [];
                 this.agenda = this.user.agenda || [];
-                this.map = (this.tasks) ? buildMap(this.tasks) : {};
+                this.map = (this.tasks) ? Index(this.tasks) : {};
                 console.log(`User Authenticated: `, this.user);
                 deferred.resolve(`User Authenticated.`);
                 notifyChange();
@@ -47,7 +47,7 @@ export default function dataSvc ($http, $q, moment) {
     }
 
     // Used to index the tasks array by tasks._id
-    function buildMap(array) {
+    function Index(array) {
         let newMap = {};
         array.forEach((e,i)=>newMap[e._id] = i);
         return newMap;
@@ -108,7 +108,7 @@ this.deleteTasks = (ids) => {
                 if(task.status.scheduled) updateAgenda.removeItem(task);
                 tasks.splice(indx, 1);
             }
-            map = buildMap(tasks);
+            map = Index(tasks);
             notifyChange();
         },
         err=>alert(err)

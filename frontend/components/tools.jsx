@@ -1,32 +1,39 @@
 import moment from 'moment';
+import { Map, List, fromJS, toJS } from 'immutable';
+
 
 // Takes in an Array and returns a map object with { _id: 'array index') key-value pairs
-export function buildMap(array) {
+export function Index(array) {
     let newMap = {};
     array.forEach((e,i)=>newMap[e._id] = i);
     return newMap;
 }
 
-/* Takes in the entire tasks array (or a subset thereof), and filters it using
+/* Takes in the entire tasks list (or a subset thereof), and filters it using
     the passed in query object in the following format...
 query = {
-    exclude: (Boolean) indicates whether filtered items should be excluded from the resulting array rather than included
-    require: (array:string) An array of string values representing which key names in the status object to iterate over. Each value must be true for the task to be considered for the resulting array.
-    include: (array:string) An array of string values representing which key names in the status object to iterate over. Any value may be true for the task to be considered for the resulting array.
+    rInclude: (array:string) An array of string values representing which key names in the status object to iterate over. Each item must return true for the task to be included in the resulting List.
+    rExclude: (array:string) An array of string values representing which key names in the status object to iterate over. Each item must return false for the task to be included in the resulting List.
+    include: (array:string) An array of string values representing which key names in the status object to iterate over. Any item may return true for the task to be included in the resulting List.
+    exclude: (array:string) An array of string values representing which key names in the status object to iterate over. Any item may return false for the task to be included in the resulting List.
 } */
-export function filterTasks(array, query) {
-    if(!query || typeof query !== 'object' || !(query.require || query.include))  return [];
-    if(!query.require) query.require = [];
+export function filterTasks(list, query) {
+    if(!List.isList(list) || list.size === 0) return List();
+    if(typeof query !== 'object')  return list;
+    if(!(query.rInclude || query.rExclude || query.include || query.exclude)) return List();
+    if(!query.rInclude) query.rInclude = [];
+    if(!query.rExclude) query.rExclude = [];
     if(!query.include) query.include = [];
-    if(!(query.require.length || query.include.length)) return (query.exclude) ? array : [];
+    if(!query.exclude) query.exclude = [];
 
-    return array.filter(task=>{
-        const { status } = task;
+    return list.filter(
+        task => {
+            const status = task.get("status");
 
-        const passed = query.require.every(item=>status[item]) &&
-                            (query.include.some(item=>status[item]) ||
-                            query.include.length === 0);
-
-        return (query.exclude) ? !passed : passed;
-    });
+            return query.rInclude.every(item=>status.get(item)) &&
+                    query.rExclude.every(item=>!status.get(item)) &&
+                    (query.include.length === 0 || query.include.some(item=>status.get(item))) &&
+                    (query.exclude.length === 0 || query.exclude.some(item=>!status.get(item)));
+        }
+    );
 }
