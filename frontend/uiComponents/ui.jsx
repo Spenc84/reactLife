@@ -70,25 +70,29 @@ export class Row extends React.Component {
 
 export class Icon extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
-        if(this.props.fluid || nextProps.fluid) return shallowCompare(this, nextProps, nextState);
+        if(this.props.fluid || nextProps.fluid || this.props.hidden !== nextProps.hidden) return shallowCompare(this, nextProps, nextState);
         return false;
     }
     render() {
-        console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
-        const { style, className, light, faded, invisible, size, onClick } = this.props;
-        let _className = (className) ? `material-icons ${className}` : "material-icons";
-        if(faded) _className += ` faded`;
+        const { style, className, light, hidden, invisible, faded, size, onClick } = this.props;
+        let _className = (className) ? `${className} ` : "";
+        _className += `${this.props.i} icon`;
+        if(hidden) _className += ' hidden';
         if(invisible) _className += ' invisible';
+        if(faded) _className += ' faded';
         if(light) _className += ' light';
-        let _style = style || {};
-        if(size) _style.fontSize = `${size}rem`;
+        const _style = (size) ? {fontSize: `${size}rem`} : null;
 
+        console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
         return (
-            <i className={_className}
-                style={_style}
-                onClick={onClick}>
-                {this.props.i}
-            </i>
+            <div className={_className}
+                onClick={onClick}
+                style={style}>
+                <i className="material-icons"
+                    style={_style}>
+                    {this.props.i}
+                </i>
+            </div>
         );
     }
 }

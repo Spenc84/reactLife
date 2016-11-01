@@ -155,45 +155,67 @@ module.exports = {
         console.log(set);
         User.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
     },
-  deleteUser: function( req, res ){
-    User.findByIdAndRemove(req.params.id, cb(res));
-  },
+    deleteUser: function( req, res ){
+        User.findByIdAndRemove(req.params.id, cb(res));
+    },
 
-  // ----- TASKS -----
-  postTask: function( req, res ){
-    Task.create(req.body, cb(res));
-  },
-  getTasks: function( req, res ){
-    Task.find(req.query, cb(res));
-  },
-  getTask: function( req, res ){
-    Task.findById(req.params.id, cb(res));
-  },
-  editTask: function( req, res ){
-    Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
-  },
-  editTasks: function( req, res ){
-    console.log(req.params);
-    let set = {},
-        items = req.params.ids.split(','),
-        keys = req.params.keys.split(','),
-        values = JSON.parse(req.params.values);
-    console.log(items);
-    console.log(keys);
-    console.log(values);
-    for (let i = 0; i < keys.length; i++) {
-      set[keys[i]] = values[i];
+// ----- TASKS -----
+    getTasks: function( req, res ) {
+        Task.find(req.query, cb(res));
+    },
+    updateTasks( req, res ) {
+        const { selectedTasks, desiredChanges, userID } = req.body;
+        Task.update(
+            {_id: { $in: selectedTasks } },
+            {$set: desiredChanges},
+            {multi: true},
+            (error, response) => {
+                if(error) return res.status(500).json(error);
+                User.findById(userID, (error, response) => {
+                    if(error) return res.status(500).json(error);
+                    res.status(200).json(response.tasks);
+                }).populate('tasks');
+            }
+        );
+    },
+    postTask: function( req, res ) {
+        Task.create(req.body, cb(res));
+    },
+    getUserTaskList( req, res ) {
+        const { userID } = req.params;
+        User.findById(userID, (error, response) => {
+            if(error) return res.status(500).json(error);
+            res.status(200).json(response.tasks);
+        }).populate('tasks');
+    },
+    getTask: function( req, res ){
+        Task.findById(req.params.id, cb(res));
+    },
+    editTask: function( req, res ){
+        Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
+    },
+    editTasks: function( req, res ){
+        console.log(req.params);
+        let set = {},
+            items = req.params.ids.split(','),
+            keys = req.params.keys.split(','),
+            values = JSON.parse(req.params.values);
+        console.log(items);
+        console.log(keys);
+        console.log(values);
+        for (let i = 0; i < keys.length; i++) {
+            set[keys[i]] = values[i];
+        }
+        console.log(set);
+        Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
+    },
+    deleteTasks: function( req, res ){
+        console.log(req.params.id);
+        let items = req.params.id.split(',');
+        console.log(items);
+        Task.remove({ _id: { $in: items } }, cb(res));
+    },
+    deleteTask: function( req, res ){
+        Task.findByIdAndRemove(req.params.id, cb(res));
     }
-    console.log(set);
-    Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
-  },
-  deleteTasks: function( req, res ){
-    console.log(req.params.id);
-    let items = req.params.id.split(',');
-    console.log(items);
-    Task.remove({ _id: { $in: items } }, cb(res));
-  },
-  deleteTask: function( req, res ){
-    Task.findByIdAndRemove(req.params.id, cb(res));
-  }
 };

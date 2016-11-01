@@ -11,6 +11,8 @@ $active = rgb(0, 120, 255)
 $current = rgba(0, 120, 255, .5)
 $inactive = _faded()
 $light = rgb(245,245,245)
+$gray = darkgray
+$completed = rgb(50,200,50)
 
 // colored items
 $listAccent = rgb(0, 120, 255)
@@ -29,6 +31,7 @@ main#app_container
     width 100vw
     height 100vh
     flex-direction column
+    overflow: hidden
     & > section
         flex 1
         flex-direction column
@@ -76,10 +79,10 @@ div#calendar_body
 
 ////////// COMPLEX //////////
 header
-    z-index $headerIndx
     flex 0 0 auto
     overflow-x: hidden
 header.calendar
+    z-index $headerIndx
     background-color $primaryBG
     box-shadow 0 1px 10px #515151
     nav span
@@ -89,30 +92,67 @@ header.calendar
         background: #f4f4f4;
         box-shadow: inset 1px 1px 3px #666;
         transition: all 200ms ease-in-out
-header.list
-    flex-direction: column
-    & > div.Row
-        align-items center
-        height 70px
-        padding 0 1rem
-    div.default.Row
-        background-color $listAccent
-        color $light
-        transition: opacity .2s
-        &.hideaway
-            opacity: 0
-            height: 0
-            margin-bottom: 70px
-            overflow: hidden
-            transition: opacity .2s, height 0s .3s, margin-bottom 0s .3s
-    div.icon.Row
-        z-index: -1
-        position: absolute
-        width: 100%
-    nav.tab.Column
+
+
+section.hour-divider
+    flex-grow 1
+    .hours
+        font-size: 12px
+        margin-top: 4px
+        span
+            height: 60px
+            justify-content: center
+    .events
+        margin-top: 10px
+        border-top 1px solid $hourDivider
+        position: relative
+        svg
+            z-index $minuteBarIndx
+            position absolute
+            left -4px
+            fill $active
+            stroke $active
+        hr
+            margin 0
+            margin-top 28px
+            border-color: transparent
+            border-bottom: 1px dashed $hourDivider
+            &:nth-child(even)
+                border-style: solid
+
+
+
+//////////////////////////////     SECTIONS     ////////////////////////////////
+div.ListSection
+
+    header.list
+        flex-direction: column
+        & > div.Row
+            height 60px
+            div.icon
+                flex 0 1 3rem
+                align-items center
+                justify-content center
+                &.check_circle
+                    color: $completed
+        div.default.Row
+            align-items center
+            background-color $listAccent
+            color $light
+        div.icon.Row
+            justify-content: space-between;
+            div.icons
+                flex 1
+                justify-content center
+
+
+
+    div.QueryBuilder
+        flex-direction: column
+        position relative
         background-color $listAccent
         color $inactive
-        .tab
+        nav.tab.Row .tab
             position: relative
             align-items: center
             justify-content: center
@@ -145,56 +185,72 @@ header.list
                 transition all .1s ease-in-out
                 & i.material-icons
                     font-size 28px
-    div.query
-        z-index 5
-        flex-direction: column
-        background white
-        color $inactive
-        padding .5rem
-        flex 1
-        span
-            -webkit-user-select: none
-            justify-content: center
-            padding .25rem .5rem
-            &.included
-                text-shadow: 0 3px 6px #048
-            &.required
-                text-shadow: 0 3px 6px #f00
-            &.included, &.required
-                color: black
-        input
-            margin .5rem
+        div.query
+            z-index 5
+            flex-direction: column
+            background white
+            color $inactive
+            padding .5rem
             flex 1
-        &.spacer
+            span
+                -webkit-user-select: none
+                justify-content: center
+                padding .25rem .5rem
+                &.included
+                    text-shadow: 0 3px 6px #048
+                &.excluded, &.excluded-active
+                    text-shadow: 0 3px 6px #f00
+                &.required-active
+                    text-shadow: 0 3px 6px #999
+                &.required, &.required-active, &.excluded-active
+                    color: black
+            input
+                margin .5rem
+                flex 1
+        div.gradient.spacer
+            z-index 5
+            position absolute
+            top 100%
+            width 100%
+            padding .25rem
             background linear-gradient(to bottom, white 0%, white 50%, transparent 100%)
 
-section.hour-divider
-    flex-grow 1
-    .hours
-        font-size: 12px
-        margin-top: 4px
-        span
-            height: 60px
-            justify-content: center
-    .events
-        margin-top: 10px
-        border-top 1px solid $hourDivider
-        position: relative
-        svg
-            z-index $minuteBarIndx
-            position absolute
-            left -4px
-            fill $active
-            stroke $active
-        hr
-            margin 0
-            margin-top 28px
-            border-color: transparent
-            border-bottom: 1px dashed $hourDivider
-            &:nth-child(even)
-                border-style: solid
-
-
+    div.List-Body
+        flex: 1
+        flex-direction column
+        overflow-y auto
+        // Task row
+        div.task.row
+            flex 0 0 3rem
+            height 3rem
+            padding-right .3rem
+            & > div.column
+                align-items center
+            div.checkbox.column
+                width 3rem
+                svg
+                    stroke _faded(.53)
+                    stroke-width 1.5px
+                    line
+                        stroke white
+                        stroke-width 2
+            div.svg.column
+                width 3rem
+                line
+                    stroke-width 1.5px
+                    stroke _faded(.53)
+            div.title.column
+                flex-grow 1
+                padding 0.5em
+                form
+                    flex-grow 1
+                    input
+                        flex-grow 1
+                        font-size 1rem
+                        font-family initial
+                        border none
+            div.icon
+                color _faded(.53)
 
 ////////////////////////////////     VIEWS     /////////////////////////////////
 .Agenda.view

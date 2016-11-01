@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import { Map, List, fromJS, toJS } from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 
 
 export default class Day extends React.Component {

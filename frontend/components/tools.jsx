@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Map, List, fromJS, toJS } from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 
 
 // Takes in an Array and returns a map object with { _id: 'array index') key-value pairs
@@ -16,24 +16,35 @@ query = {
     rExclude: (array:string) An array of string values representing which key names in the status object to iterate over. Each item must return false for the task to be included in the resulting List.
     include: (array:string) An array of string values representing which key names in the status object to iterate over. Any item may return true for the task to be included in the resulting List.
     exclude: (array:string) An array of string values representing which key names in the status object to iterate over. Any item may return false for the task to be included in the resulting List.
+    search: (string) The title of an event must contain the search string for it to be included in the resulting List.
 } */
 export function filterTasks(list, query) {
     if(!List.isList(list) || list.size === 0) return List();
-    if(typeof query !== 'object')  return list;
-    if(!(query.rInclude || query.rExclude || query.include || query.exclude)) return List();
+    if(typeof query !== 'object')  return List();
     if(!query.rInclude) query.rInclude = [];
     if(!query.rExclude) query.rExclude = [];
     if(!query.include) query.include = [];
     if(!query.exclude) query.exclude = [];
+    if(!query.search) query.search = "";
 
-    return list.filter(
+    return list.map(
         task => {
             const status = task.get("status");
-
-            return query.rInclude.every(item=>status.get(item)) &&
-                    query.rExclude.every(item=>!status.get(item)) &&
-                    (query.include.length === 0 || query.include.some(item=>status.get(item))) &&
-                    (query.exclude.length === 0 || query.exclude.some(item=>!status.get(item)));
+            const title = task.get("name").toLowerCase();
+            const include = (
+                query.rInclude.every(item=>status.get(item)) &&
+                query.rExclude.every(item=>!status.get(item)) &&
+                (
+                    (query.include.length === 0 && query.exclude.length === 0) ||
+                    query.include.some(item=>status.get(item)) ||
+                    query.exclude.some(item=>!status.get(item))
+                ) &&
+                (
+                    query.search === "" ||
+                    title.indexOf(query.search.toLowerCase()) !== -1
+                )
+            );
+            return include;
         }
     );
 }

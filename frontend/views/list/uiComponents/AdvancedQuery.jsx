@@ -1,12 +1,27 @@
 import React from 'react';
 import { Icon } from '../../../uiComponents/ui';
 
+const STATUS = {
+    0: "",
+    1: "included",
+    2: "excluded",
+    3: "required included",
+    4: "required excluded"
+}
+
+const QUERY = {
+    0: "",
+    1: "include",
+    2: "exclude",
+    3: "rInclude",
+    4: "rExclude"
+}
+
 export default class AdvancedQuery extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            query: {},
             require: false,
             exclude: false,
             active: "",
@@ -17,40 +32,45 @@ export default class AdvancedQuery extends React.Component {
             lowPriority: "",
             scheduled: "",
             unscheduled: "",
-            reoccuring: ""
+            reoccuring: "",
+            search: ""
         };
 
         this.toggleRequire = this.toggleRequire.bind(this);
         this.toggleExclude = this.toggleExclude.bind(this);
+        this.updateSearch = this.updateSearch.bind(this);
+        this.handleEscape = this.handleEscape.bind(this);
     }
-    render() {
-        const { require, exclude, active, pending, inactive, completed, highPriority, lowPriority, scheduled, unscheduled, reoccuring } = this.state;
 
+    render() {
+        const { require, exclude, active, pending, inactive, completed, highPriority, lowPriority, scheduled, unscheduled, reoccuring, search } = this.state;
+
+        console.log('RENDERED: AdvancedQuery'); // __DEV__
         return (
             <div className="query">
                 <div className="Row">
                     <div className="Column" style={{justifyContent: 'space-around'}}>
-                        <span onClick={this.toggleRequire} className={require?'active':null}>Require</span>
-                        <span onClick={this.toggleExclude} className={exclude?'active':null}>Exclude</span>
+                        <span className={require?'required-active':null} onClick={this.toggleRequire}>Require</span>
+                        <span className={exclude?'excluded-active':null} onClick={this.toggleExclude}>Exclude</span>
                     </div>
                     <div className="Column">
-                        <span className={active} onClick={this.processQueryItem.bind(this, 'active')}>Active</span>
-                        <span className={completed} onClick={this.processQueryItem.bind(this, 'completed')}>Completed</span>
-                        <span className={scheduled} onClick={this.processQueryItem.bind(this, 'scheduled')}>Scheduled</span>
+                        <span className={STATUS[active]} onClick={this.processQueryItem.bind(this, 'active')}>Active</span>
+                        <span className={STATUS[completed]} onClick={this.processQueryItem.bind(this, 'completed')}>Completed</span>
+                        <span className={STATUS[scheduled]} onClick={this.processQueryItem.bind(this, 'scheduled')}>Scheduled</span>
                     </div>
                     <div className="Column">
-                        <span className={pending} onClick={this.processQueryItem.bind(this, 'pending')}>Pending</span>
-                        <span className={highPriority} onClick={this.processQueryItem.bind(this, 'highPriority')}>High Priority</span>
-                        <span className={unscheduled} onClick={this.processQueryItem.bind(this, 'unscheduled')}>Unscheduled</span>
+                        <span className={STATUS[pending]} onClick={this.processQueryItem.bind(this, 'pending')}>Pending</span>
+                        <span className={STATUS[highPriority]} onClick={this.processQueryItem.bind(this, 'highPriority')}>High Priority</span>
+                        <span className={STATUS[unscheduled]} onClick={this.processQueryItem.bind(this, 'unscheduled')}>Unscheduled</span>
                     </div>
                     <div className="Column">
-                        <span className={inactive} onClick={this.processQueryItem.bind(this, 'inactive')}>Inactive</span>
-                        <span className={lowPriority} onClick={this.processQueryItem.bind(this, 'lowPriority')}>Low Priority</span>
-                        <span className={reoccuring} onClick={this.processQueryItem.bind(this, 'reoccuring')}>Reoccuring</span>
+                        <span className={STATUS[inactive]} onClick={this.processQueryItem.bind(this, 'inactive')}>Inactive</span>
+                        <span className={STATUS[lowPriority]} onClick={this.processQueryItem.bind(this, 'lowPriority')}>Low Priority</span>
+                        <span className={STATUS[reoccuring]} onClick={this.processQueryItem.bind(this, 'reoccuring')}>Reoccuring</span>
                     </div>
                 </div>
                 <div className="Row">
-                    <input type="text" placeholder="Search..." />
+                    <input type="text" value={search} onChange={this.updateSearch} onKeyDown={this.handleEscape} placeholder="Search..." />
                 </div>
             </div>
         );
@@ -64,52 +84,39 @@ export default class AdvancedQuery extends React.Component {
     }
     processQueryItem(item) {
         const { require, exclude } = this.state;
+        const { updateQuery } = this.props;
+        const oldStatus = this.state[item];
 
-        const status = this.state[item];
-        const required = status.indexOf("required") !== -1;
-        const included = status.indexOf("included") !== -1;
-        const excluded = status.indexOf("excluded") !== -1;
-
+        let newStatus = 0;
         if(require) {
             if(exclude) {
-                if(required && excluded) return this.updateQuery(item, "");
-                else return this.updateQuery(item, "required excluded");
+                if(oldStatus !== 4) newStatus = 4;
             }
             else {
-                if(required && included) return this.updateQuery(item, "");
-                else return this.updateQuery(item, "required included");
+                if(oldStatus !== 3) newStatus = 3;
             }
         }
         else {
             if(exclude) {
-                if(excluded && !required) return this.updateQuery(item, "");
-                else return this.updateQuery(item, "excluded");
+                if(oldStatus !== 2) newStatus = 2;
             }
             else {
-                if(included && !required) return this.updateQuery(item, "");
-                else return this.updateQuery(item, "included");
+                if(oldStatus !== 1) newStatus = 1;
             }
         }
-    }
-    updateQuery(item, newStatus) {
-    //     const { query } = this.state;
-    //     const oldStatus = this.state[item];
-    //
-    //     if(oldStatus !== "") {
-    //
-    //     }
-    //
-    //
-    //
-    //
-    //     const newState = state || this.state;
-    //     const { exclude } = newState;
-    //     let require = [], include = [];
-    //     for(let status in newState) {
-    //         if(newState[status] === 2) require.push(status);
-    //         else if(newState[status] === 1) include.push(status);
-    //     }
-    //     this.props.updateQuery({exclude, include, require});
-    // }
 
+        this.setState({ [item]: newStatus });
+        updateQuery(item, QUERY[oldStatus], QUERY[newStatus]);
+    }
+    updateSearch(e) {
+        this.setState({ search: e.target.value });
+        this.props.updateQuery("search", e.target.value);
+    }
+    handleEscape(e) {
+        if(e.keyCode === 27) {
+            e.target.value = "";
+            e.target.blur();
+            this.updateSearch(e);
+        }
+    }
 }
