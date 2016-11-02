@@ -4,6 +4,7 @@ import { Map, List, fromJS } from 'immutable';
 
 // Takes in an Array and returns a map object with { _id: 'array index') key-value pairs
 export function Index(array) {
+    if(List.isList(array)) array = array.toJS();
     let newMap = {};
     array.forEach((e,i)=>newMap[e._id] = i);
     return newMap;

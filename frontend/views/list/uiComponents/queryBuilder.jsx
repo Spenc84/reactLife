@@ -5,7 +5,7 @@ import { Map, List, fromJS } from 'immutable';
 import { Icon } from '../../../uiComponents/ui';
 import AdvancedQuery from './AdvancedQuery';
 
-export default class QueryBuilder extends React.Component {
+export default class QueryBuilder extends React.PureComponent {
     constructor(props) {
         super(props);
 
@@ -21,12 +21,7 @@ export default class QueryBuilder extends React.Component {
 
         this.updateQuery = this.updateQuery.bind(this);
     }
-    shouldComponentUpdate(nextProps, nextState) {
-        return (true);
-    }
-    componentDidMount() {
 
-    }
     render() {
         const { tasksSelected, selectedFilter } = this.props;
 

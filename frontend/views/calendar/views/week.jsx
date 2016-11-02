@@ -48,7 +48,7 @@ export default class Week extends React.Component {
                 ? schedule.get("start").map(
                     (ID,indx) => {
                         const task = tasks.get(tIndx[ID]);
-                        const startTime = moment(task.get("schedule").get("startTime").get("moment"));
+                        const startTime = moment(task.get("schedule").get("startTime"));
                         const top = startTime.hour() * 60 + startTime.minute();
                         return (
                             <div key={`task_${indx}`}

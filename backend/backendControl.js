@@ -63,63 +63,23 @@ let cb = function(res){
     };
 };
 
+
 module.exports = {
-    // updateUsers( req, res ){
-    //     let id = '575350c7b8833bf5125225a5';
-    //     User.findById(id, (err, user)=>{
-    //         Task.update({}, { users: [{user: id, access: 30}] }, {multi: true}).exec();
-    //         Task.find({}, (err, tasks)=>{
-    //             let taskIds = [],
-    //                 newAgenda = [];
+    // updateData( req, res ){
+    //     Task.find({}, (err, tasks)=>{
     //
-    //             tasks.forEach(task => {
-    //                 let start = task.schedule.startTime.moment,
-    //                     soft = task.schedule.softDeadline,
-    //                     hard = task.schedule.hardDeadline;
-    //
-    //                 if(start) {
-    //                     let indx = newAgenda.findIndex((day)=>{
-    //                         return moment(day.date).isSame(moment(start), 'day');
-    //                     });
-    //                     if(indx ===  -1) {
-    //                         newAgenda.push({
-    //                             date: moment(start).startOf('day').toJSON(),
-    //                             start: [task._id],
-    //                             soft: [],
-    //                             hard: []
-    //                         });
-    //                     } else newAgenda[indx].start.push(task._id);
-    //                 }
-    //                 if(soft) {
-    //                     let indx = newAgenda.findIndex((day)=>{
-    //                         return moment(day.date).isSame(moment(soft), 'day');
-    //                     });
-    //                     if(indx ===  -1) {
-    //                         newAgenda.push({
-    //                             date: moment(soft).startOf('day').toJSON(),
-    //                             start: [],
-    //                             soft: [task._id],
-    //                             hard: []
-    //                         });
-    //                     } else newAgenda[indx].soft.push(task._id);
-    //                 }
-    //                 if(hard) {
-    //                     let indx = newAgenda.findIndex((day)=>{
-    //                         return moment(day.date).isSame(moment(hard), 'day');
-    //                     });
-    //                     if(indx ===  -1) {
-    //                         newAgenda.push({
-    //                             date: moment(hard).startOf('day').toJSON(),
-    //                             start: [],
-    //                             soft: [],
-    //                             hard: [task._id]
-    //                         });
-    //                     } else newAgenda[indx].hard.push(task._id);
-    //                 }
-    //             });
-    //
-    //             user.agenda = newAgenda;
-    //             user.save(cb(res));
+    //         tasks.forEach(task => {
+    //             task.schedule = {
+    //               startTime: '',
+    //               duration: 0,
+    //               softDeadline: '',
+    //               hardDeadline: '',
+    //               availability
+    //             }
+    //             task.status.active = false;
+    //             task.status.scheduled = false;
+    //             task.status.inactive = true;
+    //             task.save(report);
     //         });
     //     });
     // },

@@ -2,20 +2,15 @@ import React from 'react';
 import Animator from 'react-addons-css-transition-group';
 import { Icon } from '../../../uiComponents/ui';
 
-export default class ListHeader extends React.Component {
+export default class ListHeader extends React.PureComponent {
     constructor(props) {
         super(props);
 
         this.switchToCalendarView = this.switchToCalendarView.bind(this);
     }
-    shouldComponentUpdate(nextProps, nextState) {
-        return (true);
-    }
-    componentDidMount() {
-
-    }
+    
     render() {
-        const { tasksSelected, resetSelectedTasks, toggleStarView } = this.props;
+        const { tasksSelected, resetSelectedTasks, toggleStarView, toggleStarred } = this.props;
 
         console.log('RENDERED:  --- LISTHEADER ---'); // __DEV__
         return (
@@ -30,7 +25,7 @@ export default class ListHeader extends React.Component {
                         <Icon i={'info'} />
                         <Icon i={'group_add'} />
                         <Icon i={'schedule'} onClick={this.openQuickScheduler} />
-                        <Icon i={'star'} style={{color:'rgb(241,196,15)'}} onClick={this.toggleStarred} />
+                        <Icon i={'star'} style={{color:'rgb(241,196,15)'}} onClick={toggleStarred} />
                         {/* <Icon i={'more_vert'} /> */}
                     </div>
                     <Icon i={'check_circle'} onClick={this.toggleCompleted} size={1.75} />
@@ -52,9 +47,5 @@ export default class ListHeader extends React.Component {
 
     verifyDelete() { console.log("verifyDelete()"); }
     openQuickScheduler() { console.log("openQuickScheduler()"); }
-    toggleStarred() {
-        const { updateTasks } = this.props;
-        // updateTasks({"status.starred": })
-    }
     toggleCompleted() { console.log("toggleCompleted()"); }
 }

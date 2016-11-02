@@ -7,7 +7,16 @@ import { Index } from './components/tools';
 
 import Main from './main';
 
-
+// DEFAULTS
+const TASK_COLOR = 'rgb(0, 120, 255)';
+const DEFAULT_SCHEDULE = [];
+for(let i=0;i<7;i++) {
+    let arr = [];
+    for(let j=0;j<8;j++) arr.push(false);
+    for(let j=8;j<21;j++) arr.push(true);
+    for(let j=21;j<24;j++) arr.push(false);
+    SCHEDULE.push(arr);
+}
 
 export default class LifeApp extends React.Component {
     constructor(props) {
@@ -22,6 +31,7 @@ export default class LifeApp extends React.Component {
         };
 
         this.updateTasks = this.updateTasks.bind(this);
+        this.buildTask = this.buildTask.bind(this);
     }
 
     componentDidMount() {
@@ -54,7 +64,8 @@ export default class LifeApp extends React.Component {
                 tasks={ USER.get("tasks") || List()}
                 agenda={ USER.get("agenda") || List()}
                 api={{
-                    this.updateTasks
+                    updateTasks: this.updateTasks,
+                    buildTask: this.buildTask
                 }}
                 {...this.state}
             />
@@ -83,28 +94,55 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    updateTask(selectedTasks, desiredChanges) {
+    addNewTask(newTask) {
+        const { USER } = this.state;
+
         this.setState({ loading: true });
-        selectedTasks = selectedTasks.toJS();
-        SERVER.put("/api/tasks", {selectedTasks, desiredChanges}).then(
-            incoming => {
-                this.setState({ loading: false });
-                console.log("incoming", incoming);
-                this.getUser()
-                return true;
+        SERVER.post("/api/tasks", newTask).then(
+            ({data:createdTask}) => {
+                console.log("SERVER: ---Task Created---", createdTask);
+                const taskList = USER.get('tasks').push(fromJS(createdTask));
+                this.setState({
+                    USER: USER.set('tasks', taskList),
+                    tIndx: Index(taskList),
+                    loading: false
+                });
             },
             rejected => {
                 this.setState({ loading: false });
-                console.log('Failed to process change: ', rejected);
+                console.log('Failed to create task: ', rejected);
                 alert("An error has occured. Check console for details.");
-                return false;
             }
         );
     }
 
+    buildTask(name, tab) {
+        const userID = this.state.USER.get('_id');
+        const status = {};
+        // if( tab === 'ACTIVE' ) {
+        //     status.active = true;
+        //     status.scheduled = true;
+        //     status.inactive = false;
+        //
+        // }
+        // const newTask = {
+        //     name,
+        //     color: TASK_COLOR,
+        //     description: "",
+        //     users: [{
+        //         access: 30,
+        //         user: userID
+        //     }],
+        //     status,
+        //     schedule: DEFAULT_SCHEDULE
+        // };
+        // this.addNewTask(newTask);
+    }
+
     updateTasks(selectedTasks, desiredChanges) {
         if(!List.isList(selectedTasks) || typeof desiredChanges !== 'object') return;
-        const userID = this.state.USER.get('_id');
+        const { USER } = this.state;
+        const userID = USER.get('_id');
         selectedTasks = selectedTasks.toJS();
 
         this.setState({ loading: true });

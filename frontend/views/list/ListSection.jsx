@@ -7,12 +7,14 @@ import ListBody from './uiComponents/ListBody';
 
 import { filterTasks } from '../../components/tools';
 
+// DEFAULTS
 const DEFAULT_QUERY = {
     rInclude: ['active'],
     rExclude: ['completed'],
     include: [],
     exclude: []
 };
+
 
 export default class ListSection extends React.Component {
     constructor(props) {
@@ -26,10 +28,12 @@ export default class ListSection extends React.Component {
         };
 
         this.updateTasks = this.updateTasks.bind(this);
+        this.toggleStarred = this.toggleStarred.bind(this);
         this.updateFilter = this.updateFilter.bind(this);
         this.selectTask = this.selectTask.bind(this);
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
+        this.createNewTask = this.createNewTask.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -45,7 +49,7 @@ export default class ListSection extends React.Component {
 
     render() {
         const { selectedFilter, filter, starView, selectedTasks } = this.state;
-        const { tasks, changeSection } = this.props;
+        const { tasks, changeSection, api:{buildTask} } = this.props;
 
         return (
             <div className="ListSection">
@@ -55,7 +59,8 @@ export default class ListSection extends React.Component {
                     changeSection={changeSection}
                     resetSelectedTasks={this.resetSelectedTasks}
                     toggleStarView={this.toggleStarView}
-                    updateTasks={updateTasks}
+                    updateTasks={this.updateTasks}
+                    toggleStarred={this.toggleStarred}
                 />
 
                 <QueryBuilder ref="QB"
@@ -70,6 +75,7 @@ export default class ListSection extends React.Component {
                     starView={starView}
                     selectedTasks={selectedTasks}
                     selectTask={this.selectTask}
+                    createNewTask={this.createNewTask}
                 />
 
             </div>
@@ -80,6 +86,21 @@ export default class ListSection extends React.Component {
         const { selectedTasks } = this.state;
         const { updateTasks } = this.props;
         updateTasks(selectedTasks, desiredChange);
+    }
+
+    toggleStarred() {
+        const { selectedTasks } = this.state;
+        const { api:{updateTasks}, tasks, tIndx } = this.props;
+
+        const starred = !selectedTasks.every(ID=>tasks.get(tIndx[ID]).get('status').get('starred'));
+        updateTasks(selectedTasks, {'status.starred': starred});
+    }
+
+    createNewTask(title) {
+        const { selectedFilter } = this.state;
+        const { api:{buildTask} } = this.props;
+
+        buildTask(title, selectedFilter);
     }
 
     updateFilter(tab, query) {

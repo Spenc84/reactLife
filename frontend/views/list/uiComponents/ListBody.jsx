@@ -29,19 +29,9 @@ export default class ListBody extends React.PureComponent {
                     );
                 })}
 
-                <div className="add task row">
-                    <div className="svg column" onClick={this.toggleNewItemPane}>
-                        <svg width="3em" height="3em">
-                            <line x1="1.5em" x2="1.5em" y1="0.75em" y2="2.25em" />
-                            <line x1="0.75em" x2="2.25em" y1="1.5em" y2="1.5em" />
-                        </svg>
-                    </div>
-                    <div className="title column">
-                        <form onSubmit={this.saveNew}>
-                            <input type="text" />
-                        </form>
-                    </div>
-                </div>
+                <NewTaskRow
+                    toggleNewItemPane={this.toggleNewItemPane}
+                />
 
             </div>
         );
@@ -98,4 +88,51 @@ class TaskRow extends React.PureComponent {
     toggleEdit(indx) {}
     toggleStarred() {}
     toggleEditItemPane(task) {}
+}
+
+class NewTaskRow extends React.PureComponent {
+    constructor(props) {
+        super(props);
+        this.state = { title: "" };
+
+        this.updateTitle = this.updateTitle.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+    }
+
+    render() {
+        const { title } = this.state;
+        return (
+            <div className="add task row">
+                <div className="svg column" onClick={this.props.toggleNewItemPane}>
+                    <svg width="3em" height="3em">
+                        <line x1="1.5em" x2="1.5em" y1="0.75em" y2="2.25em" />
+                        <line x1="0.75em" x2="2.25em" y1="1.5em" y2="1.5em" />
+                    </svg>
+                </div>
+                <div className="title column">
+                    <input type="text"
+                        value={title}
+                        onChange={this.updateTitle}
+                        onKeyDown={this.handleKeyPress}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    updateTitle(e) {
+        this.setState({ title: e.target.value });
+    }
+
+    handleKeyPress(e) {
+        if(e.keyCode === 27) {
+            e.target.value = "";
+            e.target.blur();
+        }
+        if(e.keyCode === 13) {
+            this.props.createNewTask(e.target.value)            
+            e.target.value = "";
+            e.target.blur();
+        }
+    }
 }

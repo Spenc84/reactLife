@@ -17,7 +17,7 @@ const QUERY = {
     4: "rExclude"
 }
 
-export default class AdvancedQuery extends React.Component {
+export default class AdvancedQuery extends React.PureComponent {
     constructor(props) {
         super(props);
 

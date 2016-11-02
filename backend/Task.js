@@ -3,10 +3,7 @@ var mongoose = require('mongoose');
 var taskSchema = new mongoose.Schema({
   name: {type: String, required: true},
   schedule: {
-    startTime: {
-      moment: {type: String, default: ''},
-      top: Number
-    },
+    startTime: { type: String, default: ''},
     duration: {type: Number, default: 0},
     softDeadline: {type: String, default: ''},
     hardDeadline: {type: String, default: ''},
