@@ -1,9 +1,9 @@
 var mongoose = require('mongoose');
 
 var taskSchema = new mongoose.Schema({
-  name: {type: String, required: true},
+  title: {type: String, required: true},
   schedule: {
-    startTime: { type: String, default: ''},
+    startTime: {type: String, default: ''},
     duration: {type: Number, default: 0},
     softDeadline: {type: String, default: ''},
     hardDeadline: {type: String, default: ''},
@@ -15,7 +15,11 @@ var taskSchema = new mongoose.Schema({
       user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
       access: Number
   }],
-  // history: [{}],
+  changeLog: [{
+      date: String,
+      user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+      display: String
+  }],
   // prereq: {},
   // context: {},
   // reminders: [{}],

@@ -33,7 +33,7 @@ export default class ListSection extends React.Component {
         this.selectTask = this.selectTask.bind(this);
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
-        this.createNewTask = this.createNewTask.bind(this);
+        this.buildTask = this.buildTask.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -75,7 +75,7 @@ export default class ListSection extends React.Component {
                     starView={starView}
                     selectedTasks={selectedTasks}
                     selectTask={this.selectTask}
-                    createNewTask={this.createNewTask}
+                    buildTask={this.buildTask}
                 />
 
             </div>
@@ -96,7 +96,7 @@ export default class ListSection extends React.Component {
         updateTasks(selectedTasks, {'status.starred': starred});
     }
 
-    createNewTask(title) {
+    buildTask(title) {
         const { selectedFilter } = this.state;
         const { api:{buildTask} } = this.props;
 

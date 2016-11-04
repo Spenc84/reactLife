@@ -4,7 +4,7 @@ import { Icon } from '../../../uiComponents/ui';
 
 export default class ListBody extends React.PureComponent {
     render() {
-        const { taskList, filter, starView, selectedTasks, selectTask } = this.props;
+        const { taskList, filter, starView, selectedTasks, selectTask, buildTask } = this.props;
 
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
@@ -31,6 +31,7 @@ export default class ListBody extends React.PureComponent {
 
                 <NewTaskRow
                     toggleNewItemPane={this.toggleNewItemPane}
+                    buildTask={buildTask}
                 />
 
             </div>
@@ -69,10 +70,10 @@ class TaskRow extends React.PureComponent {
                     </svg>
                 </div>
                 <div className="title column">
-                    {task.get("name")}
+                    {task.get("title")}
                     {/* <form ng-submit="saveTask(task)">
-                        <input type="text" ng-model="task.name" ng-if="!task.status.selected" ng-click="toggleEditItemPane(task)" readonly />
-                        <input type="text" ng-model="task.name" ng-if="task.status.selected" />
+                        <input type="text" ng-model="task.title" ng-if="!task.status.selected" ng-click="toggleEditItemPane(task)" readonly />
+                        <input type="text" ng-model="task.title" ng-if="task.status.selected" />
                     </form> */}
                 </div>
                 <Icon i={"star"} hidden={!starred} style={{color:"rgb(241,196,15)"}} onClick={this.toggleStarred()} />
@@ -130,7 +131,7 @@ class NewTaskRow extends React.PureComponent {
             e.target.blur();
         }
         if(e.keyCode === 13) {
-            this.props.createNewTask(e.target.value)            
+            this.props.buildTask(e.target.value)
             e.target.value = "";
             e.target.blur();
         }

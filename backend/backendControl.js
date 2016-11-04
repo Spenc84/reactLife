@@ -12,7 +12,7 @@ import User from './User';
   restartUpdateInterval();
   function restartUpdateInterval() {
     let now = moment(),
-        offset = (15-(now.minute()%15))*60000;
+    offset = (15-(now.minute()%15))*60000;
     offset -= now.second()*1000;
     offset -= now.millisecond();
     console.log(`(re)started periodic task updates`);
@@ -37,12 +37,12 @@ import User from './User';
 
     // This will check to see if any tasks are scheduled to start now, and if so,
     // will set it to active and notify any applicable users
-    Task.find({'schedule.startTime.moment': minute._d.toJSON()}, (error, tasks)=>{
+    Task.find({'schedule.startTime': minute._d.toJSON()}, (error, tasks)=>{
         if(error) console.log('Error finding tasks: ', error);
         else {
           console.log('tasks: ', tasks.length);
           for (let i = 0; i < tasks.length; i++) {
-            console.log(tasks[i].name);
+            console.log(tasks[i].title);
             tasks[i].status.pending = false;
             tasks[i].status.active = true;
             tasks[i].save(report);
@@ -50,18 +50,29 @@ import User from './User';
         }
     });
   }
-  function report(error, resp){
-    if(error) console.log('Error saving: ', error);
-    else console.log('saved');
-  }
 ////////////////////////////////////////////////////////////////////////////////
 
+// HELPER FUNCTIONS
+function report(error, resp){
+    if(error) console.log('Error saving: ', error);
+    else console.log('saved');
+};
 let cb = function(res){
     return function(error, response){
         if(error) res.status(500).json(error);
         else res.status(200).json(response);
     };
 };
+function sendReport(res) {
+    return (error, response) => {
+        if(error) {
+            console.log('Error saving: ', error);
+            return res.status(500).json(error);
+        }
+        console.log('saved');
+        res.status(200).json(response);
+    };
+}
 
 
 module.exports = {
@@ -82,6 +93,40 @@ module.exports = {
     //             task.save(report);
     //         });
     //     });
+    //
+    //     Task.collection.update({}, { $rename: { name: 'title' } }, { multi: true }, sendReport(res))
+    //
+    //     User.findByIdAndUpdate('575350c7b8833bf5125225a5', {$set: {agenda: {
+    //         '1478271600000': {
+    //             date: "2016-11-04T15:00:00.000Z",
+    //             start: ["5715ab983bda76260a98b099"],
+    //             soft: [],
+    //             hard: [],
+    //             scheduled: [
+    //                 {
+    //                     time: "2016-11-04T15:00:00.000Z",
+    //                     taskID: "5715ab983bda76260a98b099"
+    //                 }
+    //             ]
+    //         }
+    //     }}}, sendReport(res));
+    //
+    //     User.findByIdAndUpdate('575350c7b8833bf5125225a5', {$set: {
+    //         'agenda.1478322000000.scheduled': [{
+    //             time: "2016-11-05T19:15:00.000Z",
+    //             taskID: "581cde3697614c68456d4ca4"
+    //         }]
+    //     }}, sendReport(res));
+    //
+    //     Task.findByIdAndUpdate('5715ab983bda76260a98b099', {$set: {
+    //         'schedule.startTime': '2016-11-04T15:30:00.000Z',
+    //         'schedule.softDeadline': '2016-11-05T15:30:00.000Z',
+    //         'schedule.hardDeadline': '2016-11-06T15:30:00.000Z',
+    //         'schedule.duration': 75,
+    //         'status.active': true,
+    //         'status.inactive': false,
+    //         'status.scheduled': true
+    //     }}, sendReport(res));
     // },
     getTest( req, res ){
         console.log(req.query);
@@ -119,10 +164,13 @@ module.exports = {
         User.findByIdAndRemove(req.params.id, cb(res));
     },
 
-// ----- TASKS -----
+
+
+// -------------------------------- TASKS --------------------------------------
     getTasks: function( req, res ) {
         Task.find(req.query, cb(res));
     },
+
     updateTasks( req, res ) {
         const { selectedTasks, desiredChanges, userID } = req.body;
         Task.update(
@@ -138,9 +186,87 @@ module.exports = {
             }
         );
     },
-    postTask: function( req, res ) {
-        Task.create(req.body, cb(res));
+
+    createNewTask: function( req, res ) {
+        const { body:newTask } = req;
+
+        Task.create(newTask, (error, task)=> {
+            if(error) {
+                console.log(`Error creating task '${newTask.title}'`, error);
+                return res.status(500).json(error);
+            }
+            task.users.forEach( id => {
+                User.findById(id.user, (error, user)=> {
+                    if(error) return console.log(`Error finding user with ID: '${id.user}'`, error);
+                    user.tasks.push(task._id);
+                    if(task.status.scheduled) {
+                        const { startTime, softDeadline, hardDeadline } = task.schedule;
+                        if(startTime !== '') {
+                            const startDate = moment(startTime).startOf('day').valueOf();
+                            if( user.agenda[startDate] ) {
+                                user.agenda[startDate].start.push(task._id);
+                                user.agenda[startDate].scheduled.push({
+                                    time: startTime,
+                                    taskID: task._id
+                                })
+                            }
+                            else {
+                                user.agenda[startDate] = {
+                                    date: moment(startDate).toJSON(),
+                                    start: [task._id],
+                                    soft: [],
+                                    hard: [],
+                                    scheduled: [{
+                                        time: startTime,
+                                        taskID: task._id
+                                    }]
+                                }
+                            }
+                        }
+                        if(softDeadline !== '') {
+                            const softDate = moment(softDeadline).startOf('day').valueOf();
+                            if( user.agenda[softDate] ) {
+                                user.agenda[softDate].soft.push(task._id);
+                            }
+                            else {
+                                user.agenda[softDate] = {
+                                    date: moment(softDate).toJSON(),
+                                    start: [],
+                                    soft: [task._id],
+                                    hard: [],
+                                    scheduled: []
+                                }
+                            }
+                        }
+                        if(hardDeadline !== '') {
+                            const hardDate = moment(hardDeadline).startOf('day').valueOf();
+                            if( user.agenda[hardDate] ) {
+                                user.agenda[hardDate].hard.push(task._id);
+                            }
+                            else {
+                                user.agenda[hardDate] = {
+                                    date: moment(hardDate).toJSON(),
+                                    start: [],
+                                    soft: [],
+                                    hard: [task._id],
+                                    scheduled: []
+                                }
+                            }
+                        }
+                        user.markModified('agenda');
+                    }
+                    user.save((error, resp)=>{
+                        if(error) return console.log(`Error saving task to user '${user.firstName} ${user.lastName}'`, error);
+                        console.log(`Saved task to user '${user.firstName} ${user.lastName}'`);
+                    });
+                })
+            });
+            console.log(`Task '${newTask.title}' created successfully`);
+            return res.status(200).json(task);
+        });
+
     },
+
     getUserTaskList( req, res ) {
         const { userID } = req.params;
         User.findById(userID, (error, response) => {
@@ -148,12 +274,15 @@ module.exports = {
             res.status(200).json(response.tasks);
         }).populate('tasks');
     },
+
     getTask: function( req, res ){
         Task.findById(req.params.id, cb(res));
     },
+
     editTask: function( req, res ){
         Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
     },
+
     editTasks: function( req, res ){
         console.log(req.params);
         let set = {},

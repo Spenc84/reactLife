@@ -6,22 +6,22 @@ import { Map, List, fromJS } from 'immutable';
 export default class Day extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate:unix, prior, current, agenda, dIndx, tasks, tIndx } = this.props;
+        const { activeDate:unix, prior, current, agenda, tasks, tIndx } = this.props;
         const activeDate = moment(unix);
-        const schedule = agenda.get(dIndx[unix]);
+        const schedule = agenda.get(`${unix}`);
 
         // Style each day as inactive, active, or otherwise
         const dateClasses = (prior) ? 'inactive date'
                         : (current) ? 'active date'
                         : 'date';
 
-        const taskList = (dIndx[unix] || dIndx[unix] === 0)
-            ? schedule.get("start").map(
-                (ID,indx) => {
+        const taskList = (schedule)
+            ? schedule.get("scheduled").map(
+                (taskRef,indx) => {
+                    const ID = taskRef.get('taskID');
+                    const scheduledTime = moment(taskRef.get('time'));
                     const task = tasks.get(tIndx[ID]);
-                    const startTime = moment(task.get("schedule").get("startTime"));
-                    debugger;
-                    const top = startTime.hour() * 60 + startTime.minute();
+                    const top = scheduledTime.hour() * 60 + scheduledTime.minute();
                     return (
                         <div key={`task_${indx}`}
                             className="task"
@@ -30,7 +30,7 @@ export default class Day extends React.Component {
                                 backgroundColor: task.get("color"),
                                 height: task.get("schedule").get("duration")
                             }}>
-                            {task.get("name")}
+                            {task.get("title")}
                         </div>
                     );
                 }

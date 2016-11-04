@@ -31,7 +31,7 @@ export function filterTasks(list, query) {
     return list.map(
         task => {
             const status = task.get("status");
-            const title = task.get("name").toLowerCase();
+            const title = task.get("title").toLowerCase();
             const include = (
                 query.rInclude.every(item=>status.get(item)) &&
                 query.rExclude.every(item=>!status.get(item)) &&

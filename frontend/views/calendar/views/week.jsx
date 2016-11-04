@@ -6,7 +6,7 @@ import { Div } from '../../../uiComponents/ui';
 export default class Week extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate:unix, updateDate, agenda, dIndx, tasks, tIndx } = this.props;
+        const { activeDate:unix, updateDate, agenda, tasks, tIndx } = this.props;
         let activeDate = moment(unix);
 
         // Style the weekday names of prior weeks as prior
@@ -23,7 +23,7 @@ export default class Week extends React.Component {
         let weekday = moment(activeDate).startOf('week');
         for(let i = 0; i < 7; i++) {
             const unix = weekday.valueOf();
-            const schedule = agenda.get(dIndx[unix]);
+            const schedule = agenda.get(`${unix}`);
 
             // Style the weekday names of the current week as inactive, active, or otherwise
             let dateClasses = 'date';
@@ -44,12 +44,13 @@ export default class Week extends React.Component {
             ));
 
             // Build the task list for this particular day
-            const taskList = (dIndx[unix] || dIndx[unix] === 0)
-                ? schedule.get("start").map(
-                    (ID,indx) => {
+            const taskList = (schedule)
+                ? schedule.get("scheduled").map(
+                    (taskRef,indx) => {
+                        const ID = taskRef.get('taskID');
+                        const scheduledTime = moment(taskRef.get('time'));
                         const task = tasks.get(tIndx[ID]);
-                        const startTime = moment(task.get("schedule").get("startTime"));
-                        const top = startTime.hour() * 60 + startTime.minute();
+                        const top = scheduledTime.hour() * 60 + scheduledTime.minute();
                         return (
                             <div key={`task_${indx}`}
                                 className="task"
@@ -58,7 +59,7 @@ export default class Week extends React.Component {
                                     backgroundColor: task.get("color"),
                                     height: task.get("schedule").get("duration")
                                 }}>
-                                {task.get("name")}
+                                {task.get("title")}
                             </div>
                         );
                     }

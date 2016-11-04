@@ -7,7 +7,7 @@ export default class Agenda extends React.Component {
     componentDidUpdate() { this.refs[this.props.activeDate].scrollIntoView(); }
     componentDidMount() { this.refs[this.props.activeDate].scrollIntoView(); }
     render() {
-        const { activeDate:DATE, agenda, dIndx, tasks, tIndx, updateDate } = this.props;
+        const { activeDate:DATE, agenda, tasks, tIndx, updateDate } = this.props;
         const activeDate = moment(DATE).startOf('day').valueOf();
         const today = moment().startOf('day').valueOf();
 
@@ -21,10 +21,10 @@ export default class Agenda extends React.Component {
         );
 
         agenda.forEach(x => {
-            const date = x.get("_id");
-            const start = x.get("start");
+            const date = moment(x.get("date")).valueOf();
+            const schedule = x.get("scheduled");
 
-            if(start.size) {
+            if(schedule.size) {
                 const currentYear = moment().isSame(date, 'year');
                 const m = moment(date).startOf('month').valueOf();
                 if(!check[m]) {
@@ -42,13 +42,16 @@ export default class Agenda extends React.Component {
                             <div>{ moment(date).date() }</div>
                         </div>
                         <div className="tasks">
-                            {start.map(taskID => (
-                                <div key={taskID}
-                                    className="task"
-                                    style={{backgroundColor: tasks.get(tIndx[taskID]).get("color")}}>
-                                    {tasks.get(tIndx[taskID]).get("name")}
-                                </div>
-                            ))}
+                            {schedule.map(task => {
+                                const taskID = task.get('taskID');
+                                return (
+                                    <div key={taskID}
+                                        className="task"
+                                        style={{backgroundColor: tasks.get(tIndx[taskID]).get("color")}}>
+                                        {tasks.get(tIndx[taskID]).get("title")}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );

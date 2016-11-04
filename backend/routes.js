@@ -23,7 +23,7 @@ module.exports = function( app ){
     app.route('/api/tasks')
         .get(ctrl.getTasks)
         .put(ctrl.updateTasks)
-        .post(ctrl.postTask);
+        .post(ctrl.createNewTask);
     app.route('/api/task/:id')
         .get(ctrl.getTask)
         .put(ctrl.editTask)

@@ -9,14 +9,24 @@ import Main from './main';
 
 // DEFAULTS
 const TASK_COLOR = 'rgb(0, 120, 255)';
-const DEFAULT_SCHEDULE = [];
-for(let i=0;i<7;i++) {
-    let arr = [];
-    for(let j=0;j<8;j++) arr.push(false);
-    for(let j=8;j<21;j++) arr.push(true);
-    for(let j=21;j<24;j++) arr.push(false);
-    SCHEDULE.push(arr);
-}
+const DEFAULT_SCHEDULE = (()=>{
+    let availability = [];
+    for(let i=0;i<7;i++) {
+        let day = [];
+        for(let j=0;j<8;j++) day.push(false);
+        for(let j=8;j<21;j++) day.push(true);
+        for(let j=21;j<24;j++) day.push(false);
+        availability.push(day);
+    }
+    return Map({
+        duration: 0,
+        startTime: '',
+        softDeadline: '',
+        hardDeadline: '',
+        availability: fromJS(availability)
+    });
+})();
+
 
 export default class LifeApp extends React.Component {
     constructor(props) {
@@ -26,7 +36,6 @@ export default class LifeApp extends React.Component {
             authenticated: false,
             USER: Map(),
             tIndx: {},
-            dIndx: {},
             loading: true
         };
 
@@ -43,7 +52,6 @@ export default class LifeApp extends React.Component {
                     authenticated: true,
                     USER: fromJS(user),
                     tIndx: (tasks) ? Index(tasks) : {},
-                    dIndx: (agenda) ? Index(agenda) : {},
                     loading: false
                 });
                 console.log(`User Authenticated: `, user);
@@ -94,11 +102,11 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    addNewTask(newTask) {
+    createNewTask(newTask) {
         const { USER } = this.state;
 
         this.setState({ loading: true });
-        SERVER.post("/api/tasks", newTask).then(
+        SERVER.post("/api/tasks", newTask.toJS()).then(
             ({data:createdTask}) => {
                 console.log("SERVER: ---Task Created---", createdTask);
                 const taskList = USER.get('tasks').push(fromJS(createdTask));
@@ -116,27 +124,59 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    buildTask(name, tab) {
+    buildTask(title, tab) {
         const userID = this.state.USER.get('_id');
-        const status = {};
-        // if( tab === 'ACTIVE' ) {
-        //     status.active = true;
-        //     status.scheduled = true;
-        //     status.inactive = false;
-        //
-        // }
-        // const newTask = {
-        //     name,
-        //     color: TASK_COLOR,
-        //     description: "",
-        //     users: [{
-        //         access: 30,
-        //         user: userID
-        //     }],
-        //     status,
-        //     schedule: DEFAULT_SCHEDULE
-        // };
-        // this.addNewTask(newTask);
+        const minute = Math.floor(moment().minute()/15)*15;
+        const now = moment().minute(minute).startOf('minute');
+
+        let status = Map();
+        let schedule = DEFAULT_SCHEDULE;
+
+        if( tab === 'ACTIVE' ) {
+            status = Map({
+                active: true,
+                scheduled: true,
+                inactive: false
+            });
+            schedule = schedule.set('startTime', now.toJSON());
+        }
+        if( tab === 'PENDING' ) {
+            status = Map({
+                pending: true,
+                scheduled: true,
+                inactive: false
+            });
+            schedule = schedule.set('startTime', moment(now).add(1, 'day').toJSON());
+        }
+
+        const newTask = Map({
+            title,
+            color: TASK_COLOR,
+            description: "",
+            users: List([
+                Map({
+                    access: 30,
+                    user: userID
+                })
+            ]),
+            status,
+            schedule,
+            changeLog: List([
+                Map({
+                    date: now.toJSON(),
+                    user: userID,
+                    display: 'Task created.'
+                })
+            ])
+        });
+        
+        this.createNewTask(newTask);
+    }
+
+    updateAgenda() {
+        const { USER, dIndex } = this.state;
+
+
     }
 
     updateTasks(selectedTasks, desiredChanges) {
