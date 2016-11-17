@@ -20,9 +20,9 @@ export default class Agenda extends React.Component {
             </div>
         );
 
-        agenda.forEach(x => {
-            const date = moment(x.get("date")).valueOf();
-            const schedule = x.get("scheduled");
+        agenda.forEach( (items, dateString) => {
+            const date = parseInt(dateString);
+            const schedule = items.get("scheduled");
 
             if(schedule.size) {
                 const currentYear = moment().isSame(date, 'year');
@@ -42,8 +42,8 @@ export default class Agenda extends React.Component {
                             <div>{ moment(date).date() }</div>
                         </div>
                         <div className="tasks">
-                            {schedule.map(task => {
-                                const taskID = task.get('taskID');
+                            {schedule.map(taskID => {
+                                // const taskID = task.get('taskID');
                                 return (
                                     <div key={taskID}
                                         className="task"

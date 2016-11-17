@@ -6,7 +6,7 @@ import { Map, List, fromJS } from 'immutable';
 export default class Day extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate:unix, prior, current, agenda, tasks, tIndx } = this.props;
+        const { activeDate:unix, prior, current, agenda, tasks, tIndx, userID } = this.props;
         const activeDate = moment(unix);
         const schedule = agenda.get(`${unix}`);
 
@@ -17,10 +17,9 @@ export default class Day extends React.Component {
 
         const taskList = (schedule)
             ? schedule.get("scheduled").map(
-                (taskRef,indx) => {
-                    const ID = taskRef.get('taskID');
-                    const scheduledTime = moment(taskRef.get('time'));
-                    const task = tasks.get(tIndx[ID]);
+                (taskID, indx) => {
+                    const task = tasks.get(tIndx[taskID]);
+                    const scheduledTime = moment(task.getIn(['users', userID, 'scheduled']));
                     const top = scheduledTime.hour() * 60 + scheduledTime.minute();
                     return (
                         <div key={`task_${indx}`}

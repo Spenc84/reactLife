@@ -72,62 +72,100 @@ function sendReport(res) {
         console.log('saved');
         res.status(200).json(response);
     };
+
 }
 
-
 module.exports = {
-    // updateData( req, res ){
-    //     Task.find({}, (err, tasks)=>{
-    //
-    //         tasks.forEach(task => {
-    //             task.schedule = {
-    //               startTime: '',
-    //               duration: 0,
-    //               softDeadline: '',
-    //               hardDeadline: '',
-    //               availability
-    //             }
-    //             task.status.active = false;
-    //             task.status.scheduled = false;
-    //             task.status.inactive = true;
-    //             task.save(report);
-    //         });
-    //     });
-    //
-    //     Task.collection.update({}, { $rename: { name: 'title' } }, { multi: true }, sendReport(res))
-    //
-    //     User.findByIdAndUpdate('575350c7b8833bf5125225a5', {$set: {agenda: {
-    //         '1478271600000': {
-    //             date: "2016-11-04T15:00:00.000Z",
-    //             start: ["5715ab983bda76260a98b099"],
-    //             soft: [],
-    //             hard: [],
-    //             scheduled: [
-    //                 {
-    //                     time: "2016-11-04T15:00:00.000Z",
-    //                     taskID: "5715ab983bda76260a98b099"
-    //                 }
-    //             ]
-    //         }
-    //     }}}, sendReport(res));
-    //
-    //     User.findByIdAndUpdate('575350c7b8833bf5125225a5', {$set: {
-    //         'agenda.1478322000000.scheduled': [{
-    //             time: "2016-11-05T19:15:00.000Z",
-    //             taskID: "581cde3697614c68456d4ca4"
-    //         }]
-    //     }}, sendReport(res));
-    //
-    //     Task.findByIdAndUpdate('5715ab983bda76260a98b099', {$set: {
-    //         'schedule.startTime': '2016-11-04T15:30:00.000Z',
-    //         'schedule.softDeadline': '2016-11-05T15:30:00.000Z',
-    //         'schedule.hardDeadline': '2016-11-06T15:30:00.000Z',
-    //         'schedule.duration': 75,
-    //         'status.active': true,
-    //         'status.inactive': false,
-    //         'status.scheduled': true
-    //     }}, sendReport(res));
-    // },
+    updateData( req, res ) {
+        // const report = new Report(res);
+        //
+        // User.findByIdAndUpdate(
+        //     '575350c7b8833bf5125225a5',
+        //     {
+        //         // $set: {
+        //         //     'agenda.1479189600000.start': [ "5715ab983bda76260a98b099" ],
+        //         //     'agenda.1479189600000.scheduled': [ "5715ab983bda76260a98b099" ]
+        //         // },
+        //         $unset: {
+        //             'agenda.1479276000000': "",
+        //             'agenda.1479362400000': ""
+        //         }
+        //     },
+        //     sendReport(res)
+        // );
+        //
+        // const set = {
+        //     'users.575350c7b8833bf5125225a5': {
+        //         securityAccess: 30,
+        //         scheduled: ""
+        //     }
+        // };
+        // Task.update({}, {$set: set}, {multi: true}, report);
+        //
+        // const id = [
+        //     "5715ab983bda76260a98b099",
+        //     "581cdb77f0b180cc3e61a7d2",
+        //     "581cde3697614c68456d4ca4",
+        //     "581ce4f9bace1834469d1c53",
+        //     "582a2278a5bd650c1f078868",
+        //     "582a2261a5bd650c1f078865"
+        // ];
+        // const time = [
+        //     "2016-11-04T15:00:00.000Z",
+        //     "2016-11-04T19:00:00.000Z",
+        //     "2016-11-05T19:15:00.000Z",
+        //     "2016-11-05T19:30:00.000Z",
+        //     "2016-11-14T20:45:00.000Z",
+        //     "2016-11-15T20:45:00.000Z"
+        // ];
+        // for(let i=0; i<id.length; i++) {
+        //     Task.findByIdAndUpdate(
+        //         id[i],
+        //         {$set: {
+        //             'users.575350c7b8833bf5125225a5': {
+        //                 securityAccess: 30,
+        //                 scheduled: time[i]
+        //             }
+        //         }},
+        //         report.logResult(
+        //             `Updated task ${id[i]}`,
+        //             `Error updating task ${id[i]}`
+        //         )
+        //     );
+        // }
+        // report.sendReport({response: "All done"});
+
+        // Task.find({}, (err, tasks)=>{
+        //
+        //     tasks.forEach(task => {
+        //         task.users = {
+        //             "575350c7b8833bf5125225a5": 30
+        //         };
+        //         task.save(report);
+        //     });
+        // });
+        //
+        // Task.collection.update({}, { $rename: { name: 'title' } }, { multi: true }, sendReport(res))
+        //
+        // Task.update({ _id: { $in: items } }, {$set: set}, {multi: true}, cb(res));
+        //
+        // User.findByIdAndUpdate('575350c7b8833bf5125225a5', {$set: {
+        //     'agenda.1478322000000.scheduled': [{
+        //         time: "2016-11-05T19:15:00.000Z",
+        //         taskID: "581cde3697614c68456d4ca4"
+        //     }]
+        // }}, sendReport(res));
+        //
+        // Task.findByIdAndUpdate('5715ab983bda76260a98b099', {$set: {
+        //     'schedule.startTime': '2016-11-04T15:30:00.000Z',
+        //     'schedule.softDeadline': '2016-11-05T15:30:00.000Z',
+        //     'schedule.hardDeadline': '2016-11-06T15:30:00.000Z',
+        //     'schedule.duration': 75,
+        //     'status.active': true,
+        //     'status.inactive': false,
+        //     'status.scheduled': true
+        // }}, sendReport(res));
+    },
     getTest( req, res ){
         console.log(req.query);
         Task.find(req.query, cb(res));
@@ -189,50 +227,47 @@ module.exports = {
 
     createNewTask: function( req, res ) {
         const { body:newTask } = req;
+        const report = new Report(res);
 
         Task.create(newTask, (error, task)=> {
-            if(error) {
-                console.log(`Error creating task '${newTask.title}'`, error);
-                return res.status(500).json(error);
-            }
-            task.users.forEach( id => {
-                User.findById(id.user, (error, user)=> {
-                    if(error) return console.log(`Error finding user with ID: '${id.user}'`, error);
-                    user.tasks.push(task._id);
+            if(error) return report.criticalError(error, `Error creating task '${newTask.title}'`);
+            report.logResponse(`New task '${newTask.title}' added to database`);
+
+            const taskID = `${task._id}`;
+
+            for(let userID in task.users) {
+                User.findById(userID, (error, user)=> {
+                    if(error) return report.logError(`Error finding user with ID: '${userID}'`, error);
+
+                    user.tasks.push(taskID);
                     if(task.status.scheduled) {
                         const { startTime, softDeadline, hardDeadline } = task.schedule;
                         if(startTime !== '') {
                             const startDate = moment(startTime).startOf('day').valueOf();
                             if( user.agenda[startDate] ) {
-                                user.agenda[startDate].start.push(task._id);
-                                user.agenda[startDate].scheduled.push({
-                                    time: startTime,
-                                    taskID: task._id
-                                })
+                                user.agenda[startDate].start.push(taskID);
+                                user.agenda[startDate].scheduled.push(taskID);
                             }
                             else {
                                 user.agenda[startDate] = {
                                     date: moment(startDate).toJSON(),
-                                    start: [task._id],
+                                    start: [taskID],
                                     soft: [],
                                     hard: [],
-                                    scheduled: [{
-                                        time: startTime,
-                                        taskID: task._id
-                                    }]
+                                    scheduled: [taskID]
                                 }
                             }
                         }
                         if(softDeadline !== '') {
                             const softDate = moment(softDeadline).startOf('day').valueOf();
                             if( user.agenda[softDate] ) {
-                                user.agenda[softDate].soft.push(task._id);
+                                user.agenda[softDate].soft.push(taskID);
                             }
                             else {
                                 user.agenda[softDate] = {
                                     date: moment(softDate).toJSON(),
                                     start: [],
-                                    soft: [task._id],
+                                    soft: [taskID],
                                     hard: [],
                                     scheduled: []
                                 }
@@ -241,28 +276,30 @@ module.exports = {
                         if(hardDeadline !== '') {
                             const hardDate = moment(hardDeadline).startOf('day').valueOf();
                             if( user.agenda[hardDate] ) {
-                                user.agenda[hardDate].hard.push(task._id);
+                                user.agenda[hardDate].hard.push(taskID);
                             }
                             else {
                                 user.agenda[hardDate] = {
                                     date: moment(hardDate).toJSON(),
                                     start: [],
                                     soft: [],
-                                    hard: [task._id],
+                                    hard: [taskID],
                                     scheduled: []
                                 }
                             }
                         }
                         user.markModified('agenda');
                     }
-                    user.save((error, resp)=>{
-                        if(error) return console.log(`Error saving task to user '${user.firstName} ${user.lastName}'`, error);
-                        console.log(`Saved task to user '${user.firstName} ${user.lastName}'`);
-                    });
-                })
-            });
-            console.log(`Task '${newTask.title}' created successfully`);
-            return res.status(200).json(task);
+                    user.save(
+                        report.logResult(
+                            `Saved task to user '${user.firstName} ${user.lastName}'`,
+                            `Error saving task to user '${user.firstName} ${user.lastName}'`
+                        )
+                    );
+
+                });
+            }
+            report.setData(task);
         });
 
     },
@@ -298,13 +335,192 @@ module.exports = {
         console.log(set);
         Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
     },
-    deleteTasks: function( req, res ){
-        console.log(req.params.id);
-        let items = req.params.id.split(',');
-        console.log(items);
-        Task.remove({ _id: { $in: items } }, cb(res));
-    },
-    deleteTask: function( req, res ){
-        Task.findByIdAndRemove(req.params.id, cb(res));
+
+    deleteTasks( req, res ) {
+        const report = new Report(res);
+        // Data comes in as a string of IDs seperated by dashes. The first ID is the USER,
+        // and any following IDs belong to the tasks that will be removed from that USER.
+        const TASK_IDS = req.params.id.split('-');
+        const USER_ID = TASK_IDS.shift();
+        report.logResponse(`Requesting User: '${USER_ID}'`);
+        report.logResponse(`Tasks pending removal: '${TASK_IDS}'`);
+
+        // GET USER
+        User.findById(USER_ID, (error, user)=> {
+            if(error) return report.criticalError(`User '${USER_ID}' could not be found`, error);
+
+            const USER_NAME = `${user.firstName} ${user.lastName}`;
+
+            let agendaWasUpdated = false;
+
+            // GET TASKS
+            Task.find({ _id: { $in: TASK_IDS } }, (error, tasks)=> {
+                if(error) return report.criticalError('Unable to locate tasks', error);
+
+                // For each task, perform the following opertions.
+                tasks.forEach(task => {
+                    const { _id:taskId, title, status:{scheduled}, schedule:{startTime, softDeadline, hardDeadline} } = task;
+                    const scheduledTime = task.users[USER_ID].scheduled;
+                    const taskID = `${taskId}`;
+
+                    // ----- UPDATE THE USER -----
+                    // Remove this task's ID from the User's task list
+                    const taskIndex = user.tasks.indexOf(taskID);
+                    if(taskIndex !== -1) user.tasks.splice(taskIndex, 1);
+                    else return report.logError(`Task '${title}' not found on user '${USER_NAME}'`);
+
+                    // If the task is scheduled, it will need to be removed from the User's AGENDA as well
+                    if(scheduled) {
+                        // Remove the task's start time
+                        if(startTime) {
+                            const startDay = moment(startTime).startOf('day').valueOf();
+                            const startIndex = user.agenda[startDay].start.indexOf(taskID);
+                            if(startIndex !== -1) user.agenda[startDay].start.splice(startIndex, 1);
+                            else report.logError(`Unable to remove Task '${title}'s startTime from user '${USER_NAME}'s AGENDA`);
+                        }
+
+                        // Remove the task's scheduled time
+                        if(scheduledTime) {
+                            const scheduledDay = moment(scheduledTime).startOf('day').valueOf();
+                            const scheduledIndex = user.agenda[scheduledDay].scheduled.indexOf(taskID);
+                            if(scheduledIndex !== -1) user.agenda[scheduledDay].scheduled.splice(scheduledIndex, 1);
+                            else report.logError(`Unable to remove Task '${title}'s scheduled time from user '${USER_NAME}'s AGENDA`);
+                        }
+
+                        // If it exists, remove the task's soft deadline
+                        if(softDeadline) {
+                            const softDay = moment(softDeadline).startOf('day').valueOf();
+                            const softIndex = user.agenda[softDay].soft.indexOf(taskID);
+                            if(softIndex !== -1) user.agenda[softDay].soft.splice(softIndex, 1);
+                            else report.logError(`Unable to remove Task '${title}'s softDeadline from user '${USER_NAME}'s AGENDA`);
+                        }
+
+                        // If it exists, remove the task's hard deadline
+                        if(hardDeadline) {
+                            const hardDay = moment(hardDeadline).startOf('day').valueOf();
+                            const hardIndex = user.agenda[hardDay].hard.indexOf(taskID);
+                            if(hardIndex !== -1) user.agenda[hardDay].hard.splice(hardIndex, 1);
+                            else report.logError(`Unable to remove Task '${title}'s hardDeadline from user '${USER_NAME}'s AGENDA`);
+                        }
+
+                        agendaWasUpdated = true;
+                    }
+
+                    report.logResponse(`Task '${title}' was removed from user '${USER_NAME}'`);
+
+                    // ----- UPDATE THE TASK -----
+                    /* If the task belongs solely to the user requesting the removal
+                        then it will be removed completely from the TASK database, but
+                        it the task is shared with other users, then it will remain in
+                        the database attached to those other users and will only be
+                        removed from the USER requesting the removal.               */
+
+                    if(Object.keys(task.users).length > 1) {
+                        delete task.users[USER_ID];
+                        task.markModified('users');
+
+                        task.changeLog.push({
+                            date: moment().toJSON(),
+                            user: USER_ID,
+                            display: `'${USER_NAME}' removed from the Task`
+                        });
+
+                        task.save(
+                            report.logResult(
+                                `User '${USER_NAME}' was successfully removed from Task '${title}'`,
+                                `Failed to save Task '${title}'`
+                            )
+                        );
+                    }
+                    else task.remove(
+                        report.logResult(
+                            `!!! Task '${title}' was REMOVED from the TASK Database !!!`,
+                            `Failed to remove Task '${title}' from the TASK Database`
+                        )
+                    );
+
+                })
+
+                // Save changes to the user and send user back to client
+                if(agendaWasUpdated) user.markModified('agenda');
+                user.save(
+                    report.logResult(
+                        `User '${USER_NAME}' was successfully modified`,
+                        `Error saving User '${USER_NAME}'`
+                    )
+                );
+
+                user.populate('tasks', report.sendResult());
+            });
+
+        });
     }
 };
+
+
+class Report {
+    constructor(res) {
+        this.res = res;
+        this.waiting = 0;
+        this.report = {
+            status: "SUCCESS",
+            error: [],     // { msg, error }
+            response: [],    // { msg, response }
+            data: null
+        };
+    }
+
+    logError(msg = "", error = "") {
+        console.log(`--ERROR-- : ${msg}`);
+        if(error !== "") console.log(error);
+        this.report.error.push({ msg, error });
+    }
+
+    logResponse(msg = "") {
+        console.log(`UPDATE: ${msg}`);
+        this.report.response.push({ msg, response: null });
+    }
+
+    logResult(msg = "", errorMsg = "") {
+        this.waiting++;
+        return (error, response) => {
+            if(error) {
+                console.log(`--ERROR-- : ${errorMsg}`, error);
+                this.report.error.push({ errorMsg, error });
+            }
+            else {
+                console.log(`UPDATE: ${msg}`);
+                this.report.response.push({ msg, response });
+            }
+            this.waiting--;
+            this.sendReport();
+        };
+    }
+
+    setData(data) {
+        this.report.data = data;
+    }
+
+    sendReport(data, response) {
+        if(response) data = response;
+        if(data) this.report.data = data;
+        if(this.report.error.length > 0) this.report.status = "PARTIAL";
+        if(!this.waiting) this.res.status(200).json(this.report);
+    }
+
+    sendResult() {
+        this.waiting++;
+        return (error, response) => {
+            this.report.data = error || response;
+            this.waiting--;
+            this.sendReport();
+        };
+    }
+
+    criticalError(msg, error) {
+        console.log(msg, error);
+        this.report.status = "FAIL";
+        this.report.error.push({ msg, error });
+        this.res.status(500).json(this.report);
+    }
+}

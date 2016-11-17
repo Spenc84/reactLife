@@ -6,7 +6,7 @@ import { Div } from '../../../uiComponents/ui';
 export default class Week extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate:unix, updateDate, agenda, tasks, tIndx } = this.props;
+        const { activeDate:unix, updateDate, agenda, tasks, tIndx, userID } = this.props;
         let activeDate = moment(unix);
 
         // Style the weekday names of prior weeks as prior
@@ -46,10 +46,9 @@ export default class Week extends React.Component {
             // Build the task list for this particular day
             const taskList = (schedule)
                 ? schedule.get("scheduled").map(
-                    (taskRef,indx) => {
-                        const ID = taskRef.get('taskID');
-                        const scheduledTime = moment(taskRef.get('time'));
-                        const task = tasks.get(tIndx[ID]);
+                    (taskID, indx) => {
+                        const task = tasks.get(tIndx[taskID]);
+                        const scheduledTime = moment(task.getIn(['users', userID, 'scheduled']));
                         const top = scheduledTime.hour() * 60 + scheduledTime.minute();
                         return (
                             <div key={`task_${indx}`}

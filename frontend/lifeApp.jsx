@@ -41,27 +41,11 @@ export default class LifeApp extends React.Component {
 
         this.updateTasks = this.updateTasks.bind(this);
         this.buildTask = this.buildTask.bind(this);
+        this.deleteTasks = this.deleteTasks.bind(this);
     }
 
     componentDidMount() {
-        this.serverRequest = SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
-            incoming => {
-                console.log("incoming", incoming);
-                const { data:user, data:{ tasks, agenda } } = incoming;
-                this.setState({
-                    authenticated: true,
-                    USER: fromJS(user),
-                    tIndx: (tasks) ? Index(tasks) : {},
-                    loading: false
-                });
-                console.log(`User Authenticated: `, user);
-            },
-            rejected => {
-                this.setState({ loading: false });
-                console.log('Failed to acquire user', rejected);
-                alert("An error has occured. Check console for details.");
-            }
-        );
+        this.serverRequest = this.getUser();
     }
 
 	render() {
@@ -73,7 +57,8 @@ export default class LifeApp extends React.Component {
                 agenda={ USER.get("agenda") || List()}
                 api={{
                     updateTasks: this.updateTasks,
-                    buildTask: this.buildTask
+                    buildTask: this.buildTask,
+                    deleteTasks: this.deleteTasks
                 }}
                 {...this.state}
             />
@@ -81,7 +66,7 @@ export default class LifeApp extends React.Component {
 	}
 
     getUser() {
-        SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
+        return SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
             incoming => {
                 console.log("incoming", incoming);
                 const { data:user, data:{ tasks, agenda } } = incoming;
@@ -89,7 +74,6 @@ export default class LifeApp extends React.Component {
                     authenticated: true,
                     USER: fromJS(user),
                     tIndx: (tasks) ? Index(tasks) : {},
-                    dIndx: (agenda) ? Index(agenda) : {},
                     loading: false
                 });
                 console.log(`User Authenticated: `, user);
@@ -107,11 +91,14 @@ export default class LifeApp extends React.Component {
 
         this.setState({ loading: true });
         SERVER.post("/api/tasks", newTask.toJS()).then(
-            ({data:createdTask}) => {
+            ({data, data:{data:createdTask}}) => {
+                console.log("SERVER-RESPONSE: ", data);
                 console.log("SERVER: ---Task Created---", createdTask);
-                const taskList = USER.get('tasks').push(fromJS(createdTask));
+                const task = fromJS(createdTask);
+                const taskList = USER.get('tasks').push(task);
+                const agenda = task.getIn(['status', 'scheduled']) ? this.addToAgenda(task) : USER.get('agenda');
                 this.setState({
-                    USER: USER.set('tasks', taskList),
+                    USER: USER.withMutations(user => user.set('tasks', taskList).set('agenda', agenda)),
                     tIndx: Index(taskList),
                     loading: false
                 });
@@ -131,6 +118,8 @@ export default class LifeApp extends React.Component {
 
         let status = Map();
         let schedule = DEFAULT_SCHEDULE;
+        let scheduledTime = "";
+        // Fix pending tasks getting added with the wrong scheduled time
 
         if( tab === 'ACTIVE' ) {
             status = Map({
@@ -138,7 +127,8 @@ export default class LifeApp extends React.Component {
                 scheduled: true,
                 inactive: false
             });
-            schedule = schedule.set('startTime', now.toJSON());
+            scheduledTime = now.toJSON();
+            schedule = schedule.set('startTime', scheduledTime);
         }
         if( tab === 'PENDING' ) {
             status = Map({
@@ -146,19 +136,20 @@ export default class LifeApp extends React.Component {
                 scheduled: true,
                 inactive: false
             });
-            schedule = schedule.set('startTime', moment(now).add(1, 'day').toJSON());
+            scheduledTime = now.clone().add(1, 'day').toJSON();
+            schedule = schedule.set('startTime', scheduledTime);
         }
 
         const newTask = Map({
             title,
             color: TASK_COLOR,
             description: "",
-            users: List([
-                Map({
-                    access: 30,
-                    user: userID
-                })
-            ]),
+            users: Map({
+                [userID]: {
+                    securityAccess: 30,
+                    scheduled: scheduledTime
+                }
+            }),
             status,
             schedule,
             changeLog: List([
@@ -169,14 +160,71 @@ export default class LifeApp extends React.Component {
                 })
             ])
         });
-        
+
         this.createNewTask(newTask);
     }
 
-    updateAgenda() {
-        const { USER, dIndex } = this.state;
+    addToAgenda(task) {
+        const { USER } = this.state;
+        let agenda = USER.get('agenda');
 
+        const taskID = task.get('_id');
 
+        const scheduledTime = task.getIn(['users', USER.get('_id'), 'scheduled']);
+        const startTime = task.getIn(['schedule', 'startTime']);
+        const softDeadline = task.getIn(['schedule', 'softDeadline']);
+        const hardDeadline = task.getIn(['schedule', 'hardDeadline']);
+
+        if(scheduledTime !== '') {
+            const scheduledDate = moment(scheduledTime).startOf('day').valueOf().toString();
+            agenda = agenda.has(scheduledDate)
+                ?   agenda.updateIn( [scheduledDate, 'scheduled'], list=>list.push(taskID) )
+                :   agenda.set(scheduledDate, fromJS({
+                        date: moment(scheduledDate).toJSON(),
+                        start: [],
+                        soft: [],
+                        hard: [],
+                        scheduled: [taskID]
+                    }));
+        }
+        if(startTime !== '') {
+            const startDate = moment(startTime).startOf('day').valueOf().toString();
+            agenda = agenda.has(startDate)
+                ?   agenda.updateIn( [startDate, 'start'], list=>list.push(taskID) )
+                :   agenda.set(startDate, fromJS({
+                        date: moment(startDate).toJSON(),
+                        start: [taskID],
+                        soft: [],
+                        hard: [],
+                        scheduled: []
+                    }));
+        }
+        if(softDeadline !== '') {
+            const softDate = moment(softDeadline).startOf('day').valueOf().toString();
+            agenda = agenda.has(softDate)
+                ?   agenda.updateIn( [softDate, 'soft'], list=>list.push(taskID) )
+                :   agenda.set(softDate, fromJS({
+                        date: moment(softDate).toJSON(),
+                        start: [],
+                        soft: [taskID],
+                        hard: [],
+                        scheduled: []
+                    }));
+        }
+        if(hardDeadline !== '') {
+            const hardDate = moment(hardDeadline).startOf('day').valueOf().toString();
+            agenda = agenda.has(hardDate)
+                ?   agenda.updateIn( [hardDate, 'hard'], list=>list.push(taskID) )
+                :   agenda.set(hardDate, fromJS({
+                        date: moment(hardDate).toJSON(),
+                        start: [],
+                        soft: [],
+                        hard: [taskID],
+                        scheduled: []
+                    }));
+        }
+
+        return agenda;
     }
 
     updateTasks(selectedTasks, desiredChanges) {
@@ -203,27 +251,63 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    refreshTaskData() {
-        const { USER, loading } = this.state;
-        const userID = USER.get('_id');
-        if(!loading) this.setState({ loading: true });
+    deleteTasks(selectedTasks) {
+        if(!List.isList(selectedTasks) || selectedTasks.size < 1) return;
+        const { USER, tIndx } = this.state;
+        const existingTaskList = USER.get('tasks');
 
-        SERVER.get(`/api/user/${userID}/tasks`).then(
-            ({data:taskList}) => {
-                console.log("SERVER: ---Incoming TaskList---", taskList);
+        if(selectedTasks.size === 1) {
+            const taskName = existingTaskList.get( tIndx[selectedTasks.get(0)] ).get('title');
+            if( !confirm(`Are you sure you want to delete task '${taskName}'?`) ) return;
+        }
+        else {
+            if( !confirm(`Are you sure you want to delete these ${selectedTasks.size} tasks?'`) ) return;
+        }
+
+        const taskIDs = selectedTasks.join('-');
+        const IDs = `${USER.get('_id')}-${taskIDs}`;
+
+        this.setState({ loading: true });
+        SERVER.delete(`/api/task/${IDs}`).then(
+            approved => {
+                console.log(`SERVER: ---${selectedTasks.size} Tasks deleted---`, approved.data);
+                const updatedUser = approved.data.data;
+
                 this.setState({
-                    USER: USER.set('tasks', fromJS(taskList)),
-                    tIndx: Index(taskList),
+                    USER: fromJS(updatedUser),
+                    tIndx: Index(updatedUser.tasks),
                     loading: false
                 });
             },
             rejected => {
                 this.setState({ loading: false });
-                console.log('Failed to refresh Task data: ', rejected);
+                console.log('Failed to delete task(s): ', rejected);
                 alert("An error has occured. Check console for details.");
             }
         );
     }
+
+    // refreshTaskData() {
+    //     const { USER, loading } = this.state;
+    //     const userID = USER.get('_id');
+    //     if(!loading) this.setState({ loading: true });
+    //
+    //     SERVER.get(`/api/user/${userID}/tasks`).then(
+    //         ({data:taskList}) => {
+    //             console.log("SERVER: ---Incoming TaskList---", taskList);
+    //             this.setState({
+    //                 USER: USER.set('tasks', fromJS(taskList)),
+    //                 tIndx: Index(taskList),
+    //                 loading: false
+    //             });
+    //         },
+    //         rejected => {
+    //             this.setState({ loading: false });
+    //             console.log('Failed to refresh Task data: ', rejected);
+    //             alert("An error has occured. Check console for details.");
+    //         }
+    //     );
+    // }
 }
 
 ReactDOM.render(<LifeApp/>, document.querySelector("App"));

@@ -28,6 +28,7 @@ export default class ListSection extends React.Component {
         };
 
         this.updateTasks = this.updateTasks.bind(this);
+        this.deleteTasks = this.deleteTasks.bind(this);
         this.toggleStarred = this.toggleStarred.bind(this);
         this.updateFilter = this.updateFilter.bind(this);
         this.selectTask = this.selectTask.bind(this);
@@ -43,7 +44,10 @@ export default class ListSection extends React.Component {
     componentWillReceiveProps(nextProps) {
         if(this.props.tasks !== nextProps.tasks) {
             const query = this.refs.QB.getQuery();
-            this.setState( {filter: filterTasks(nextProps.tasks, query)} );
+            this.setState({
+                filter: filterTasks(nextProps.tasks, query),
+                selectedTasks: List()
+            });
         }
     }
 
@@ -60,6 +64,7 @@ export default class ListSection extends React.Component {
                     resetSelectedTasks={this.resetSelectedTasks}
                     toggleStarView={this.toggleStarView}
                     updateTasks={this.updateTasks}
+                    deleteTasks={this.deleteTasks}
                     toggleStarred={this.toggleStarred}
                 />
 
@@ -84,8 +89,14 @@ export default class ListSection extends React.Component {
 
     updateTasks(desiredChange) {
         const { selectedTasks } = this.state;
-        const { updateTasks } = this.props;
+        const { api:{updateTasks} } = this.props;
         updateTasks(selectedTasks, desiredChange);
+    }
+
+    deleteTasks() {
+        const { selectedTasks } = this.state;
+        const { api:{deleteTasks} } = this.props;
+        deleteTasks(selectedTasks);
     }
 
     toggleStarred() {

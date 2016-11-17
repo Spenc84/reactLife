@@ -8,9 +8,9 @@ export default class ListHeader extends React.PureComponent {
 
         this.switchToCalendarView = this.switchToCalendarView.bind(this);
     }
-    
+
     render() {
-        const { tasksSelected, resetSelectedTasks, toggleStarView, toggleStarred } = this.props;
+        const { tasksSelected, resetSelectedTasks, toggleStarView, deleteTasks, toggleStarred } = this.props;
 
         console.log('RENDERED:  --- LISTHEADER ---'); // __DEV__
         return (
@@ -19,7 +19,7 @@ export default class ListHeader extends React.PureComponent {
                 <div className={`${tasksSelected?"":"hidden "}icon Row`}>
                     <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.75}/>
                     <div className="functional icons">
-                        <Icon i={'delete'} onClick={this.verifyDelete} />
+                        <Icon i={'delete'} onClick={deleteTasks} />
                         <Icon i={'group_work'} />
                         <Icon i={'linear_scale'} />
                         <Icon i={'info'} />

@@ -14,8 +14,8 @@ module.exports = function( app ){
     app.route('/api/users/:ids/:keys/:values')
         .put(ctrl.editUsers);
 
-    // app.route('/api/update')
-    //     .get(ctrl.updateData);
+    app.route('/api/update')
+        .get(ctrl.updateData);
     app.route('/api/test')
         .get(ctrl.getTest);
 

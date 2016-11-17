@@ -1,25 +1,46 @@
 var mongoose = require('mongoose');
 
 var taskSchema = new mongoose.Schema({
-  title: {type: String, required: true},
-  schedule: {
-    startTime: {type: String, default: ''},
-    duration: {type: Number, default: 0},
-    softDeadline: {type: String, default: ''},
-    hardDeadline: {type: String, default: ''},
-    availability: []
-  },
-  color: {type: String, default: '#0078ff'},
-  description: {type: String, default: ''},
-  users: [{
-      user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-      access: Number
-  }],
-  changeLog: [{
-      date: String,
-      user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-      display: String
-  }],
+    title: {type: String, required: true},
+    schedule: {
+        startTime: {type: String, default: ''},
+        duration: {type: Number, default: 0},
+        softDeadline: {type: String, default: ''},
+        hardDeadline: {type: String, default: ''},
+        availability: []
+    },
+    color: {type: String, default: '#0078ff'},
+    description: {type: String, default: ''},
+    users: {},
+    /*  {
+            userID <string> : {
+                securityAccess: <number>,
+                scheduled: <ISO formatted Date string> || ""
+            }
+        }                                                       */
+    changeLog: [{
+        date: String,
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+        display: String
+    }],
+    status: {
+        starred: {type: Boolean, default: false},
+        active: {type: Boolean, default: false},
+        pending: {type: Boolean, default: false},
+        inactive: {type: Boolean, default: true},
+        completed: {type: Boolean, default: false},
+        incomplete: {type: Boolean, default: false},
+        scheduled: {type: Boolean, default: false},
+        highPriority: {type: Boolean, default: false},
+        lowPriority: {type: Boolean, default: false},
+        reoccuring: {type: Boolean, default: false},
+        behindSchedule: {type: Boolean, default: false},
+        pastDue: {type: Boolean, default: false},
+        needsAttention: {type: Boolean, default: false},
+        multiday: {type: Boolean, default: false},
+        carryOver: {type: Boolean, default: false},
+        carriedOver: {type: Number, default: 0}
+    }
   // prereq: {},
   // context: {},
   // reminders: [{}],
@@ -44,24 +65,6 @@ var taskSchema = new mongoose.Schema({
   //   // dateRange
   // },
   // comments: [Comment],
-  status: {
-    starred: {type: Boolean, default: false},
-    active: {type: Boolean, default: false},
-    pending: {type: Boolean, default: false},
-    inactive: {type: Boolean, default: true},
-    completed: {type: Boolean, default: false},
-    incomplete: {type: Boolean, default: false},
-    scheduled: {type: Boolean, default: false},
-    highPriority: {type: Boolean, default: false},
-    lowPriority: {type: Boolean, default: false},
-    reoccuring: {type: Boolean, default: false},
-    behindSchedule: {type: Boolean, default: false},
-    pastDue: {type: Boolean, default: false},
-    needsAttention: {type: Boolean, default: false},
-    multiday: {type: Boolean, default: false},
-    carryOver: {type: Boolean, default: false},
-    carriedOver: {type: Number, default: 0}
-  }
 });
 
 module.exports = mongoose.model('Task', taskSchema);

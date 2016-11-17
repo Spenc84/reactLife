@@ -11,15 +11,10 @@ var userSchema = new mongoose.Schema({
     // agenda: {
     //     <unix>: {
     //         date: String,
+    //         scheduled: [<taskID>],
     //         start: [<taskID>],
     //         soft: [<taskID>],
-    //         hard: [<taskID>],
-    //         scheduled: [
-    //             {
-    //                 time: String,
-    //                 taskID: <taskID>
-    //             }
-    //         ]
+    //         hard: [<taskID>]
     //     }
     // }
 });
