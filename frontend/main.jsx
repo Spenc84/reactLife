@@ -4,6 +4,8 @@ import SplashSection from './views/splash/SplashSection';
 import CalendarSection from './views/calendar/CalendarSection';
 import ListSection from './views/list/ListSection';
 
+import Scheduler from './components/scheduler/scheduler';
+
 export default class Main extends React.Component {
     constructor(props) {
         super(props);
@@ -13,6 +15,7 @@ export default class Main extends React.Component {
         };
 
         this.changeSection = this.changeSection.bind(this);
+        this.openScheduler = this.openScheduler.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,8 +46,11 @@ export default class Main extends React.Component {
                     <ListSection
                         active={(activeSection === "LIST")}
                         changeSection={this.changeSection}
+                        openScheduler={this.openScheduler}
                         {...this.props} />
                 </section>
+
+                <Scheduler ref={ ref=> this.Scheduler = ref } />
 
             </main>
         );
@@ -52,5 +58,9 @@ export default class Main extends React.Component {
 
     changeSection(activeSection) {
         this.setState({ activeSection });
+    }
+
+    openScheduler() {
+        this.Scheduler.openScheduler();
     }
 }

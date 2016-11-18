@@ -55,7 +55,7 @@ export default class ListSection extends React.Component {
 
     render() {
         const { selectedFilter, filter, starView, selectedTasks } = this.state;
-        const { tasks, changeSection, api:{buildTask} } = this.props;
+        const { tasks, changeSection, openScheduler, api:{buildTask} } = this.props;
 
         return (
             <div className="ListSection">
@@ -68,6 +68,7 @@ export default class ListSection extends React.Component {
                     deleteTasks={this.deleteTasks}
                     toggleStarred={this.toggleStarred}
                     toggleCompleted={this.toggleCompleted}
+                    openScheduler={openScheduler}
                 />
 
                 <QueryBuilder ref="QB"

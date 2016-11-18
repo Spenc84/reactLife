@@ -1,0 +1,28 @@
+div.Modal
+    z-index: 100;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0,0,0,.5);
+    align-items: center;
+    justify-content: center;
+
+    div.inner
+        flex-direction: column;
+
+        & > header
+            min-height: 60px;
+            padding: 0 10px;
+
+            div.header_content
+                flex: 1;
+
+        & > footer
+            min-height: 60px;
+            padding: 0 10px;
+
+            div.action
+                height: 36px;
+                margin-left: 10px;

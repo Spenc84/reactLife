@@ -10,7 +10,7 @@ export default class ListHeader extends React.PureComponent {
     }
 
     render() {
-        const { tasksSelected, resetSelectedTasks, toggleStarView, deleteTasks, toggleStarred, toggleCompleted } = this.props;
+        const { tasksSelected, resetSelectedTasks, toggleStarView, deleteTasks, toggleStarred, toggleCompleted, openScheduler } = this.props;
 
         console.log('RENDERED:  --- LISTHEADER ---'); // __DEV__
         return (
@@ -24,7 +24,7 @@ export default class ListHeader extends React.PureComponent {
                         <Icon i={'linear_scale'} />
                         <Icon i={'info'} />
                         <Icon i={'group_add'} />
-                        <Icon i={'schedule'} onClick={this.openQuickScheduler} />
+                        <Icon i={'schedule'} onClick={openScheduler} />
                         <Icon i={'star'} style={{color:'rgb(241,196,15)'}} onClick={toggleStarred} />
                         {/* <Icon i={'more_vert'} /> */}
                     </div>

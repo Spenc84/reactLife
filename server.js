@@ -5,6 +5,8 @@ import cors from 'cors';
 import { PORT, mongoUri, corsOptions } from './config/session';
 import webpackDevServer from "./webpackDevServer";
 
+mongoose.Promise = Promise;
+
 const PROD = process.env.NODE_ENV === "production";
 const app = express();
 
