@@ -8,7 +8,7 @@ import { Column, Row } from '../../../uiComponents/ui';
 const WEEKDAY_TITLES = moment.weekdaysShort().map((x)=><span key={x} className="weekday title">{x}</span>);
 
 export default class Month extends React.Component {
-    // shouldComponentUpdate(nextProps) { return nextProps.active; }
+    shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
         const { activeDate, updateDate, agenda, tasks, tIndx } = this.props;
         let day = moment(activeDate).startOf('month');
@@ -73,10 +73,9 @@ export default class Month extends React.Component {
                 <div className="weekday title row">
                     {WEEKDAY_TITLES}
                 </div>
-                <Column className="month" check={activeDate}>
+                <div className="month Column">
                     {month}
-                </Column>
-
+                </div>
             </div>
         );
     }

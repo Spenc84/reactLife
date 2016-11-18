@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
 import ListHeader from './uiComponents/ListHeader';
@@ -27,14 +28,15 @@ export default class ListSection extends React.Component {
             selectedTasks: List()
         };
 
-        this.updateTasks = this.updateTasks.bind(this);
+        this.buildTask = this.buildTask.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
         this.toggleStarred = this.toggleStarred.bind(this);
+        this.toggleCompleted = this.toggleCompleted.bind(this);
+
         this.updateFilter = this.updateFilter.bind(this);
         this.selectTask = this.selectTask.bind(this);
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
-        this.buildTask = this.buildTask.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -63,9 +65,9 @@ export default class ListSection extends React.Component {
                     changeSection={changeSection}
                     resetSelectedTasks={this.resetSelectedTasks}
                     toggleStarView={this.toggleStarView}
-                    updateTasks={this.updateTasks}
                     deleteTasks={this.deleteTasks}
                     toggleStarred={this.toggleStarred}
+                    toggleCompleted={this.toggleCompleted}
                 />
 
                 <QueryBuilder ref="QB"
@@ -87,10 +89,12 @@ export default class ListSection extends React.Component {
         );
     }
 
-    updateTasks(desiredChange) {
-        const { selectedTasks } = this.state;
-        const { api:{updateTasks} } = this.props;
-        updateTasks(selectedTasks, desiredChange);
+
+    buildTask(title) {
+        const { selectedFilter } = this.state;
+        const { api:{buildTask} } = this.props;
+
+        buildTask(title, selectedFilter);
     }
 
     deleteTasks() {
@@ -101,17 +105,40 @@ export default class ListSection extends React.Component {
 
     toggleStarred() {
         const { selectedTasks } = this.state;
-        const { api:{updateTasks}, tasks, tIndx } = this.props;
+        const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
 
         const starred = !selectedTasks.every(ID=>tasks.get(tIndx[ID]).get('status').get('starred'));
-        updateTasks(selectedTasks, {'status.starred': starred});
+        const action = {
+            date: moment().toJSON(),
+            user: USER.get('_id'),
+            display: (starred) ? 'Added star to task' : 'Removed star from task'
+        };
+
+        const operation = {
+            $set: { 'status.starred': starred },
+            $push: { changeLog: action }
+        };
+
+        updateTasks(selectedTasks, operation);
     }
 
-    buildTask(title) {
-        const { selectedFilter } = this.state;
-        const { api:{buildTask} } = this.props;
+    toggleCompleted() {
+        const { selectedTasks } = this.state;
+        const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
 
-        buildTask(title, selectedFilter);
+        const completed = !selectedTasks.every(ID=>tasks.get(tIndx[ID]).get('status').get('completed'));
+        const action = {
+            date: moment().toJSON(),
+            user: USER.get('_id'),
+            display: (completed) ? 'Marked task as Completed' : 'Removed Completed status'
+        };
+
+        const operation = {
+            $set: { 'status.completed': completed },
+            $push: { changeLog: action }
+        };
+
+        updateTasks(selectedTasks, operation);
     }
 
     updateFilter(tab, query) {

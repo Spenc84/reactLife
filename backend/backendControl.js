@@ -213,7 +213,7 @@ module.exports = {
         const { selectedTasks, desiredChanges, userID } = req.body;
         Task.update(
             {_id: { $in: selectedTasks } },
-            {$set: desiredChanges},
+            desiredChanges,
             {multi: true},
             (error, response) => {
                 if(error) return res.status(500).json(error);
