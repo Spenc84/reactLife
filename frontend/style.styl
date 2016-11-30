@@ -2,6 +2,14 @@
 html, body
     margin 0
     padding 0
+    cursor default
+    -webkit-user-select none
+    user-select none
+
+html
+    font-size 10px
+body
+    font-size 16px
 
 // COLORS
 _faded(alpha = .5)
@@ -25,21 +33,6 @@ $shadow = 0 1px 10px #515151
 $headerIndx = 50
 $minuteBarIndx = 10
 
-// GLOBALS
-body *
-    display flex
-    box-sizing border-box
-main#app_container
-    width 100vw
-    height 100vh
-    flex-direction column
-    overflow: hidden
-    & > section
-        flex 1
-        flex-direction column
-        & > div
-            flex 1
-            flex-direction column
 
 // STYLES
 .faded
@@ -58,8 +51,11 @@ main#app_container
     color: $light
 
 
+// GLOBALS
+body *
+    display flex
+    box-sizing border-box
 
-/////////////////////////////   COMPONENTS   ////////////////////////////////
 ////////// UI //////////
 .Column
     flex-direction column
@@ -67,33 +63,61 @@ main#app_container
 .Row
     flex-grow 1
 
-i.material-icons
-    display flex
-    align-items center
+div.icon
+    cursor pointer
     transition opacity 300ms ease-in-out
+    i.material-icons
+        display flex
+        align-items center
+    &.invisible
+        cursor default
+        cursor inherit
+
+
+
+/////////////////////////////   COMPONENTS   ////////////////////////////////
+
+//////////   NAMED ELEMENTS   //////////
+main#app_container
+    width 100vw
+    height 100vh
+    flex-direction column
+    overflow: hidden
+    & > section
+        flex 1
+        flex-direction column
+        & > div
+            flex 1
+            flex-direction column
+
+div#dropNav div.icon
+    padding 0 16px
 
 div#calendar_body
-    display: block
+    display block
     flex 1 1 100%
-    overflow-x: hidden
-    overflow-y: auto
-    position: relative
+    overflow-x hidden
+    overflow-y auto
+    overflow-y overlay
+    position relative
 
-////////// COMPLEX //////////
+
+//////////   COMPLEX   //////////
 header
     flex 0 0 auto
-    overflow-x: hidden
-header.calendar
-    z-index $headerIndx
-    background-color $primaryBG
-    box-shadow 0 1px 10px #515151
-    nav span
-        border-radius: 0.5rem;
-        padding .2rem .5rem .1rem
-    nav .selected
-        background: #f4f4f4;
-        box-shadow: inset 1px 1px 3px #666;
-        transition: all 200ms ease-in-out
+    overflow-x hidden
+    &.calendar
+        z-index $headerIndx
+        background-color $primaryBG
+        box-shadow 0 1px 10px #515151
+        nav span
+            border-radius: 8px
+            padding 3.2px .8px 1.6px
+            cursor pointer
+            &.selected
+                background #f4f4f4
+                box-shadow inset 1px 1px 3px #666
+                transition all 200ms ease-in-out
 
 
 section.hour-divider
@@ -125,6 +149,138 @@ section.hour-divider
 
 
 //////////////////////////////     SECTIONS     ////////////////////////////////
+div.CalendarSection
+    .Agenda.view
+        flex-direction: column
+        width 100%
+        .month
+            height 80px
+            justify-content: center
+            align-items: center
+            font-size 32px
+        .day
+            margin 8px 0
+        .date
+            flex-direction column
+            height 60px
+            width 50px
+            font-size 24px
+            align-items center
+            background $dateDay
+            cursor pointer
+            &>div:first-child
+              font-size 10px
+        .tasks
+            flex-direction: column
+            flex 1 1 auto
+        .task
+            padding 4px 8px
+            border-radius 2.4px
+            margin 4px 16px 4px 0
+            font-family -apple-system,".SFNSText-Regular","San Francisco",Roboto,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif
+            font-size 14px
+            color white
+            cursor pointer
+
+    .Day.view
+        z-index 1
+        position: absolute
+        width 100%
+        .date
+            position fixed
+            left 0
+            height 70px
+            width 50px
+            padding-top 10px
+            font-size 24px
+            flex-direction column
+            align-items center
+            background: $dateDay
+            &>div:first-child
+              font-size 10px
+        .eventColumn
+            position: relative
+            flex-direction: column
+            height 1440px
+            width 100%
+            padding-left 48px
+            margin-top 10px
+            border-top 1px solid transparent
+            .task
+                position: absolute
+                width: 100%
+                overflow: hidden
+                padding: 1px
+                transition: all 500ms ease-in-out
+                cursor pointer
+                &:hover
+                    max-height: 360px !important
+
+    .Week.view
+        z-index 1
+        position: absolute
+        flex-direction: column
+        width 100%
+        .dateBar
+            z-index 1
+            position fixed
+            height 60px
+            padding-left 48px
+            width 100%
+            align-items: center
+        .date
+            flex 0 1 (100%/7)
+            font-size 24px
+            flex-direction column
+            align-items center
+            cursor pointer
+            &>div:first-child
+              font-size 10px
+        .weekEvents
+            height 1440px
+            padding-left 48px
+            margin-top 10px
+            border-top 1px solid transparent
+            .eventColumn
+                position: relative
+                flex-direction: column
+                width (100%/7)
+                border-right 1px solid $hourDivider
+                &:first-of-type
+                    border-left 1px solid $hourDivider
+                .task
+                    position: absolute
+                    font-size: 13px
+                    width: 100%
+                    overflow: hidden
+                    padding: 1px
+                    transition: all 500ms ease-in-out
+                    cursor pointer
+                    &:hover
+                        max-height: 360px !important
+
+    .Month.view
+        flex-direction: column
+        width 100%
+        .weekday.title span, .day
+            width (100%/7)
+        .weekday.title.row
+            padding 8px 0
+            span
+                justify-content center
+        .week
+            flex 1 1 0
+        .day
+            padding 3px
+            .date
+                align-self center
+            .task
+                height 10px
+                margin 1px 0
+                border-radius 8px
+                cursor pointer
+
+
 div.ListSection
 
     header.list
@@ -132,7 +288,7 @@ div.ListSection
         & > div.Row
             height 60px
             div.icon
-                flex 0 1 3rem
+                flex 0 1 48px
                 align-items center
                 justify-content center
                 &.check_circle
@@ -141,15 +297,14 @@ div.ListSection
             align-items center
             background-color $listAccent
             color $light
-        div.icon.Row
-            justify-content: space-between;
+        div.icons.Row
+            justify-content: space-between
             div.icons
                 flex 1
                 justify-content center
 
 
-
-    div.QueryBuilder
+    .QueryBuilder
         flex-direction: column
         position relative
         background-color $listAccent
@@ -160,44 +315,47 @@ div.ListSection
             justify-content: center
             flex: 2 1 0
             padding 4px 8px
-            height 2rem
+            height 32px
             &:first-child span
                 border-left: none
             &:last-child span
                 border-right: none
             span
-                position: absolute;
-                background: rgb(240,240,240);
-                width: 100%;
-                height: 100%;
-                align-items: center;
-                justify-content: center;
+                position: absolute
+                background: rgb(240,240,240)
+                width: 100%
+                height: 100%
+                align-items: center
+                justify-content: center
                 border: 1px solid $inactive
                 border-top-left-radius: 8px
                 border-top-right-radius: 8px
+                cursor pointer
             &.selected span
-                z-index: 5;
-                width: 110%;
-                height: 120%;
-                font-weight: 600;
-                font-size: 18px;
-                color: rgb(85,85,85);
-                background: white;
+                z-index: 5
+                width: 110%
+                height: 120%
+                font-weight: 600
+                font-size: 18px
+                color: rgb(85,85,85)
+                background: white
                 box-shadow: inset 0px 0px 4px #666
                 transition all .1s ease-in-out
+                cursor default
                 & i.material-icons
                     font-size 28px
+                    cursor default
         div.query
             z-index 5
             flex-direction: column
             background white
             color $inactive
-            padding .5rem
+            padding 8px
             flex 1
             span
                 -webkit-user-select: none
                 justify-content: center
-                padding .25rem .5rem
+                padding 4px 8px
                 &.included
                     text-shadow: 0 3px 6px #048
                 &.excluded, &.excluded-active
@@ -207,29 +365,31 @@ div.ListSection
                 &.required, &.required-active, &.excluded-active
                     color: black
             input
-                margin .5rem
+                margin 8px
                 flex 1
         div.gradient.spacer
             z-index 5
             position absolute
             top 100%
             width 100%
-            padding .25rem
+            padding 4px
             background linear-gradient(to bottom, white 0%, white 50%, transparent 100%)
 
-    div.List-Body
+
+    .List-Body
         flex: 1
         flex-direction column
         overflow-y auto
-        // Task row
+
         div.task.row
-            flex 0 0 3rem
-            height 3rem
-            padding-right .3rem
+            flex 0 0 48px
+            height 48px
+            padding-right .48px
             & > div.column
                 align-items center
             div.checkbox.column
-                width 3rem
+                width 48px
+                cursor pointer
                 svg
                     stroke _faded(.53)
                     stroke-width 1.5px
@@ -237,164 +397,38 @@ div.ListSection
                         stroke white
                         stroke-width 2
             div.svg.column
-                width 3rem
+                width 48px
+                cursor pointer
                 line
                     stroke-width 1.5px
                     stroke _faded(.53)
             div.title.column
                 flex-grow 1
-                padding 0.5em
+                padding 8px
                 input
                     flex-grow 1
-                    font-size 1rem
+                    font-size 16px
                     font-family initial
                     border none
             div.icon
                 color _faded(.53)
 
-////////////////////////////////     VIEWS     /////////////////////////////////
-.Agenda.view
-    flex-direction: column
-    width 100%
-    .month
-        height 5rem
-        justify-content: center
-        align-items: center
-        font-size 2rem
-    .day
-        margin .5rem 0
-    .date
-        flex-direction column
-        height 60px
-        width 50px
-        font-size 24px
-        align-items center
-        background: $dateDay
-        &>div:first-child
-          font-size 10px
-    .tasks
-        flex-direction: column
-        flex 1 1 auto
-    .task
-        padding .25rem .5rem
-        border-radius: .15rem
-        margin: .25rem 1rem .25rem 0
-        font-family: -apple-system,".SFNSText-Regular","San Francisco",Roboto,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
-        font-size: 14px
-        color: white
-
-.Day.view
-    z-index 1
-    position: absolute
-    width 100%
-    .date
-        position fixed
-        left 0
-        height 70px
-        width 50px
-        padding-top 10px
-        font-size 24px
-        flex-direction column
-        align-items center
-        background: $dateDay
-        &>div:first-child
-          font-size 10px
-    .eventColumn
-        position: relative
-        flex-direction: column
-        height 1440px
-        width 100%
-        padding-left 48px
-        margin-top 10px
-        border-top 1px solid transparent
-        .task
-            position: absolute
-            width: 100%
-            overflow: hidden
-            padding: 1px
-            transition: all 500ms ease-in-out
-            &:hover
-                max-height: 360px !important
-
-.Week.view
-    z-index 1
-    position: absolute
-    flex-direction: column
-    width 100%
-    .dateBar
-        z-index 1
-        position fixed
-        height 60px
-        padding-left 48px
-        width 100%
-        align-items: center
-    .date
-        flex 0 1 (100%/7)
-        font-size 24px
-        flex-direction column
-        align-items center
-        &>div:first-child
-          font-size 10px
-    .weekEvents
-        height 1440px
-        padding-left 48px
-        margin-top 10px
-        border-top 1px solid transparent
-        .eventColumn
-            position: relative
-            flex-direction: column
-            width (100%/7)
-            border-right 1px solid $hourDivider
-            &:first-of-type
-                border-left 1px solid $hourDivider
-            .task
-                position: absolute
-                font-size: 13px
-                width: 100%
-                overflow: hidden
-                padding: 1px
-                transition: all 500ms ease-in-out
-                &:hover
-                    max-height: 360px !important
-
-.Month.view
-    flex-direction: column
-    width 100%
-    .weekday.title span, .day
-        width: (100%/7)
-    .weekday.title.row
-        padding: .5rem 0
-        span
-            justify-content: center
-    .week
-        flex 1 1 0
-    .day
-        padding 3px
-        .date
-            align-self center
-        .task
-            height 10px
-            margin 1px 0
-            border-radius: 8px
-
-
-
 
 /////////////////////////   ANIMATIONS / TRANSITIONS   /////////////////////////
 #dropNav
-    margin-top -.5rem
+    margin-top -8px
     &.dropNav-enter
-        margin-top -2rem
+        margin-top -32px
         opacity 0
         transition margin-top 200ms ease-in-out, opacity 150ms 50ms ease-in-out
         &&-active
-            margin-top -.5rem
+            margin-top -8px
             opacity 1
 
     &.dropNav-leave
-        margin-top -.5rem
+        margin-top -8px
         opacity 1
         &&-active
-            margin-top -2rem
+            margin-top -32px
             opacity 0
             transition margin-top 200ms ease-in-out, opacity 100ms ease-in-out

@@ -16,7 +16,7 @@ export default class ListHeader extends React.PureComponent {
         return (
             <header className="list">
 
-                <div className={`${tasksSelected?"":"hidden "}icon Row`}>
+                <div className={`${tasksSelected?"":"hidden "}icons Row`}>
                     <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.75}/>
                     <div className="functional icons">
                         <Icon i={'delete'} onClick={deleteTasks} />
@@ -34,7 +34,7 @@ export default class ListHeader extends React.PureComponent {
                 <div className={`${tasksSelected?"hidden ":""}default Row`}>
                     <Icon i={'today'} onClick={this.switchToCalendarView} />
                     <div style={{flexGrow: 1}}>
-                        <span style={{margin: "0 .5rem 0 1.5rem", fontSize: "2rem"}}>Projects</span>
+                        <span style={{margin: "0 8px 0 24px", fontSize: "32px"}}>Projects</span>
                     </div>
                     <Icon i={'star'} onClick={toggleStarView} light />
                 </div>

@@ -24,60 +24,60 @@ main.Scheduler
             color rgba(0,0,0,.3)
         span
             font-size small
-            margin-bottom -.6em
+            margin-bottom -7.8px
         div.value
             align-items center
-            height 1.5em
-            font-size 2em
+            height 48px
+            font-size 32px
         &:first-of-type
             margin-top 10px
         &:last-of-type
             box-shadow none
 
     div.modal
-      position absolute
-      z-index 50
-      top 1em
-      bottom 10px
-      left 1px
-      right 1px
-      display flex
-      flex-direction column
-      background-color lightish(.85)
-      div.spacer
-        width 100%
-      div.bottom
-        center(vert, h)
-        flex-wrap wrap
-        flex-grow 1
-        div.item
-          center(vert, h)
-          height 2.5em
-          width 44%
-          box-sizing border-box
-          padding .3em
-          border-radius .5em
-          background-color $light
-          box-shadow $shadow
-          text-align center
-      div.custom
-        padding 0 10px
-        form
-          display flex
-          flex-direction column
-          input
-            font-size 1em
-          div.hour.checkbox.items
-            span
-              cursor pointer
-            div.am, div.pm
-              center(vert)
-              &>span
-                width 10%
-              div.labels
-                center(vert)
+        position absolute
+        z-index 50
+        top 16px
+        bottom 10px
+        left 1px
+        right 1px
+        display flex
+        flex-direction column
+        background-color lightish(.85)
+        div.spacer
+            width 100%
+        div.bottom
+            center(vert, h)
+            flex-wrap wrap
+            flex-grow 1
+            div.item
+                center(vert, h)
+                height 40px
+                width 44%
+                box-sizing border-box
+                padding 4.8px
+                border-radius 8px
+                background-color $light
+                box-shadow $shadow
+                text-align center
+        div.custom
+            padding 0 10px
+            form
+                display flex
                 flex-direction column
-                margin 0 10px
+                input
+                    font-size 16px
+                div.hour.checkbox.items
+                    span
+                        cursor pointer
+                    div.am, div.pm
+                        center(vert)
+                        &>span
+                            width 10%
+                        div.labels
+                            center(vert)
+                            flex-direction column
+                            margin 0 10px
 
     footer
         align-items: center;
@@ -89,6 +89,6 @@ main.Scheduler
             align-items: center;
             justify-content: center;
             padding 10px 30px
-            border-radius .5em
+            border-radius .8px
             background-color $light
             box-shadow $shadow

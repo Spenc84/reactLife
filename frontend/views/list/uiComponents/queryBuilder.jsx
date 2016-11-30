@@ -32,23 +32,23 @@ export default class QueryBuilder extends React.PureComponent {
                 <nav className="tab Row">
 
                     <div className={(selectedFilter === 'SEARCH')?"selected tab":"tab"} style={{flex: .6, padding: '4px 0'}}>
-                        <span onClick={this.selectFilter.bind(this, 'SEARCH')}><Icon i={'search'} /></span>
+                        <span onClick={(selectedFilter === 'SEARCH')?null:this.selectFilter.bind(this, 'SEARCH')}><Icon i={'search'} /></span>
                     </div>
 
                     <div className={(selectedFilter === 'ACTIVE')?"selected tab":"tab"} style={{flex: .8}}>
-                        <span onClick={this.selectFilter.bind(this, 'ACTIVE')}>Active</span>
+                        <span onClick={(selectedFilter === 'ACTIVE')?null:this.selectFilter.bind(this, 'ACTIVE')}>Active</span>
                     </div>
 
                     <div className={(selectedFilter === 'PENDING')?"selected tab":"tab"} style={{flex: 1}}>
-                        <span onClick={this.selectFilter.bind(this, 'PENDING')}>Pending</span>
+                        <span onClick={(selectedFilter === 'PENDING')?null:this.selectFilter.bind(this, 'PENDING')}>Pending</span>
                     </div>
 
                     <div className={(selectedFilter === 'INACTIVE')?"selected tab":"tab"} style={{flex: 1}}>
-                        <span onClick={this.selectFilter.bind(this, 'INACTIVE')}>Inactive</span>
+                        <span onClick={(selectedFilter === 'INACTIVE')?null:this.selectFilter.bind(this, 'INACTIVE')}>Inactive</span>
                     </div>
 
                     <div className={(selectedFilter === 'COMPLETED')?"selected tab":"tab"} style={{flex: 1.3}}>
-                        <span onClick={this.selectFilter.bind(this, 'COMPLETED')}>Completed</span>
+                        <span onClick={(selectedFilter === 'COMPLETED')?null:this.selectFilter.bind(this, 'COMPLETED')}>Completed</span>
                     </div>
 
                 </nav>

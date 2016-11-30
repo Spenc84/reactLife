@@ -53,16 +53,18 @@ import User from './User';
 ////////////////////////////////////////////////////////////////////////////////
 
 // HELPER FUNCTIONS
-function report(error, resp){
-    if(error) console.log('Error saving: ', error);
-    else console.log('saved');
-};
 let cb = function(res){
     return function(error, response){
         if(error) res.status(500).json(error);
         else res.status(200).json(response);
     };
 };
+
+function report(error, resp){
+    if(error) console.log('Error saving: ', error);
+    else console.log('saved');
+};
+
 function sendReport(res) {
     return (error, response) => {
         if(error) {
@@ -75,6 +77,7 @@ function sendReport(res) {
 
 }
 
+// SERVER CONTROLS
 module.exports = {
     updateData( req, res ) {
         // const report = new Report(res);
@@ -170,7 +173,9 @@ module.exports = {
         console.log(req.query);
         Task.find(req.query, cb(res));
     },
-    // ----- USERS -----
+
+
+// -------------------------------- USERS --------------------------------------
     postUser: function( req, res ){
         User.create(req.body, cb(res));
     },
@@ -203,12 +208,31 @@ module.exports = {
     },
 
 
-
 // -------------------------------- TASKS --------------------------------------
     getTasks: function( req, res ) {
         Task.find(req.query, cb(res));
     },
-
+    getTask: function( req, res ){
+        Task.findById(req.params.id, cb(res));
+    },
+    editTask: function( req, res ){
+        Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
+    },
+    editTasks: function( req, res ){
+        console.log(req.params);
+        let set = {},
+            items = req.params.ids.split(','),
+            keys = req.params.keys.split(','),
+            values = JSON.parse(req.params.values);
+        console.log(items);
+        console.log(keys);
+        console.log(values);
+        for (let i = 0; i < keys.length; i++) {
+            set[keys[i]] = values[i];
+        }
+        console.log(set);
+        Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
+    },
     updateTasks( req, res ) {
         const { selectedTasks, desiredChanges, userID } = req.body;
         Task.update(
@@ -224,8 +248,7 @@ module.exports = {
             }
         );
     },
-
-    createNewTask: function( req, res ) {
+    createNewTask( req, res ) {
         const { body:newTask } = req;
         const report = new Report(res);
 
@@ -303,7 +326,6 @@ module.exports = {
         });
 
     },
-
     getUserTaskList( req, res ) {
         const { userID } = req.params;
         User.findById(userID, (error, response) => {
@@ -311,31 +333,6 @@ module.exports = {
             res.status(200).json(response.tasks);
         }).populate('tasks');
     },
-
-    getTask: function( req, res ){
-        Task.findById(req.params.id, cb(res));
-    },
-
-    editTask: function( req, res ){
-        Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
-    },
-
-    editTasks: function( req, res ){
-        console.log(req.params);
-        let set = {},
-            items = req.params.ids.split(','),
-            keys = req.params.keys.split(','),
-            values = JSON.parse(req.params.values);
-        console.log(items);
-        console.log(keys);
-        console.log(values);
-        for (let i = 0; i < keys.length; i++) {
-            set[keys[i]] = values[i];
-        }
-        console.log(set);
-        Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
-    },
-
     deleteTasks( req, res ) {
         const report = new Report(res);
         // Data comes in as a string of IDs seperated by dashes. The first ID is the USER,

@@ -81,7 +81,7 @@ export class Icon extends React.Component {
         if(invisible) _className += ' invisible';
         if(faded) _className += ' faded';
         if(light) _className += ' light';
-        const _style = (size) ? {fontSize: `${size}rem`} : null;
+        const _style = (size) ? {fontSize: `${size*16}px`} : null;
 
         console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
         return (
@@ -104,7 +104,7 @@ export class Span extends React.Component {
         let _className = (className) ? `Span ${className}` : "Span";
         if(faded) _className += ` faded`;
         let _style = style || {};
-        if(size) _style.fontSize = `${size}rem`;
+        if(size) _style.fontSize = `${size*16}px`;
 
         console.log(`RENDERED: ${_className}`); // __DEV__
         return (

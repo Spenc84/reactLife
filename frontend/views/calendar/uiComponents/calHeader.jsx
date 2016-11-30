@@ -32,15 +32,15 @@ export default class calHeader extends React.Component {
         return (
             <header className="calendar">
                 <div className="Column">
-                    <div className="Row" style={{height: '4.375rem', padding: '1rem'}}>
+                    <div className="Row" style={{height: '70px', padding: '16px'}}>
                         <div style={{flexGrow: 1}}>
                             <Icon i={'menu'} size={2} onClick={toggleOptionPane} faded />
-                            <span style={{margin: "0 .5rem 0 1.5rem", fontSize: "2rem"}}>{month}</span>
+                            <span style={{margin: "0 8px 0 24px", fontSize: "32px"}}>{month}</span>
                             <Icon i={dropIcon} size={2} onClick={this.toggleDropNav} faded fluid />
                         </div>
                         <Div style={{alignItems: 'center'}} static>
-                            <Icon i={'today'} onClick={getToday} style={{borderRight: '2px solid black', paddingRight: '.5rem'}} faded />
-                            <Icon i={'list'} onClick={this.switchToListView} style={{paddingLeft: '.5rem'}} faded />
+                            <Icon i={'today'} onClick={getToday} style={{borderRight: '2px solid black', paddingRight: '8px'}} faded />
+                            <Icon i={'list'} onClick={this.switchToListView} style={{paddingLeft: '8px'}} faded />
                         </Div>
                     </div>
                     <Animator transitionName="dropNav" transitionEnterTimeout={200} transitionLeaveTimeout={200} component={FirstChild}>
@@ -61,9 +61,9 @@ export default class calHeader extends React.Component {
             default: console.log("CALHEADER: View not recognized");
         }
         return (
-            <div className="Row" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.5rem`}}>
+            <div className="Row" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `8px`}}>
                 <Icon i={`chevron_left`} onClick={(agenda)?null:getPrior} invisible={agenda} fluid={agenda} />
-                <nav style={{padding: `0 1.5rem`, flexGrow: 1, alignItems: `center`, justifyContent: `space-around`, fontSize: `12px`}}>
+                <nav style={{flexGrow: 1, alignItems: `center`, justifyContent: `space-around`, fontSize: `12px`}}>
                     <span className={aClass} onClick={(aClass) ? null : this.switchToAgendaView}>AGENDA</span>
                     <span className={dClass} onClick={(dClass) ? null : this.switchToDayView}>DAY</span>
                     <span className={wClass} onClick={(wClass) ? null : this.switchToWeekView}>WEEK</span>
