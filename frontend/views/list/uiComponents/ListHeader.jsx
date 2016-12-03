@@ -17,7 +17,7 @@ export default class ListHeader extends React.PureComponent {
             <header className="list">
 
                 <div className={`${tasksSelected?"":"hidden "}icons Row`}>
-                    <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.75}/>
+                    <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.25}/>
                     <div className="functional icons">
                         <Icon i={'delete'} onClick={deleteTasks} />
                         <Icon i={'group_work'} />
@@ -28,15 +28,15 @@ export default class ListHeader extends React.PureComponent {
                         <Icon i={'star'} style={{color:'rgb(241,196,15)'}} onClick={toggleStarred} />
                         {/* <Icon i={'more_vert'} /> */}
                     </div>
-                    <Icon i={'check_circle'} onClick={toggleCompleted} size={1.75} />
+                    <Icon i={'check_circle'} onClick={toggleCompleted} size={1.25} />
                 </div>
 
                 <div className={`${tasksSelected?"hidden ":""}default Row`}>
-                    <Icon i={'today'} onClick={this.switchToCalendarView} />
+                    <Icon i={'today'} onClick={this.switchToCalendarView} size={1.25} />
                     <div style={{flexGrow: 1}}>
-                        <span style={{margin: "0 8px 0 24px", fontSize: "32px"}}>Projects</span>
+                        <span style={{margin: "0 .8rem 0 2.4rem", fontSize: "3.2rem"}}>Projects</span>
                     </div>
-                    <Icon i={'star'} onClick={toggleStarView} light />
+                    <Icon i={'star'} onClick={toggleStarView} size={1.25} light />
                 </div>
 
             </header>

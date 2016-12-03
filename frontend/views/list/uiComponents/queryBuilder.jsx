@@ -31,7 +31,7 @@ export default class QueryBuilder extends React.PureComponent {
 
                 <nav className="tab Row">
 
-                    <div className={(selectedFilter === 'SEARCH')?"selected tab":"tab"} style={{flex: .6, padding: '4px 0'}}>
+                    <div className={(selectedFilter === 'SEARCH')?"selected tab":"tab"} style={{flex: .6, padding: '.4rem 0'}}>
                         <span onClick={(selectedFilter === 'SEARCH')?null:this.selectFilter.bind(this, 'SEARCH')}><Icon i={'search'} /></span>
                     </div>
 

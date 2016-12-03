@@ -1,7 +1,6 @@
 import React from 'react';
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
-import { Div } from '../../../uiComponents/ui';
 
 export default class Week extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
@@ -80,7 +79,6 @@ export default class Week extends React.Component {
                 <div className={dateBarClasses}>
                     {dateBar}
                 </div>
-                {/* <Div style={{paddingTop: '60px'}} static></Div> */}
                 <div className="weekEvents">
                     {weekEvents}
                 </div>

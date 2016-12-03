@@ -2,7 +2,7 @@ import './modal.styl';
 import React, { PureComponent, PropTypes } from 'react';
 import shallowCompare from 'react-addons-shallow-compare';
 
-import { Icon } from '../ui';
+import { Icon, Button } from '../ui';
 
 export default class Modal extends React.Component {
     constructor(props) {
@@ -20,36 +20,39 @@ export default class Modal extends React.Component {
 
     render() {
         const { open } = this.state;
-        const { headerContent, footerContent, footer:footerProp } = this.props;
+        const { header:headerContent, footer:footerActions, locked } = this.props;
 
-        const header = (headerContent)
-            ?   <header>
-                    <div className="header_content">
-                        {headerContent}
-                    </div>
-                    <Icon i="close" onClick={this.closeModal} />
-                </header>
-            :   null;
-
-        const footer = (footerProp)
-            ?   footer
-            :   (footerContent)
-                ?   <footer>
-                        {footerContent.map( (action, index) => (
-                            <div key={`action_${index+1}`}
-                            className={`${action.disabled?"disabled ":""}action`}
-                            title={action.title || ""}>
-                                {action.display}
+        const header = (typeof headerContent === "undefined") ? null
+            : (
+                <header>
+                    {(typeof headerContent === "string")
+                        ?   <span className="label"> {headerContent} </span>
+                        :   <div className="header_content">
+                                {headerContent}
                             </div>
-                        ))}
-                    </footer>
-                :   null;
+                    }
+                    {/* <Icon i="close" onClick={this.closeModal} /> */}
+                </header>
+            );
+
+        const footer = (footerActions)
+            ?   <footer>
+                    {footerActions.map( (action, index) => (
+                        <Button key={`action_${index+1}`}
+                            type={action.type}
+                            label={action.label}
+                            title={action.title}
+                            disabled={action.disabled}
+                            onClick={action.onClick} />
+                    ))}
+                </footer>
+            :   null;
 
         return (
             <div ref={ref=>this.Modal = ref}
                 className="Modal"
                 style={open ? null : {display: 'none'}}
-                onClick={headerContent ? null : this.closeModal}
+                onClick={locked ? null : this.closeModal}
             >
                 <div className="inner">
                     {header}
@@ -80,8 +83,8 @@ export default class Modal extends React.Component {
 Modal.propTypes = {
     onModalOpen: PropTypes.func,
     onModalClose: PropTypes.func,
-    headerContent: PropTypes.any,
-    footerContent: PropTypes.arrayOf(
+    header: PropTypes.any,
+    footer: PropTypes.arrayOf(
         PropTypes.shape({
             display: PropTypes.any,
             title: PropTypes.string,
@@ -89,5 +92,5 @@ Modal.propTypes = {
             disabled: PropTypes.bool
         })
     ),
-    footer: PropTypes.element
+    locked: PropTypes.bool
 };

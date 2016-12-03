@@ -4,8 +4,70 @@ import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
 import Modal from '../../uiComponents/modal/modal';
+import ExpansionPanel from '../../uiComponents/expansionPanel/expansionPanel';
+import { Button } from '../../uiComponents/ui';
 
 // DEFAULTS
+const PROPERTIES = {
+
+    duration: {
+        options: [
+            { display: 'None', value: 0 },
+            { display: '15 Minutes', value: 15 },
+            { display: '30 Minutes', value: 30 },
+            { display: '1 Hour', value: 60 },
+            { display: '4 Hours', value: 240 },
+            { display: '8 Hours', value: 480 },
+            { display: '24 Hours', value: 1440 }
+        ]
+    },
+    startTime: {
+        options: [
+            { display: 'None', value: 0 },
+            { display: '15 Minutes', value: 15 },
+            { display: '30 Minutes', value: 30 },
+            { display: '1 Hour', value: 60 },
+            { display: '4 Hours', value: 240 },
+            { display: '8 Hours', value: 480 },
+            { display: '24 Hours', value: 1440 }
+        ]
+    },
+    softDeadline: {
+        options: [
+            { display: 'None', value: 0 },
+            { display: '15 Minutes', value: 15 },
+            { display: '30 Minutes', value: 30 },
+            { display: '1 Hour', value: 60 },
+            { display: '4 Hours', value: 240 },
+            { display: '8 Hours', value: 480 },
+            { display: '24 Hours', value: 1440 }
+        ]
+    },
+    hardDeadline: {
+        options: [
+            { display: 'None', value: 0 },
+            { display: '15 Minutes', value: 15 },
+            { display: '30 Minutes', value: 30 },
+            { display: '1 Hour', value: 60 },
+            { display: '4 Hours', value: 240 },
+            { display: '8 Hours', value: 480 },
+            { display: '24 Hours', value: 1440 }
+        ]
+    },
+    availability: {
+        options: [
+            { display: 'None', value: 0 },
+            { display: '15 Minutes', value: 15 },
+            { display: '30 Minutes', value: 30 },
+            { display: '1 Hour', value: 60 },
+            { display: '4 Hours', value: 240 },
+            { display: '8 Hours', value: 480 },
+            { display: '24 Hours', value: 1440 }
+        ]
+    }
+
+};
+
 const DEFAULT_SCHEDULE = (()=>{
     let availability = [];
     for(let i=0;i<7;i++) {
@@ -49,20 +111,65 @@ export default class Scheduler extends React.PureComponent {
         this.toggleStartTimeModal = this.toggleStartTimeModal.bind(this);
         this.toggleDeadlineModal = this.toggleDeadlineModal.bind(this);
         this.toggleAvailabilityModal = this.toggleAvailabilityModal.bind(this);
-        this.quickSchedule = this.quickSchedule.bind(this);
+        this.scheduleTasks = this.scheduleTasks.bind(this);
+        this.updateProperty = this.updateProperty.bind(this);
     }
 
     render() {
         const { schedule, display } = this.state;
 
-        return (
-            <Modal ref={ref=>this.modal = ref}
-                onModalClose={this.resetScheduler}
-            >
-                <main className="Scheduler">
+        let body = [];
+        for(let key in schedule.toJS()) {
+            body.push((
+                <ExpansionPanel
+                    key={key}
+                    label={key}
+                    title={display.get(key)}
+                    value={display.get(key)}
+                >
+                    <div className="custom row">
 
-                    <div className="body">
-                        <div className="duration row" onClick={this.toggleDurationModal}>
+                    </div>
+
+                    <div className="options row">
+                    {
+                        PROPERTIES[key].options.map(option=>(
+
+                            <div className={`${key} option`}
+                                onClick={this.updateProperty.bind(null, key, option)}
+                                data-content={option.display}>
+
+                                <div>{option.display}</div>
+
+                            </div>
+
+                        ))
+                    }
+                    </div>
+
+                </ExpansionPanel>
+            ));
+        }
+
+        return (
+            <main className="Scheduler">
+                <Modal ref={ref=>this.modal = ref}
+                    onModalClose={this.resetScheduler}
+                >
+                    <header className="scheduler_header">
+                        <span className="title">Schedule Tasks</span>
+                        <Button light
+                            label={'SAVE'}
+                            title={'Schedule selected tasks'}
+                            onClick={this.scheduleTasks}
+                        />
+                    </header>
+
+                    <div className="scheduler_body">
+
+                        { body }
+
+                        {/* <div className="duration row" onClick={this.toggleDurationModal}>
                             <span>Duration</span>
                             <div className="value"> {display.get('duration')} </div>
                         </div>
@@ -85,16 +192,26 @@ export default class Scheduler extends React.PureComponent {
                         <div className="availability row" onClick={this.toggleAvailabilityModal}>
                             <span>Availability</span>
                             <div className="value"> {display.get('availability')} </div>
-                        </div>
+                        </div> */}
                     </div>
 
-                    <footer>
-                        <div className="save_button" onClick={this.quickSchedule}> SAVE </div>
-                    </footer>
+                    {/* <footer>
+                        <div className="save_button" onClick={this.scheduleTasks}> SAVE </div>
+                    </footer> */}
 
-                </main>
-            </Modal>
+                </Modal>
+            </main>
         );
+    }
+
+
+
+    updateProperty(key, {value, display:optionDisplay}) {
+        const { schedule, display } = this.state;
+        this.setState({
+            schedule: schedule.set(key, value),
+            display: display.set(key, optionDisplay)
+        });
     }
 
     openScheduler(schedule) {
@@ -114,8 +231,11 @@ export default class Scheduler extends React.PureComponent {
     toggleStartTimeModal() { console.log("toggleStartTimeModal()"); }
     toggleDeadlineModal() { console.log("toggleDeadlineModal()"); }
     toggleAvailabilityModal() { console.log("toggleAvailabilityModal()"); }
-    quickSchedule() { console.log("quickSchedule()"); }
+    scheduleTasks() { console.log("scheduleTasks()"); }
 }
+
+
+
 
 
 // ----- HELPER FUNCTIONS -----
@@ -326,10 +446,10 @@ function formatMoment(time) {
 
 
 // //the modal that allows you to quickly choose a time for your task
-// export function quickScheduler(moment, dataSvc) {
+// export function scheduleTasksr(moment, dataSvc) {
 //   return {
 //     restrict: 'E',
-//     template: require('./quickScheduler.html'),
+//     template: require('./scheduleTasksr.html'),
 //     link(scope, element, attrs, ctrl) {
 //       scope.moment = moment;
 //       scope.hour = moment().hour();
@@ -660,7 +780,7 @@ function formatMoment(time) {
 //
 // ////////////////////////////////////////////////////////////////////////////////
 // /////////////////////////////////  SUBMIT  /////////////////////////////////////
-//       scope.quickSchedule = () => {
+//       scope.scheduleTasks = () => {
 //         let {startTime, softDeadline, hardDeadline} = scope.schedule,
 //             scheduled = startTime.moment ? true : false,
 //             startsNow = scheduled ? startTime.moment.isSameOrBefore(moment()) : false,
@@ -705,4 +825,4 @@ function formatMoment(time) {
 // ////////////////////////////////////////////////////////////////////////////////
 //     }
 //   };
-// } quickScheduler.$inject = [`moment`, `dataSvc`];
+// } scheduleTasksr.$inject = [`moment`, `dataSvc`];

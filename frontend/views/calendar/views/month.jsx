@@ -2,10 +2,10 @@ import React from 'react';
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
-import { Column, Row } from '../../../uiComponents/ui';
 
 // Build the weekdays title row
 const WEEKDAY_TITLES = moment.weekdaysShort().map((x)=><span key={x} className="weekday title">{x}</span>);
+
 
 export default class Month extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }

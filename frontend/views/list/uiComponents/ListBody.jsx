@@ -54,19 +54,19 @@ class TaskRow extends React.PureComponent {
         const completed = task.get("status").get("completed");
         const svgInnerColor = (selected) ? 'rgb(0,120,255)' : 'rgb(50,200,50)';
         const svgInner = (selected || completed)
-                ? <circle cx="24px" cy="24px" r="8px" fill={svgInnerColor} />
+                ? <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill={svgInnerColor} />
                 : null;
 
         console.log('RENDERED: TaskRow'); // __DEV__
         return (
             <div className={`${hidden}task row`}>
                 <div className="checkbox column" onClick={this.selectTask}>
-                    <svg width="48px" height="48px">
-                        <circle cx="24px" cy="24px" r="12px" fill="white"/>
-                        <circle cx="24px" cy="24px" r="8px" fill="rgb(50,200,50)" style={(!selected&&completed)?null:{display:"none"}} />
-                        <line x1="19.2px" x2="22.4px" y1="24px" y2="27.2px" style={(!selected&&completed)?null:{display:"none"}} />
-                        <line x1="22.4px" x2="28.8px" y1="27.2px" y2="20.8px" style={(!selected&&completed)?null:{display:"none"}} />
-                        <circle cx="24px" cy="24px" r="8px" fill="rgb(0,120,255)" style={selected?null:{display:"none"}} />
+                    <svg width="4.8rem" height="4.8rem">
+                        <circle cx="2.4rem" cy="2.4rem" r="1.2rem" fill="white"/>
+                        <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill="rgb(50,200,50)" style={(!selected&&completed)?null:{display:"none"}} />
+                        <line x1="1.92rem" x2="2.24rem" y1="2.4rem" y2="2.72rem" style={(!selected&&completed)?null:{display:"none"}} />
+                        <line x1="2.24rem" x2="2.88rem" y1="2.72rem" y2="2.08rem" style={(!selected&&completed)?null:{display:"none"}} />
+                        <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill="rgb(0,120,255)" style={selected?null:{display:"none"}} />
                     </svg>
                 </div>
                 <div className="title column">
@@ -105,9 +105,9 @@ class NewTaskRow extends React.PureComponent {
         return (
             <div className="add task row">
                 <div className="svg column" onClick={this.props.toggleNewItemPane}>
-                    <svg width="48px" height="48px">
-                        <line x1="24px" x2="24px" y1="12px" y2="36px" />
-                        <line x1="12px" x2="36px" y1="24px" y2="24px" />
+                    <svg width="4.8rem" height="4.8rem">
+                        <line x1="2.4rem" x2="2.4rem" y1="1.2rem" y2="3.6rem" />
+                        <line x1="1.2rem" x2="3.6rem" y1="2.4rem" y2="2.4rem" />
                     </svg>
                 </div>
                 <div className="title column">

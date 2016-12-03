@@ -1,6 +1,5 @@
 import React from 'react';
 import moment from 'moment';
-import {Column, Row, Span} from '../../../uiComponents/ui';
 
 // Static Elements
 const DIVIDING_LINES = [];
@@ -42,9 +41,9 @@ export default class HourDivider extends React.Component {
                 : null;
         const MINUTE_BAR = (current)
                 ? (
-                    <svg height="8" width="105%" style={{top: minuteBarHeight}} className="currentTime">
-                        <circle cx="4" cy="4" r="2.5"/>
-                        <line x1="4" y1="4" x2="100%" y2="4" style={{strokeWidth: 1}}/>
+                    <svg height=".8rem" width="105%" style={{top: `${minuteBarHeight/10}rem`}} className="currentTime">
+                        <circle cx=".4rem" cy=".4rem" r=".25rem"/>
+                        <line x1=".4rem" y1=".4rem" x2="100%" y2=".4rem" style={{strokeWidth: '.1rem'}}/>
                     </svg>
                 )
                 : null;
@@ -52,18 +51,18 @@ export default class HourDivider extends React.Component {
         console.log('RENDERED:  *  HourDivider'); // __DEV__
         return (
             <section className="hour-divider">
-                <div className={(prior) ? "inactive Row" : "Row"} style={{flex: '0 0 48px'}}>
+                <div className={(prior) ? "inactive Row" : "Row"} style={{flex: '0 0 4.8rem'}}>
                     {hourStyles}
-                    <Column className="hours" flex={'0 0 48px'} static>
+                    <div className="hours Column" style={{flex:'0 0 4.8rem'}}>
                         {HOURS}
-                    </Column>
+                    </div>
                 </div>
-                <Row className="events" static={!current}>
+                <div className="events Row">
                     {MINUTE_BAR}
-                    <Column className="dividingLines" static>
+                    <div className="dividingLines Column">
                         {DIVIDING_LINES}
-                    </Column>
-                </Row>
+                    </div>
+                </div>
             </section>
         );
     }
