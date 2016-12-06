@@ -7,6 +7,8 @@ import Modal from '../../uiComponents/modal/modal';
 import ExpansionPanel from '../../uiComponents/expansionPanel/expansionPanel';
 import { Button } from '../../uiComponents/ui';
 
+import Duration from './duration';
+
 // DEFAULTS
 const PROPERTIES = {
 
@@ -166,6 +168,11 @@ export default class Scheduler extends React.PureComponent {
                     </header>
 
                     <div className="scheduler_body">
+
+                        <Duration
+                            duration={schedule.get('duration')}
+                            updateProperty={this.updateProperty}
+                        />
 
                         { body }
 
