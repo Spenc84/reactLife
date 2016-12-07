@@ -17,30 +17,10 @@ main.Scheduler
         width 35rem
         max-width 100%
 
-        div.picker
-            flex-direction column
-
         div.ExpansionPanel
             & > div.body
                 padding 0
                 flex-direction column
-
-                & > div.custom.row
-                    margin-top 1rem
-                    justify-content center
-                    & > div
-                        align-items center
-                        span.label
-                            margin-right 1rem
-                        span.value
-                            padding .3rem 1rem
-                            background #f3f3f3
-                            border 1px solid #ccc
-                            cursor pointer
-                            min-width 4rem
-                            justify-content center
-                        &:first-of-type
-                            margin-right 2rem
 
                 & > div.options.row
                     margin: 1rem;
@@ -77,3 +57,67 @@ main.Scheduler
             &:last-of-type
                 border-bottom-left-radius .3rem
                 border-bottom-right-radius .3rem
+
+            &.Duration div.custom.row
+                margin-top 1rem
+                justify-content center
+
+                & > div
+                    align-items center
+                    span.label
+                        margin-right 1rem
+                    div.value
+                        padding .3rem 1rem
+                        background #f3f3f3
+                        border 1px solid #ccc
+                        min-width 4rem
+                        justify-content center
+                    &:first-of-type
+                        margin-right 2rem
+
+            &.StartTime div.custom.Row
+                margin 1rem 3rem
+                align-items center
+                justify-content space-between
+                div.date
+                    font-size 2rem
+                div.time
+                    font-size 2.5rem
+                    align-items center
+                    div.inputOptions
+                        font-size 1.6rem
+                    div.Column
+                        font-size 1rem
+                        margin-left 1rem
+                        cursor pointer
+                        &:hover, &.focus { background-color: #EDF7FF; }
+
+            div.value
+                position relative
+                cursor pointer
+                &:hover, &.focus { background-color: #EDF7FF; }
+                &::after
+                    content ''
+                    position absolute
+                    top 100%
+                    left 0
+                    height 0.3rem
+                    width 100%
+                div.inputOptions
+                    z-index 1
+                    position absolute
+                    top 100%
+                    left 0
+                    max-height 15rem
+                    margin-top .2rem
+                    margin-left -0.1rem
+                    flex-direction column
+                    background whitesmoke
+                    overflow auto
+                    border 1px solid #ccc
+                    span
+                        flex 0 0 auto
+                        justify-content center
+                        padding .3rem 1rem
+                        cursor pointer
+                        &:hover, &.focus { background-color: #EDF7FF; }

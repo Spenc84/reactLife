@@ -17,8 +17,14 @@ export default class ExpansionPanel extends Component {
 		const { expanded } = this.state;
         const { label, title, value, className, isModified, disabled, onSave, onCancel } = this.props;
 
+		const style = {
+			marginBottom: "0.33rem",
+			borderBottomLeftRadius: "0.3rem",
+			borderBottomRightRadius: "0.3rem"
+		}
+		const panelStyle = (expanded) ? style : null;
+
 		const panelClasses = (className) ? `${className} ExpansionPanel` : "ExpansionPanel";
-        const panelStyle = (expanded) ? {margin:"1.33rem 0"} : null;
         const togglePanel = (expanded) ? this.collapsePanel : this.expandPanel;
         const icon = (expanded) ? 'expand_less' : 'expand_more';
 		const hideFooter = this.props.hideFooter || !(typeof onSave === 'function' && typeof onCancel === 'function');

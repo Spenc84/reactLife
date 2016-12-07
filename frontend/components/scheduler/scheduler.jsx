@@ -8,32 +8,11 @@ import ExpansionPanel from '../../uiComponents/expansionPanel/expansionPanel';
 import { Button } from '../../uiComponents/ui';
 
 import Duration from './duration';
+import StartTime from './startTime';
 
 // DEFAULTS
 const PROPERTIES = {
 
-    duration: {
-        options: [
-            { display: 'None', value: 0 },
-            { display: '15 Minutes', value: 15 },
-            { display: '30 Minutes', value: 30 },
-            { display: '1 Hour', value: 60 },
-            { display: '4 Hours', value: 240 },
-            { display: '8 Hours', value: 480 },
-            { display: '24 Hours', value: 1440 }
-        ]
-    },
-    startTime: {
-        options: [
-            { display: 'None', value: 0 },
-            { display: '15 Minutes', value: 15 },
-            { display: '30 Minutes', value: 30 },
-            { display: '1 Hour', value: 60 },
-            { display: '4 Hours', value: 240 },
-            { display: '8 Hours', value: 480 },
-            { display: '24 Hours', value: 1440 }
-        ]
-    },
     softDeadline: {
         options: [
             { display: 'None', value: 0 },
@@ -88,8 +67,6 @@ const DEFAULT_SCHEDULE = (()=>{
     });
 })();
 const DEFAULT_DISPLAY = Map({
-    duration: 'None',
-    startTime: 'Now',
     softDeadline: 'None',
     hardDeadline: 'None',
     availability: 'Anytime'
@@ -121,7 +98,7 @@ export default class Scheduler extends React.PureComponent {
         const { schedule, display } = this.state;
 
         let body = [];
-        for(let key in schedule.toJS()) {
+        for(let key in PROPERTIES) {
             body.push((
                 <ExpansionPanel
                     key={key}
@@ -137,7 +114,8 @@ export default class Scheduler extends React.PureComponent {
                     {
                         PROPERTIES[key].options.map(option=>(
 
-                            <div className={`${key} option`}
+                            <div key={option.value}
+                                className={`${key} option`}
                                 onClick={this.updateProperty.bind(null, key, option)}
                                 data-content={option.display}>
 
@@ -171,6 +149,11 @@ export default class Scheduler extends React.PureComponent {
 
                         <Duration
                             duration={schedule.get('duration')}
+                            updateProperty={this.updateProperty}
+                        />
+
+                        <StartTime
+                            startTime={schedule.get('startTime')}
                             updateProperty={this.updateProperty}
                         />
 
@@ -213,11 +196,11 @@ export default class Scheduler extends React.PureComponent {
 
 
 
-    updateProperty(key, {value, display:optionDisplay}) {
-        const { schedule, display } = this.state;
+    updateProperty(key, value) {
+        const { schedule } = this.state;
+
         this.setState({
-            schedule: schedule.set(key, value),
-            display: display.set(key, optionDisplay)
+            schedule: schedule.set(key, value)
         });
     }
 
