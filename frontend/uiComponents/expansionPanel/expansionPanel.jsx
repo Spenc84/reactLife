@@ -2,29 +2,32 @@ import './expansionPanel.styl';
 import React, { PropTypes, Component } from "react";
 import { Icon, Button } from "../ui";
 
+// PROPS: label, title, display, className, isModified, disabled, onSave, onCancel, onOpen, onClose, expanded, togglePanel
 
 export default class ExpansionPanel extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = { expanded: false };
+		this.state = { expanded: props.expanded };
 
 		this.expandPanel = this.expandPanel.bind(this);
 		this.collapsePanel = this.collapsePanel.bind(this);
 	}
 
+	componentWillReceiveProps(nextProps) {
+		if(this.props.expanded !== nextProps.expanded) this.setState({ expanded: nextProps.expanded });
+	}
+
 	render() {
 		const { expanded } = this.state;
-        const { label, title, value, className, isModified, disabled, onSave, onCancel } = this.props;
+        const { label, title, display, className, isModified, disabled, onSave, onCancel } = this.props;
 
-		const style = {
-			marginBottom: "0.33rem",
-			borderBottomLeftRadius: "0.3rem",
-			borderBottomRightRadius: "0.3rem"
-		}
-		const panelStyle = (expanded) ? style : null;
+		const panelClasses
+			= (expanded ? 'expanded ' : '')
+			+ (disabled ? 'disabled ' : '')
+			+ "ExpansionPanel "
+			+ (className || '');
 
-		const panelClasses = (className) ? `${className} ExpansionPanel` : "ExpansionPanel";
         const togglePanel = (expanded) ? this.collapsePanel : this.expandPanel;
         const icon = (expanded) ? 'expand_less' : 'expand_more';
 		const hideFooter = this.props.hideFooter || !(typeof onSave === 'function' && typeof onCancel === 'function');
@@ -32,12 +35,12 @@ export default class ExpansionPanel extends Component {
         const collapsableFooter = (expanded) ? null : {display: 'none'};
 
 		return(
-			<div className={panelClasses} style={panelStyle}>
+			<div className={panelClasses}>
 
-				<div className="header" onClick={togglePanel} title={title || ""}>
+				<div className="header" onClick={disabled?null:togglePanel} title={title || ""}>
 					<div className="label">{label}</div>
-					<div className="value">{value}</div>
-					<Icon i={icon} fluid />
+					<div className="display">{display}</div>
+					<Icon i={icon} invisible={disabled} />
 				</div>
 
 
@@ -76,14 +79,16 @@ export default class ExpansionPanel extends Component {
 	}
 
 	expandPanel() {
-        const { onOpen } = this.props;
+        const { onOpen, togglePanel } = this.props;
 		if(typeof onOpen === 'function') onOpen();
+		if(typeof togglePanel === 'function') return togglePanel();
 		this.setState({ expanded: true });
     }
 
     collapsePanel() {
-		const { onClose } = this.props;
+		const { onClose, togglePanel } = this.props;
 		if(typeof onClose === 'function') onClose();
+		if(typeof togglePanel === 'function') return togglePanel();
 		this.setState({ expanded: false });
     }
 }

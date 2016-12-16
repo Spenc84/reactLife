@@ -89,7 +89,6 @@ body *
     font-size 1.4rem
     font-family 'Roboto medium', 'Roboto', sans-serif
     align-items center
-
     color $darkText
     &:focus, &:hover
         background rgba(0,0,0,.12)
@@ -97,7 +96,6 @@ body *
         background rgba(153, 153, 153, .4)
     &.disabled
         color $darkTextDisabled
-
     &.light
         color $lightText
         &:focus, &:hover
@@ -108,10 +106,13 @@ body *
             color $lightTextDisabled
 
 
+.Accordian
+    flex-direction column
+    width 35rem
+    max-width 100%
 
 
-
-div.icon
+.Icon
     cursor pointer
     transition opacity 300ms ease-in-out
     i.material-icons
@@ -138,7 +139,7 @@ main#app_container
             flex 1
             flex-direction column
 
-div#dropNav div.icon
+div#dropNav div.Icon
     padding 0 1.6rem
 
 div#calendar_body
@@ -335,7 +336,7 @@ div.ListSection
         flex-direction column
         & > div.Row
             height 6rem
-            div.icon
+            div.Icon
                 flex 0 1 4.8rem
                 align-items center
                 justify-content center
@@ -458,7 +459,7 @@ div.ListSection
                     font-size 1.6rem
                     font-family initial
                     border none
-            div.icon
+            div.Icon
                 color _faded(.53)
                 padding-right .5rem
 

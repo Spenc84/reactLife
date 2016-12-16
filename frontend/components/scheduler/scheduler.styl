@@ -2,6 +2,8 @@ $primary = rgb(0, 120, 255)
 $lightText = rgb(255,255,255)
 $light = rgb(245,245,245)
 $shadow = 0 .1rem 1rem #515151
+$darkText = rgba(0,0,0,.87)
+$darkTextSecondary = rgba(0,0,0,.54)
 
 
 main.Scheduler
@@ -12,112 +14,117 @@ main.Scheduler
         justify-content space-between
         padding 0 .8rem 0 1.6rem
 
-    .scheduler_body
-        flex-direction column
-        width 35rem
-        max-width 100%
+    div.ExpansionPanel
+        & > div.body
+            padding 0
+            flex-direction column
 
-        div.ExpansionPanel
-            & > div.body
-                padding 0
-                flex-direction column
+            & > div.options.row
+                margin: 1rem;
+                background: rgba(200,200,200,0.15);
+                box-shadow: inset 0 1px 3px rgba(34,34,34,0.6);
+                flex-wrap: wrap;
+                padding: 1rem 0 0 1rem;
 
-                & > div.options.row
-                    margin: 1rem;
-                    background: rgba(200,200,200,0.15);
-                    box-shadow: inset 0 1px 3px rgba(34,34,34,0.6);
-                    flex-wrap: wrap;
-                    padding: 1rem 0 0 1rem;
+                div.option
+                    position: relative;
+                    margin: 0 1rem 1rem 0;
+                    justify-content: center;
+                    align-items: center;
 
-                    div.option
-                        position: relative;
-                        margin: 0 1rem 1rem 0;
-                        justify-content: center;
-                        align-items: center;
+                    &::before
+                        content: attr(data-content);
+                        padding: 1rem;
 
-                        &::before
-                            content: attr(data-content);
-                            padding: 1rem;
+                    div
+                        position: absolute;
+                        padding: 1rem;
+                        background: rgb(250,250,250);
+                        box-shadow: 0px 1px 3px rgba(34,34,34,.5);
+                        border-radius: 5px;
+                        cursor: pointer;
+                        white-space: nowrap;
+                        &:hover, &:focus { background-color: #EDF7FF; }
+                        &:active {
+                            background-color: #EDF7FF * .98;
+                            font-size 1.5rem
+                            box-shadow: 0px 0px 3px rgba(34,34,34,.5);
+                        }
 
-                        div
-                            position: absolute;
-                            padding: 1rem;
-                            background: rgb(250,250,250);
-                            box-shadow: 0px 1px 3px rgba(34,34,34,.5);
-                            border-radius: 5px;
-                            cursor: pointer;
-                            white-space: nowrap;
-                            &:hover, &.focus { background-color: #EDF7FF; }
-                            &:active {
-                                background-color: #EDF7FF * .98;
-                                font-size 1.5rem
-                                box-shadow: 0px 0px 3px rgba(34,34,34,.5);
-                            }
+        &:last-of-type
+            border-bottom-left-radius .3rem
+            border-bottom-right-radius .3rem
 
-            &:last-of-type
-                border-bottom-left-radius .3rem
-                border-bottom-right-radius .3rem
+        &.Duration div.custom.row
+            margin-top 1rem
+            justify-content center
 
-            &.Duration div.custom.row
-                margin-top 1rem
+            span.option
                 justify-content center
 
-                & > div
-                    align-items center
-                    span.label
-                        margin-right 1rem
-                    div.value
-                        padding .3rem 1rem
-                        background #f3f3f3
-                        border 1px solid #ccc
-                        min-width 4rem
-                        justify-content center
-                    &:first-of-type
-                        margin-right 2rem
+            & > div
+                align-items center
+                span.label
+                    margin-right 1rem
+                div.value
+                    padding .3rem 1rem
+                    background #f3f3f3
+                    border 1px solid #ccc
+                    min-width 4rem
+                    justify-content center
+                &:first-of-type
+                    margin-right 2rem
 
-            &.StartTime div.custom.Row
+        &.StartTime, &.SoftDeadline, &.HardDeadline
+            div.custom.row
                 margin 1rem 3rem
                 align-items center
                 justify-content space-between
-                div.date
-                    font-size 2rem
+                color $darkTextSecondary
+                div.value:hover, div.value:focus
+                    color $darkText
                 div.time
                     font-size 2.5rem
                     align-items center
-                    div.inputOptions
+                    div.options
                         font-size 1.6rem
+                        span.option
+                            justify-content flex-end
                     div.Column
                         font-size 1rem
                         margin-left 1rem
                         cursor pointer
-                        &:hover, &.focus { background-color: #EDF7FF; }
+                        &:hover, &:focus
+                            background-color: #EDF7FF
+                            color $darkText
 
-            div.value
-                position relative
-                cursor pointer
-                &:hover, &.focus { background-color: #EDF7FF; }
-                &::after
-                    content ''
-                    position absolute
-                    top 100%
-                    left 0
-                    height 0.3rem
-                    width 100%
-                div.inputOptions
-                    z-index 1
-                    position absolute
-                    top 100%
-                    left 0
-                    max-height 15rem
-                    margin-top .2rem
-                    margin-left -0.1rem
-                    flex-direction column
-                    background whitesmoke
-                    overflow auto
-                    border 1px solid #ccc
-                    span
-                        flex 0 0 auto
-                        justify-content center
-                        padding .3rem 1rem
-                        cursor pointer
-                        &:hover, &.focus { background-color: #EDF7FF; }
+        div.value
+            position relative
+            cursor pointer
+            &:hover, &:focus
+                background-color #EDF7FF
+            &::after
+                content ''
+                position absolute
+                top 100%
+                left 0
+                height 0.3rem
+                width 100%
+            div.inputOptions
+                z-index 1
+                position absolute
+                top 100%
+                left 0
+                max-height 15rem
+                margin-top .2rem
+                margin-left -0.1rem
+                flex-direction column
+                background whitesmoke
+                overflow auto
+                border 1px solid #ccc
+                span
+                    flex 0 0 auto
+                    justify-content center
+                    padding .3rem 1rem
+                    cursor pointer
+                    &:hover, &:focus { background-color: #EDF7FF; }

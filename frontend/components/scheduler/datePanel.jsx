@@ -2,57 +2,18 @@ import React from 'react';
 import moment from 'moment';
 import ExpansionPanel from '../../uiComponents/expansionPanel/expansionPanel';
 
-const START_TIME = [
-    {
-        display: 'Now',
-        get value() { return moment().minute(Math.floor(moment().minute()/15)*15).startOf('minute').toJSON(); }
-    },
-    {
-        display: 'Tonight',
-        get value() { return moment().hour(18).startOf('hour').toJSON() },
-        get hide() { return moment().hour() > 16 }
-    },
-    {
-        display: 'Tomorrow',
-        get value() { return moment().add(1, 'day').hour(8).startOf('hour').toJSON() }
-    },
-    {
-        display: 'Tomorrow Evening',
-        get value() { return moment().add(1, 'day').hour(18).startOf('hour').toJSON() }
-    },
-    {
-        display: 'This Weekend',
-        get value() { return moment().day(6).hour(8).startOf('hour').toJSON() },
-        get hide() { return moment().day() > 4 }
-    },
-    {
-        display: 'Next Week',
-        get value() { return moment().add(1, 'week').day(1).hour(8).startOf('hour').toJSON() }
-    },
-    {
-        display: 'Next Weekend',
-        get value() { return moment().add(1, 'week').day(6).hour(8).startOf('hour').toJSON() }
-    },
-    {
-        display: 'Next Month',
-        get value() { return moment().add(1, 'month').date(1).hour(8).startOf('hour').toJSON() }
-    },
-    {
-        display: 'Someday',
-        value: ''
-    }
-]
+import * as DATA from './data';
 
 const HOURS = (()=>{
-    let hours = [12];
-    for(let i = 1; i<12; i++) hours.push(i);
+    let hours = [];
+    for(let i = 1; i<=12; i++) hours.push(i);
     return hours;
 })();
 
 const MINUTES = [0, 15, 30, 45];
 
 
-export default class StartTime extends React.PureComponent {
+export default class DatePanel extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -66,38 +27,43 @@ export default class StartTime extends React.PureComponent {
         this.showMinutes = this.showMinutes.bind(this);
         this.setHour = this.setHour.bind(this);
         this.setMinute = this.setMinute.bind(this);
+        this.onOpen = this.onOpen.bind(this);
     }
 
     render() {
         const { showHours, showMinutes } = this.state;
-        const { startTime:start, updateProperty } = this.props;
+        const { dateTime:unix, property, updateProperty, expanded } = this.props;
+        if(!(typeof property === "string" && DATA.hasOwnProperty(property))) return null;
 
-        const startTime = (start) ? moment(start) : null;
-        const startTimeDisplay = (startTime) ? startTime.calendar() : 'None';
+        const data = DATA[property];
 
-        const year = (startTime)
+        const dateTime = (unix) ? moment(unix) : null;
+        const dateTimeDisplay = (dateTime) ? dateTime.calendar() : 'None';
+
+        const year = (dateTime)
             ?   <div className="year value">
-                    {startTime.format('Y')}
+                    {dateTime.format('Y')}
                 </div>
             :   <span>YEAR</span>;
 
-        const date = (startTime)
+        const date = (dateTime)
             ?   <div className="date value">
-                    {startTime.format('ddd, MMM Do')}
+                    {dateTime.format('ddd, MMM Do')}
                 </div>
             :   <span>DATE</span>;
 
-        const time = (startTime)
+        const time = (dateTime)
             ?   <div className="time">
 
-                    <div className="hour value" onClick={this.showHours} onMouseLeave={this.hideOptions}>
+                    <div className="hour value" onClick={this.showHours}>
 
-                        {startTime.format('h')}
+                        {dateTime.format('h')}
 
                         <div className="inputOptions"
                             style={(showHours) ? null : {display: 'none'}}>
                             {HOURS.map( i=> (
                                 <span key={i}
+                                    className="input-option"
                                     onClick={this.setHour}
                                     data-content={i}>
                                     {i}
@@ -109,14 +75,15 @@ export default class StartTime extends React.PureComponent {
 
                     {' : '}
 
-                    <div className="minute value" onClick={this.showMinutes} onMouseLeave={this.hideOptions}>
+                    <div className="minute value" onClick={this.showMinutes}>
 
-                        {startTime.format('mm')}
+                        {dateTime.format('mm')}
 
                         <div className="inputOptions"
                             style={(showMinutes) ? null : {display: 'none'}}>
                             {MINUTES.map( i=> (
                                 <span key={i}
+                                    className="input-option"
                                     onClick={this.setMinute}
                                     data-content={i}>
                                     {i}
@@ -127,8 +94,8 @@ export default class StartTime extends React.PureComponent {
                     </div>
 
                     <div className="Column" onClick={this.toggleAMPM}>
-                        <span style={startTime.hour() < 12 ? null : {opacity: .5}}>AM</span>
-                        <span style={startTime.hour() < 12 ? {opacity: .5} : null}>PM</span>
+                        <span style={dateTime.hour() < 12 ? null : {opacity: .5}}>AM</span>
+                        <span style={dateTime.hour() < 12 ? {opacity: .5} : null}>PM</span>
                     </div>
 
                 </div>
@@ -136,10 +103,12 @@ export default class StartTime extends React.PureComponent {
 
         return (
             <ExpansionPanel
-                className="StartTime"
-                label="Start Time"
-                title="When can you start?"
-                value={startTimeDisplay}>
+                className={data.className}
+                label={data.label}
+                title={data.title}
+                value={dateTimeDisplay}
+                expanded={expanded}
+                onOpen={this.onOpen}>
 
                 <div className="custom Row">
                     <div className="Column" style={{flexGrow: 0}}>
@@ -153,11 +122,11 @@ export default class StartTime extends React.PureComponent {
 
                 <div className="options row">
                 {
-                    START_TIME.map(({value, display, hide}, index)=>(
+                    data.defaults.map(({value, display, hide}, index)=>(
 
                         <div key={index}
-                            className={'StartTime option'}
-                            onClick={updateProperty.bind(null, 'startTime', value)}
+                            className={'default option'}
+                            onClick={updateProperty.bind(null, property, value)}
                             data-content={display}
                             style={(hide)?{display: 'none'}:null}>
 
@@ -173,52 +142,63 @@ export default class StartTime extends React.PureComponent {
         );
     }
 
-    toggleAMPM() {
-        const { startTime, updateProperty } = this.props;
+    onOpen() {
+        if(typeof this.props.onOpen === "function") this.props.onOpen(this.props.property);
+    }
 
-        const sMoment = moment(startTime);
+    toggleAMPM() {
+        const { dateTime, property, updateProperty } = this.props;
+
+        const sMoment = moment(dateTime);
         const newValue = (sMoment.hour() < 12)
             ? sMoment.add(12, 'hours')
             : sMoment.subtract(12, 'hours');
 
-        updateProperty('startTime', newValue.toJSON());
+        updateProperty(property, newValue.toJSON());
     }
 
-    hideOptions() {
+    hideOptions(e) {
         if(this.state.showHours || this.state.showMinutes) {
             this.setState({
                 showHours: false,
                 showMinutes: false
             });
         }
+
+        document.removeEventListener('click', this.hideOptions, true);
+        if(e.target.className !== "input-option") e.stopPropagation();
     }
 
     showHours() {
         if(this.state.showHours) return;
         this.setState({ showHours: true });
+
+        document.addEventListener('click', this.hideOptions, true);
     }
 
     showMinutes() {
         if(this.state.showMinutes) return;
         this.setState({ showMinutes: true });
+
+        document.addEventListener('click', this.hideOptions, true);
     }
 
     setHour(e) {
-        const { startTime, updateProperty } = this.props;
+        const { dateTime, property, updateProperty } = this.props;
 
-        const sMoment = moment(startTime);
+        const sMoment = moment(dateTime);
         let hour = parseInt(e.target.dataset.content);
         if(hour === 12) hour = 0;
         if(sMoment.hour() >= 12) hour += 12;
 
-        updateProperty('startTime', sMoment.hour(hour).toJSON());
-        this.hideOptions();
+        updateProperty(property, sMoment.hour(hour).toJSON());
+        e.stopPropagation();
     }
 
     setMinute(e) {
-        const { startTime, updateProperty } = this.props;
-        const newValue = moment(startTime).minute(e.target.dataset.content).toJSON();
-        updateProperty('startTime', newValue);
-        this.hideOptions();
+        const { dateTime, property, updateProperty } = this.props;
+        const newValue = moment(dateTime).minute(e.target.dataset.content).toJSON();
+        updateProperty(property, newValue);
+        e.stopPropagation();
     }
 }

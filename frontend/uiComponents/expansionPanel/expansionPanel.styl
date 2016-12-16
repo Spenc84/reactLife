@@ -1,49 +1,61 @@
 $shadow = 0 2px 2px 0 rgba(0, 0, 0, 0.1), 0 3px 1px -2px rgba(0, 0, 0, 0.1), 0 1px 5px 1px rgba(0, 0, 0, 0.09)
 $lightBackground = white
+$borderColor = rgba(0,0,0,.12)
 
 .ExpansionPanel
-    flex: 0 0 auto;
-    display: flex;
-    position: relative;
-    flex-direction: column;
+    flex 0 0 auto
+    display flex
+    position relative
+    flex-direction column
     background $lightBackground
-    font-family: 'Roboto Regular', 'Roboto', sans-serif;
+    border-top .1rem solid $borderColor
+    font-family 'Roboto Regular', 'Roboto', sans-serif
+
+    &.expanded
+        margin-bottom 0.33rem
+        border-bottom-left-radius 0.3rem
+        border-bottom-right-radius 0.3rem
+
+    &.disabled > div.header
+        opacity: .5
+        cursor default
+        &:hover, &.focus { background-color: $lightBackground; }
 
     &::after
-        content: ' ';
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: -1;
-        box-shadow: $shadow;
+        content ''
+        position absolute
+        top 0
+        bottom 0
+        left 0
+        right 0
+        z-index -1
+        box-shadow $shadow
 
     & > div.header
         flex: 0 0 4.8rem;
         display: flex;
         align-items: center;
         padding: 0 2.4rem;
-        border-top: .1rem solid rgba(0,0,0,.12);
         cursor: pointer;
 
         &:hover, &.focus { background-color: #EDF7FF; }
 
         div.label
-            flex: 0 0 10rem;
+            flex: 0 0 11rem;
             display: flex;
             align-items: center;
             font-size: 1.6rem;
             color: rgba(0,0,0,.87);
 
-        div.value
+        div.display
             flex: 1;
             display: flex;
             flex-direction: column;
             color: rgba(0,0,0,.54);
             margin: 0 1.6rem;
+            font-stretch: condensed;
 
-        .icon { color: rgba(0,0,0,.38); }
+        .Icon { color: rgba(0,0,0,.38); }
 
     & > div.body
         flex: 0 0 auto;

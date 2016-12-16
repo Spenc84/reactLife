@@ -1,23 +1,18 @@
 import '../style.styl';
 import React from 'react';
-import shallowCompare from 'react-addons-shallow-compare';
 
-export class Icon extends React.Component {
-    shouldComponentUpdate(nextProps, nextState) {
-        if(this.props.fluid || nextProps.fluid || this.props.hidden !== nextProps.hidden) return shallowCompare(this, nextProps, nextState);
-        return false;
-    }
+export class Icon extends React.PureComponent {
     render() {
         const { style, className, light, hidden, invisible, faded, size, onClick } = this.props;
         let _className = (className) ? `${className} ` : "";
-        _className += `${this.props.i} icon`;
+        _className += `${this.props.i} Icon`;
         if(hidden) _className += ' hidden';
         if(invisible) _className += ' invisible';
         if(faded) _className += ' faded';
         if(light) _className += ' light';
         const _style = (size) ? {fontSize: `${size*2.4}rem`} : null;
 
-        console.log(`RENDERED: ${this.props.i} icon`); // __DEV__
+        console.log(`RENDERED: ${this.props.i} Icon`); // __DEV__
         return (
             <div className={_className}
                 onClick={onClick}

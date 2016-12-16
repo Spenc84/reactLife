@@ -1,15 +1,7 @@
 import React from 'react';
 import ExpansionPanel from '../../uiComponents/expansionPanel/expansionPanel';
 
-const DURATION = [
-    { value: 0, display: 'None' },
-    { value: 15, display: '15 Minutes' },
-    { value: 30, display: '30 Minutes' },
-    { value: 60, display: '1 Hour' },
-    { value: 240, display: '4 Hours' },
-    { value: 480, display: '8 Hours' },
-    { value: 1440, display: '24 Hours' }
-]
+import * as DATA from './data';
 
 const HOURS = (()=>{
     let hours = [];
@@ -20,7 +12,7 @@ const HOURS = (()=>{
 const MINUTES = [0, 15, 30, 45];
 
 
-export default class Duration extends React.PureComponent {
+export default class DurationPanel extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -33,11 +25,15 @@ export default class Duration extends React.PureComponent {
         this.showMinutes = this.showMinutes.bind(this);
         this.setHour = this.setHour.bind(this);
         this.setMinute = this.setMinute.bind(this);
+        this.onOpen = this.onOpen.bind(this);
     }
 
     render() {
         const { showHours, showMinutes } = this.state;
-        const { duration, updateProperty } = this.props;
+        const { duration, property, updateProperty, expanded } = this.props;
+        if(!(typeof property === "string" && DATA.hasOwnProperty(property))) return null;
+
+        const data = DATA[property];
 
         const durationDisplay
             =   (duration === 0) ? 'None'
@@ -48,16 +44,18 @@ export default class Duration extends React.PureComponent {
 
         return (
             <ExpansionPanel
-                className="Duration"
-                label="Duration"
-                title="How long will it take?"
-                value={durationDisplay}>
+                className={data.className}
+                label={data.label}
+                title={data.title}
+                value={durationDisplay}
+                expanded={expanded}
+                onOpen={this.onOpen}>
 
                 <div className="custom row">
 
                     <div>
                         <span className="label"> Hours: </span>
-                        <div className="value" onClick={this.showHours} onMouseLeave={this.hideOptions}>
+                        <div className="value" onClick={this.showHours}>
 
                             {Math.floor(duration / 60)}
 
@@ -66,6 +64,7 @@ export default class Duration extends React.PureComponent {
 
                                 {HOURS.map( i=> (
                                     <span key={i}
+                                        className="input-option"
                                         onClick={this.setHour}
                                         data-content={i*60}>
                                         {i}
@@ -79,7 +78,7 @@ export default class Duration extends React.PureComponent {
 
                     <div>
                         <span className="label"> Minutes: </span>
-                        <div className="value" onClick={this.showMinutes} onMouseLeave={this.hideOptions}>
+                        <div className="value" onClick={this.showMinutes}>
 
                             {duration % 60}
 
@@ -88,6 +87,7 @@ export default class Duration extends React.PureComponent {
 
                                 {MINUTES.map( i=> (
                                     <span key={i}
+                                        className="input-option"
                                         onClick={this.setMinute}
                                         data-content={i}>
                                         {i}
@@ -103,11 +103,11 @@ export default class Duration extends React.PureComponent {
 
                 <div className="options row">
                 {
-                    DURATION.map(({value, display})=>(
+                    data.defaults.map(({value, display}, index)=>(
 
-                        <div key={value}
-                            className={'Duration option'}
-                            onClick={updateProperty.bind(null, 'duration', value)}
+                        <div key={index}
+                            className={'default option'}
+                            onClick={updateProperty.bind(null, property, value)}
                             data-content={display}>
 
                             <div>{display}</div>
@@ -122,36 +122,47 @@ export default class Duration extends React.PureComponent {
         );
     }
 
-    hideOptions() {
+    onOpen() {
+        if(typeof this.props.onOpen === "function") this.props.onOpen('duration');
+    }
+
+    hideOptions(e) {
         if(this.state.showHours || this.state.showMinutes) {
             this.setState({
                 showHours: false,
                 showMinutes: false
             });
         }
+
+        document.removeEventListener('click', this.hideOptions, true);
+        if(e.target.className !== "input-option") e.stopPropagation();
     }
 
     showHours() {
         if(this.state.showHours) return;
         this.setState({ showHours: true });
+
+        document.addEventListener('click', this.hideOptions, true);
     }
 
     showMinutes() {
         if(this.state.showMinutes) return;
         this.setState({ showMinutes: true });
+
+        document.addEventListener('click', this.hideOptions, true);
     }
 
     setHour(e) {
         const { duration, updateProperty } = this.props;
         const newValue = Math.min(parseInt(e.target.dataset.content) + (duration % 60), 1440);
         updateProperty('duration', newValue);
-        this.hideOptions();
+        e.stopPropagation();
     }
 
     setMinute(e) {
         const { duration, updateProperty } = this.props;
         const newValue = Math.min(Math.floor(duration/60)*60 + parseInt(e.target.dataset.content), 1440);
         updateProperty('duration', newValue);
-        this.hideOptions();
+        e.stopPropagation();
     }
 }

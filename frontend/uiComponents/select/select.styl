@@ -1,0 +1,47 @@
+$borderColor = rgba(0,0,0,.12)
+$boxShadow = 0 1px 6px rgba(0, 0, 0, 0.2)
+$backgroundBright = white
+$hoverBorder = rgba(0, 120, 255, .75)
+$hoverShadow = rgba(0, 120, 255, .75)
+$hoverBackground = rgb(237,247,255)
+$selectedBackground = $hoverBackground * .97
+
+main.Select
+    position relative
+    flex-direction column
+    min-width 4rem
+
+    &:hover > div.input, div.active.input
+        border-color $hoverBorder
+        transition border-color 900ms 100ms, box-shadow 400ms
+    & > div.input
+        padding .3rem 0
+        justify-content center
+        border 1px solid $borderColor
+        border-radius .3rem
+        cursor pointer
+        transition border-color 400ms, box-shadow 400ms
+        &.active
+            color inherit
+            box-shadow 0 0 .5rem $hoverShadow
+
+    div.options
+        z-index 1
+        position absolute
+        top 100%
+        left 0
+        right 0
+        flex-direction column
+        margin-top .1rem
+        background $backgroundBright
+        border 1px solid $borderColor
+        border-radius .3rem
+        box-shadow $boxShadow
+        span.option
+            padding .3rem 1rem
+            transition background-color 300ms
+            cursor pointer
+            &:hover
+                background-color $hoverBackground
+            &.selected
+                background-color $selectedBackground
