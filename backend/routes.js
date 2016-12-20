@@ -24,6 +24,8 @@ module.exports = function( app ){
         .get(ctrl.getTasks)
         .put(ctrl.updateTasks)
         .post(ctrl.createNewTask);
+    app.route('/api/tasks/schedule')
+        .put(ctrl.scheduleTasks);
     app.route('/api/task/:id')
         .get(ctrl.getTask)
         .put(ctrl.editTask)

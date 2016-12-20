@@ -50,7 +50,8 @@ export default class Main extends React.Component {
                         {...this.props} />
                 </section>
 
-                <Scheduler ref={ ref => this.Scheduler = ref } />
+                <Scheduler ref={ ref => this.Scheduler = ref }
+                    scheduleTasks={this.props.api.scheduleTasks} />
 
             </main>
         );

@@ -39,8 +39,9 @@ export default class LifeApp extends React.Component {
             loading: true
         };
 
-        this.updateTasks = this.updateTasks.bind(this);
         this.buildTask = this.buildTask.bind(this);
+        this.updateTasks = this.updateTasks.bind(this);
+        this.scheduleTasks = this.scheduleTasks.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
     }
 
@@ -56,8 +57,9 @@ export default class LifeApp extends React.Component {
                 tasks={ USER.get("tasks") || List()}
                 agenda={ USER.get("agenda") || List()}
                 api={{
-                    updateTasks: this.updateTasks,
                     buildTask: this.buildTask,
+                    updateTasks: this.updateTasks,
+                    scheduleTasks: this.scheduleTasks,
                     deleteTasks: this.deleteTasks
                 }}
                 {...this.state}
@@ -246,6 +248,40 @@ export default class LifeApp extends React.Component {
             rejected => {
                 this.setState({ loading: false });
                 console.log('Failed to update tasks: ', rejected);
+                alert("An error has occured. Check console for details.");
+            }
+        );
+    }
+
+    scheduleTasks(selectedTasks, schedule) {
+        if(!Map.isMap(schedule) || !List.isList(selectedTasks) || selectedTasks.size === 0) {
+            let error = [];
+            if(!Map.isMap(schedule)) error.push(`Invalid input: 'schedule' should be of type <Map>, and not <${typeof schedule}>`, schedule);
+            if(!List.isList(selectedTasks)) error.push(`Invalid input: 'selectedTasks' should be of type <List>, and not <${typeof schedule}>`, selectedTasks);
+            else if(selectedTasks.size === 0) error.push("Cannot schedule tasks if no tasks are selected.", schedule.toJS());
+            for(let i=0;i<error.length;i++) console.warn(error[i]);
+            alert("An error has occured. Check console for details.");
+            return;
+        }
+        const { USER } = this.state;
+        
+        const userID = USER.get('_id');
+        selectedTasks = selectedTasks.toJS();
+        schedule = schedule.toJS();
+
+        this.setState({ loading: true });
+        SERVER.put("/api/tasks/schedule", {selectedTasks, schedule, userID}).then(
+            ({data:taskList}) => {
+                console.log("SERVER: ---Tasks updated---", taskList);
+                this.setState({
+                    USER: USER.set('tasks', fromJS(taskList)),
+                    tIndx: Index(taskList),
+                    loading: false
+                });
+            },
+            rejected => {
+                this.setState({ loading: false });
+                console.log('Failed to schedule tasks: ', rejected);
                 alert("An error has occured. Check console for details.");
             }
         );

@@ -212,13 +212,13 @@ module.exports = {
     getTasks: function( req, res ) {
         Task.find(req.query, cb(res));
     },
-    getTask: function( req, res ){
+    getTask: function( req, res ) {
         Task.findById(req.params.id, cb(res));
     },
-    editTask: function( req, res ){
+    editTask: function( req, res ) {
         Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
     },
-    editTasks: function( req, res ){
+    editTasks: function( req, res ) {
         console.log(req.params);
         let set = {},
             items = req.params.ids.split(','),
@@ -326,6 +326,77 @@ module.exports = {
         });
 
     },
+    scheduleTasks( req, res ) {
+        const { selectedTasks, schedule, userID } = req.body;
+        const report = new Report(res);
+        const scheduled = schedule.startTime !== '';
+        const active = scheduled ? moment().isBefore(schedule.startTime) : false;
+        const pending = scheduled ? !active : false;
+
+        Task.find( {_id: { $in: selectedTasks } }, (error, tasks)=> {
+            if(error) return report.criticalError(error, `Error finding task(s) in '${selectedTasks}'.`);
+            report.logResponse(`Located tasks: '${selectedTasks}'.`);
+
+            let task, taskID, wasScheduled;
+            for(let tIndx=0; tIndx<tasks.length; tIndx++) {
+                task = tasks[tIndx];
+                taskID = `${task._id}`;
+                wasScheduled = task.status.scheduled;
+
+                task.changeLog.push({
+                    date: moment().toJSON(),
+                    user: userID,
+                    display: scheduled && !wasScheduled ? "Scheduled task"
+                        : !scheduled && wasScheduled ? "Unscheduled task"
+                        : "Updated task's schedule"
+                });
+
+                task.status.scheduled = scheduled;
+                task.status.active = active;
+                task.status.pending = pending;
+
+                task.schedule = schedule;
+
+                task.save( (error, savedTask) => {
+                    if(error) return report.logError(`Error saving task: '${task.title}'`, error);
+                    report.logResponse(`Updated schedule, status, and changeLog on task '${task.title}'.`);
+
+                    if(scheduled || wasScheduled) {
+                        const userList = task.users.keys();
+                        User.find( {_id: { $in: userList } }, (error, users)=> {
+                            if(error) return report.logError(`Error locating users '${userList}' on task '${task.title}'`, error);
+                            report.logResponse(`Located users '${userList}' on task '${task.title}'`);
+
+                            let user, userId;
+                            for(let uIndx=0; uIndx<users.length; uIndx++) {
+                                user = users[uIndx];
+                                userId = `${task._id}`;
+
+                                user.changeLog.push({
+                                    date: moment().toJSON(),
+                                    user: userID,
+                                    display: scheduled && !wasScheduled ? `Scheduled task '${task.title}'`
+                                        : !scheduled && wasScheduled ? `Removed task '${task.title}' from schedule`
+                                        : `Updated agenda with task '${task.title}'s new schedule`
+                                });
+
+                                updateUsersAgenda(user, task);
+
+                                user.markModified('agenda');
+                                user.save(
+                                    report.logResult(
+                                        `Updated 'agenda' and 'changeLog' on user '${user.firstName} ${user.lastName}'`,
+                                        `Error saving changes to user '${user.firstName} ${user.lastName}'`
+                                    )
+                                );
+
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
     getUserTaskList( req, res ) {
         const { userID } = req.params;
         User.findById(userID, (error, response) => {
@@ -454,6 +525,59 @@ module.exports = {
     }
 };
 
+function updateUsersAgenda(user, task) {
+
+    if(task.status.scheduled) {
+        const { startTime, softDeadline, hardDeadline } = task.schedule;
+        if(startTime !== '') {
+            const startDate = moment(startTime).startOf('day').valueOf();
+            if( user.agenda[startDate] ) {
+                user.agenda[startDate].start.push(taskID);
+                user.agenda[startDate].scheduled.push(taskID);
+            }
+            else {
+                user.agenda[startDate] = {
+                    date: moment(startDate).toJSON(),
+                    start: [taskID],
+                    soft: [],
+                    hard: [],
+                    scheduled: [taskID]
+                }
+            }
+        }
+        if(softDeadline !== '') {
+            const softDate = moment(softDeadline).startOf('day').valueOf();
+            if( user.agenda[softDate] ) {
+                user.agenda[softDate].soft.push(taskID);
+            }
+            else {
+                user.agenda[softDate] = {
+                    date: moment(softDate).toJSON(),
+                    start: [],
+                    soft: [taskID],
+                    hard: [],
+                    scheduled: []
+                }
+            }
+        }
+        if(hardDeadline !== '') {
+            const hardDate = moment(hardDeadline).startOf('day').valueOf();
+            if( user.agenda[hardDate] ) {
+                user.agenda[hardDate].hard.push(taskID);
+            }
+            else {
+                user.agenda[hardDate] = {
+                    date: moment(hardDate).toJSON(),
+                    start: [],
+                    soft: [],
+                    hard: [taskID],
+                    scheduled: []
+                }
+            }
+        }
+    }
+
+}
 
 class Report {
     constructor(res) {
@@ -473,9 +597,10 @@ class Report {
         this.report.error.push({ msg, error });
     }
 
-    logResponse(msg = "") {
+    logResponse(msg = "", response) {
         console.log(`UPDATE: ${msg}`);
-        this.report.response.push({ msg, response: null });
+        if(response !== "") console.log(response);
+        this.report.response.push({ msg, response });
     }
 
     logResult(msg = "", errorMsg = "") {

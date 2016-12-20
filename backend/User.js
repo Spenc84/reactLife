@@ -7,7 +7,7 @@ var userSchema = new mongoose.Schema({
     email: {type: String, required: true, unique: true},
     role: String,
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
-    agenda: {}
+    agenda: {},
     // agenda: {
     //     <unix>: {
     //         date: String,
@@ -17,6 +17,11 @@ var userSchema = new mongoose.Schema({
     //         hard: [<taskID>]
     //     }
     // }
+    changeLog: [{
+        date: String,
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+        display: String
+    }]
 });
 
 module.exports = mongoose.model('User', userSchema);

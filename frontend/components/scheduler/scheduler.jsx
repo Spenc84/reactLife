@@ -8,8 +8,8 @@ import Accordian from '../../uiComponents/accordian';
 import Select from '../../uiComponents/select/select';
 import { Button } from '../../uiComponents/ui';
 
-import DurationPanel from './durationPanel';
-import DatePanel from './datePanel';
+// import DurationPanel from './durationPanel';
+// import DatePanel from './datePanel';
 import OptionPane from './optionPane';
 
 
@@ -33,12 +33,13 @@ const DEFAULT_SCHEDULE = (()=>{
 
 const MINUTES = [0, 15, 30, 45].map(x=>({value:x,display:x}));
 
-
+// PROPS: scheduleTasks
 export default class Scheduler extends React.PureComponent {
     constructor(props) {
         super(props);
 
         this.state = {
+            selectedTaskIDs: '',
             schedule: DEFAULT_SCHEDULE
         };
 
@@ -93,17 +94,35 @@ export default class Scheduler extends React.PureComponent {
         });
     }
 
-    openScheduler(schedule) {
+    openScheduler(selectedTaskIDs, schedule = DEFAULT_SCHEDULE) {
+        if(!List.isList(selectedTaskIDs) || selectedTaskIDs.size === 0) {
+            console.warn("Scheduler cannot be opened without a selected task");
+            alert("An error has occured. Check console for details.");
+            return;
+        }
+
         this.modal.openModal();
-        schedule = schedule || DEFAULT_SCHEDULE;
-        this.setState({ schedule });
+        this.setState({ selectedTaskIDs, schedule });
     }
 
     resetScheduler() {
-        this.setState({ schedule: DEFAULT_SCHEDULE });
+        this.setState({
+            selectedTaskIDs: '',
+            schedule: DEFAULT_SCHEDULE
+        });
     }
 
-    scheduleTasks() { console.log("scheduleTasks()"); }
+    scheduleTasks() {
+        const { selectedTaskIDs, schedule } = this.state;
+        const { scheduleTasks } = this.props;
+        if(typeof scheduleTasks !== 'function') {
+            console.warn("'scheduleTasks()' prop not passed into Scheduler component");
+            alert("An error has occured. Check console for details.");
+            return;
+        }
+
+        scheduleTasks(selectedTaskIDs, schedule);
+    }
 
     getDuration() {
         const duration = this.state.schedule.get('duration');

@@ -29,6 +29,7 @@ export default class ListSection extends React.Component {
         };
 
         this.buildTask = this.buildTask.bind(this);
+        this.openScheduler = this.openScheduler.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
         this.toggleStarred = this.toggleStarred.bind(this);
         this.toggleCompleted = this.toggleCompleted.bind(this);
@@ -55,7 +56,7 @@ export default class ListSection extends React.Component {
 
     render() {
         const { selectedFilter, filter, starView, selectedTasks } = this.state;
-        const { tasks, changeSection, openScheduler, api:{buildTask} } = this.props;
+        const { tasks, changeSection, api:{buildTask} } = this.props;
 
         return (
             <div className="ListSection">
@@ -68,7 +69,7 @@ export default class ListSection extends React.Component {
                     deleteTasks={this.deleteTasks}
                     toggleStarred={this.toggleStarred}
                     toggleCompleted={this.toggleCompleted}
-                    openScheduler={openScheduler}
+                    openScheduler={this.openScheduler}
                 />
 
                 <QueryBuilder ref="QB"
@@ -96,6 +97,22 @@ export default class ListSection extends React.Component {
         const { api:{buildTask} } = this.props;
 
         buildTask(title, selectedFilter);
+    }
+
+    openScheduler() {
+        const { selectedTasks } = this.state;
+        const { openScheduler, tasks } = this.props;
+
+        if(selectedTasks.size === 1) {
+            const _id = selectedTasks.get(0).get("_id");
+            const index = tasks.findIndex( task => task.get("_id") === _id )
+            if(index !== -1) {
+                const schedule = tasks.get(index).get("schedule")
+                return openScheduler(selectedTasks, schedule);
+            };
+        }
+
+        openScheduler(selectedTasks);
     }
 
     deleteTasks() {
