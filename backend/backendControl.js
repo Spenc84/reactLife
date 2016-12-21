@@ -82,20 +82,20 @@ module.exports = {
     updateData( req, res ) {
         // const report = new Report(res);
         //
-        // User.findByIdAndUpdate(
-        //     '575350c7b8833bf5125225a5',
-        //     {
-        //         // $set: {
-        //         //     'agenda.1479189600000.start': [ "5715ab983bda76260a98b099" ],
-        //         //     'agenda.1479189600000.scheduled': [ "5715ab983bda76260a98b099" ]
-        //         // },
-        //         $unset: {
-        //             'agenda.1479276000000': "",
-        //             'agenda.1479362400000': ""
-        //         }
-        //     },
-        //     sendReport(res)
-        // );
+        User.findByIdAndUpdate(
+            '575350c7b8833bf5125225a5',
+            {
+                // $set: {
+                //     'agenda.1479189600000.start': [ "5715ab983bda76260a98b099" ],
+                //     'agenda.1479189600000.scheduled': [ "5715ab983bda76260a98b099" ]
+                // },
+                $unset: {
+                    'agenda.1482300000000': "",
+                    'agenda.1482386400000': ""
+                }
+            },
+            sendReport(res)
+        );
         //
         // const set = {
         //     'users.575350c7b8833bf5125225a5': {
@@ -130,12 +130,13 @@ module.exports = {
         //                 scheduled: time[i]
         //             }
         //         }},
-        //         report.logResult(
+        //         report.sendResult(
         //             `Updated task ${id[i]}`,
         //             `Error updating task ${id[i]}`
         //         )
         //     );
         // }
+        // report.add();
         // report.sendReport({response: "All done"});
 
         // Task.find({}, (err, tasks)=>{
@@ -263,18 +264,35 @@ module.exports = {
                     if(error) return report.logError(`Error finding user with ID: '${userID}'`, error);
 
                     user.tasks.push(taskID);
+
                     if(task.status.scheduled) {
                         const { startTime, softDeadline, hardDeadline } = task.schedule;
+                        const scheduledTime = task.users[user._id].scheduled;
+
                         if(startTime !== '') {
                             const startDate = moment(startTime).startOf('day').valueOf();
                             if( user.agenda[startDate] ) {
                                 user.agenda[startDate].start.push(taskID);
-                                user.agenda[startDate].scheduled.push(taskID);
                             }
                             else {
                                 user.agenda[startDate] = {
                                     date: moment(startDate).toJSON(),
                                     start: [taskID],
+                                    soft: [],
+                                    hard: [],
+                                    scheduled: []
+                                }
+                            }
+                        }
+                        if(scheduledTime !== '') {
+                            const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
+                            if( user.agenda[scheduledDate] ) {
+                                user.agenda[scheduledDate].scheduled.push(taskID);
+                            }
+                            else {
+                                user.agenda[scheduledDate] = {
+                                    date: moment(scheduledDate).toJSON(),
+                                    start: [],
                                     soft: [],
                                     hard: [],
                                     scheduled: [taskID]
@@ -314,7 +332,7 @@ module.exports = {
                         user.markModified('agenda');
                     }
                     user.save(
-                        report.logResult(
+                        report.sendResult(
                             `Saved task to user '${user.firstName} ${user.lastName}'`,
                             `Error saving task to user '${user.firstName} ${user.lastName}'`
                         )
@@ -330,18 +348,34 @@ module.exports = {
         const { selectedTasks, schedule, userID } = req.body;
         const report = new Report(res);
         const scheduled = schedule.startTime !== '';
-        const active = scheduled ? moment().isBefore(schedule.startTime) : false;
-        const pending = scheduled ? !active : false;
+        const pending = scheduled && moment().isBefore(schedule.startTime);
+        const active = scheduled && !pending;
 
         Task.find( {_id: { $in: selectedTasks } }, (error, tasks)=> {
             if(error) return report.criticalError(error, `Error finding task(s) in '${selectedTasks}'.`);
             report.logResponse(`Located tasks: '${selectedTasks}'.`);
 
-            let task, taskID, wasScheduled;
             for(let tIndx=0; tIndx<tasks.length; tIndx++) {
-                task = tasks[tIndx];
-                taskID = `${task._id}`;
-                wasScheduled = task.status.scheduled;
+                let task = tasks[tIndx];
+                const taskID = `${task._id}`;
+                const wasScheduled = task.status.scheduled;
+                const oldTask = wasScheduled
+                    ?   {
+                            _id: task._id,
+                            users: (()=>{
+                                let userObj = {};
+                                for(let userID in task.users) {
+                                    userObj[userID] = {scheduled: task.users[userID].scheduled};
+                                }
+                                return userObj;
+                            })(),
+                            schedule: {
+                                startTime: task.schedule.startTime,
+                                softDeadline: task.schedule.hardDeadline,
+                                hardDeadline: task.schedule.softDeadline
+                            }
+                        }
+                    :       undefined;
 
                 task.changeLog.push({
                     date: moment().toJSON(),
@@ -352,25 +386,30 @@ module.exports = {
                 });
 
                 task.status.scheduled = scheduled;
+                task.status.inactive = !scheduled;
                 task.status.active = active;
                 task.status.pending = pending;
 
                 task.schedule = schedule;
 
+                scheduleTask(task);
+
+                report.wait();
                 task.save( (error, savedTask) => {
                     if(error) return report.logError(`Error saving task: '${task.title}'`, error);
                     report.logResponse(`Updated schedule, status, and changeLog on task '${task.title}'.`);
 
                     if(scheduled || wasScheduled) {
-                        const userList = task.users.keys();
+                        const userList = Object.keys(task.users);
+
+                        report.wait();
                         User.find( {_id: { $in: userList } }, (error, users)=> {
                             if(error) return report.logError(`Error locating users '${userList}' on task '${task.title}'`, error);
-                            report.logResponse(`Located users '${userList}' on task '${task.title}'`);
 
-                            let user, userId;
                             for(let uIndx=0; uIndx<users.length; uIndx++) {
-                                user = users[uIndx];
-                                userId = `${task._id}`;
+                                let user = users[uIndx];
+                                const userId = `${user._id}`;
+                                const userName = `${user.firstName} ${user.lastName}`;
 
                                 user.changeLog.push({
                                     date: moment().toJSON(),
@@ -380,23 +419,37 @@ module.exports = {
                                         : `Updated agenda with task '${task.title}'s new schedule`
                                 });
 
-                                updateUsersAgenda(user, task);
+                                if(wasScheduled) {
+                                    removeFromAgenda(user, oldTask);
+                                    report.logResponse(`Removed task '${task.title}' from '${userName}'s agenda.`);
+                                }
+                                if(scheduled) {
+                                    addToAgenda(user, task);
+                                    report.logResponse(`Added task '${task.title}' to '${userName}'s agenda.`);
+                                }
 
                                 user.markModified('agenda');
+
                                 user.save(
-                                    report.logResult(
-                                        `Updated 'agenda' and 'changeLog' on user '${user.firstName} ${user.lastName}'`,
-                                        `Error saving changes to user '${user.firstName} ${user.lastName}'`
+                                    report.sendResult(
+                                        `User '${userName}' was successfully updated.`,
+                                        `Error saving changes to user '${userName}'`
                                     )
                                 );
 
-                            });
-                        }
+                                if(userID === userId) user.populate('tasks', report.sendData());
+
+                            }
+
+                            report.doneWaiting();
+                        });
                     }
+
+                    report.doneWaiting();
                 });
             }
         });
-    }
+    },
     getUserTaskList( req, res ) {
         const { userID } = req.params;
         User.findById(userID, (error, response) => {
@@ -494,14 +547,14 @@ module.exports = {
                         });
 
                         task.save(
-                            report.logResult(
+                            report.sendResult(
                                 `User '${USER_NAME}' was successfully removed from Task '${title}'`,
                                 `Failed to save Task '${title}'`
                             )
                         );
                     }
                     else task.remove(
-                        report.logResult(
+                        report.sendResult(
                             `!!! Task '${title}' was REMOVED from the TASK Database !!!`,
                             `Failed to remove Task '${title}' from the TASK Database`
                         )
@@ -512,67 +565,162 @@ module.exports = {
                 // Save changes to the user and send user back to client
                 if(agendaWasUpdated) user.markModified('agenda');
                 user.save(
-                    report.logResult(
+                    report.sendResult(
                         `User '${USER_NAME}' was successfully modified`,
                         `Error saving User '${USER_NAME}'`
                     )
                 );
 
-                user.populate('tasks', report.sendResult());
+                user.populate('tasks', report.sendData());
             });
 
         });
     }
 };
 
-function updateUsersAgenda(user, task) {
+function scheduleTask(task) {
+    for(let userID in task.users) {
+        task.users[userID].scheduled = task.schedule.startTime;
+    }
+    task.markModified('users');
+}
 
-    if(task.status.scheduled) {
-        const { startTime, softDeadline, hardDeadline } = task.schedule;
-        if(startTime !== '') {
-            const startDate = moment(startTime).startOf('day').valueOf();
-            if( user.agenda[startDate] ) {
-                user.agenda[startDate].start.push(taskID);
-                user.agenda[startDate].scheduled.push(taskID);
-            }
-            else {
-                user.agenda[startDate] = {
-                    date: moment(startDate).toJSON(),
-                    start: [taskID],
-                    soft: [],
-                    hard: [],
-                    scheduled: [taskID]
-                }
+function removeFromAgenda(user, task) {
+
+    const { startTime, softDeadline, hardDeadline } = task.schedule;
+    const scheduledTime = task.users[user._id].scheduled;
+    const taskID = `${task._id}`;
+
+    if(scheduledTime !== '') {
+        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(scheduledDate)) {
+            const date = user.agenda[scheduledDate];
+            const index = date.scheduled.indexOf(`${taskID}`);
+            debugger;
+            if(index !== -1) date.scheduled.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[scheduledDate];
+        }
+    }
+
+    if(startTime !== '') {
+        const startDate = moment(startTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(startDate)) {
+            const date = user.agenda[startDate];
+            const index = date.start.indexOf(taskID);
+            if(index !== -1) date.start.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[startDate];
+        }
+    }
+
+    if(softDeadline !== '') {
+        const softDate = moment(softDeadline).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(softDate)) {
+            const date = user.agenda[softDate];
+            const index = date.soft.indexOf(taskID);
+            if(index !== -1) date.soft.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[softDate];
+        }
+    }
+
+    if(hardDeadline !== '') {
+        const hardDate = moment(hardDeadline).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(hardDate)) {
+            const date = user.agenda[hardDate];
+            const index = date.hard.indexOf(taskID);
+            if(index !== -1) date.hard.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[hardDate];
+        }
+    }
+
+}
+
+function addToAgenda(user, task) {
+
+    const { startTime, softDeadline, hardDeadline } = task.schedule;
+    const scheduledTime = task.users[user._id].scheduled;
+
+    const taskID = `${task._id}`;
+
+    if(scheduledTime !== '') {
+        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
+        if( user.agenda[scheduledDate] ) {
+            user.agenda[scheduledDate].scheduled.push(taskID);
+        }
+        else {
+            user.agenda[scheduledDate] = {
+                date: moment(scheduledDate).toJSON(),
+                start: [],
+                soft: [],
+                hard: [],
+                scheduled: [taskID]
             }
         }
-        if(softDeadline !== '') {
-            const softDate = moment(softDeadline).startOf('day').valueOf();
-            if( user.agenda[softDate] ) {
-                user.agenda[softDate].soft.push(taskID);
-            }
-            else {
-                user.agenda[softDate] = {
-                    date: moment(softDate).toJSON(),
-                    start: [],
-                    soft: [taskID],
-                    hard: [],
-                    scheduled: []
-                }
+    }
+
+    if(startTime !== '') {
+        const startDate = moment(startTime).startOf('day').valueOf();
+        if( user.agenda[startDate] ) {
+            user.agenda[startDate].start.push(taskID);
+        }
+        else {
+            user.agenda[startDate] = {
+                date: moment(startDate).toJSON(),
+                start: [taskID],
+                soft: [],
+                hard: [],
+                scheduled: []
             }
         }
-        if(hardDeadline !== '') {
-            const hardDate = moment(hardDeadline).startOf('day').valueOf();
-            if( user.agenda[hardDate] ) {
-                user.agenda[hardDate].hard.push(taskID);
+    }
+
+    if(softDeadline !== '') {
+        const softDate = moment(softDeadline).startOf('day').valueOf();
+        if( user.agenda[softDate] ) {
+            user.agenda[softDate].soft.push(taskID);
+        }
+        else {
+            user.agenda[softDate] = {
+                date: moment(softDate).toJSON(),
+                start: [],
+                soft: [taskID],
+                hard: [],
+                scheduled: []
             }
-            else {
-                user.agenda[hardDate] = {
-                    date: moment(hardDate).toJSON(),
-                    start: [],
-                    soft: [],
-                    hard: [taskID],
-                    scheduled: []
-                }
+        }
+    }
+
+    if(hardDeadline !== '') {
+        const hardDate = moment(hardDeadline).startOf('day').valueOf();
+        if( user.agenda[hardDate] ) {
+            user.agenda[hardDate].hard.push(taskID);
+        }
+        else {
+            user.agenda[hardDate] = {
+                date: moment(hardDate).toJSON(),
+                start: [],
+                soft: [],
+                hard: [taskID],
+                scheduled: []
             }
         }
     }
@@ -591,20 +739,35 @@ class Report {
         };
     }
 
+    wait() {
+        this.waiting++;
+    }
+
+    doneWaiting() {
+        this.waiting--;
+        if(this.waiting === 0) {
+            if(this.report.error.length > 0) this.report.status = "PARTIAL";
+            this.res.status(200).json(this.report);
+        }
+    }
+
     logError(msg = "", error = "") {
         console.log(`--ERROR-- : ${msg}`);
         if(error !== "") console.log(error);
         this.report.error.push({ msg, error });
     }
 
-    logResponse(msg = "", response) {
+    logResponse(msg = "") {
         console.log(`UPDATE: ${msg}`);
-        if(response !== "") console.log(response);
-        this.report.response.push({ msg, response });
+        this.report.response.push({ msg });
     }
 
-    logResult(msg = "", errorMsg = "") {
-        this.waiting++;
+    setData(data) {
+        this.report.data = data;
+    }
+
+    sendResult(msg = "", errorMsg = "") {
+        this.wait();
         return (error, response) => {
             if(error) {
                 console.log(`--ERROR-- : ${errorMsg}`, error);
@@ -614,28 +777,15 @@ class Report {
                 console.log(`UPDATE: ${msg}`);
                 this.report.response.push({ msg, response });
             }
-            this.waiting--;
-            this.sendReport();
+            this.doneWaiting();
         };
     }
 
-    setData(data) {
-        this.report.data = data;
-    }
-
-    sendReport(data, response) {
-        if(response) data = response;
-        if(data) this.report.data = data;
-        if(this.report.error.length > 0) this.report.status = "PARTIAL";
-        if(!this.waiting) this.res.status(200).json(this.report);
-    }
-
-    sendResult() {
-        this.waiting++;
+    sendData() {
+        this.wait();
         return (error, response) => {
             this.report.data = error || response;
-            this.waiting--;
-            this.sendReport();
+            this.doneWaiting();
         };
     }
 

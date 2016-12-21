@@ -264,24 +264,26 @@ export default class LifeApp extends React.Component {
             return;
         }
         const { USER } = this.state;
-        
+
         const userID = USER.get('_id');
         selectedTasks = selectedTasks.toJS();
         schedule = schedule.toJS();
 
         this.setState({ loading: true });
         SERVER.put("/api/tasks/schedule", {selectedTasks, schedule, userID}).then(
-            ({data:taskList}) => {
-                console.log("SERVER: ---Tasks updated---", taskList);
+            approved => {
+                console.log(`SERVER: ---${selectedTasks.size} Tasks scheduled---`, approved.data);
+                const updatedUser = approved.data.data;
+
                 this.setState({
-                    USER: USER.set('tasks', fromJS(taskList)),
-                    tIndx: Index(taskList),
+                    USER: fromJS(updatedUser),
+                    tIndx: Index(updatedUser.tasks),
                     loading: false
                 });
             },
             rejected => {
                 this.setState({ loading: false });
-                console.log('Failed to schedule tasks: ', rejected);
+                console.log('Failed to schedule task(s): ', rejected);
                 alert("An error has occured. Check console for details.");
             }
         );

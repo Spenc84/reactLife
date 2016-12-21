@@ -24,7 +24,7 @@ const DEFAULT_SCHEDULE = (()=>{
     }
     return Map({
         duration: 0,
-        startTime: formatMoment(moment()),
+        get startTime() { return formatMoment(moment()); },
         softDeadline: '',
         hardDeadline: '',
         availability: fromJS(availability)

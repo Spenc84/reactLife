@@ -61,7 +61,7 @@ export default class Main extends React.Component {
         this.setState({ activeSection });
     }
 
-    openScheduler() {
-        this.Scheduler.openScheduler();
+    openScheduler(selectedTasks, schedule) {
+        this.Scheduler.openScheduler(selectedTasks, schedule);
     }
 }

@@ -104,10 +104,10 @@ export default class ListSection extends React.Component {
         const { openScheduler, tasks } = this.props;
 
         if(selectedTasks.size === 1) {
-            const _id = selectedTasks.get(0).get("_id");
-            const index = tasks.findIndex( task => task.get("_id") === _id )
+            const _id = selectedTasks.get(0);
+            const index = tasks.findIndex( task => task.get("_id") === _id );
             if(index !== -1) {
-                const schedule = tasks.get(index).get("schedule")
+                const schedule = tasks.get(index).get("schedule");
                 return openScheduler(selectedTasks, schedule);
             };
         }
