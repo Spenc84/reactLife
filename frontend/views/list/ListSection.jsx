@@ -31,6 +31,7 @@ export default class ListSection extends React.Component {
         this.buildTask = this.buildTask.bind(this);
         this.openScheduler = this.openScheduler.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
+        this.updateTitle = this.updateTitle.bind(this);
         this.toggleStarred = this.toggleStarred.bind(this);
         this.toggleCompleted = this.toggleCompleted.bind(this);
 
@@ -49,7 +50,7 @@ export default class ListSection extends React.Component {
             const query = this.refs.QB.getQuery();
             this.setState({
                 filter: filterTasks(nextProps.tasks, query),
-                selectedTasks: List()
+                // selectedTasks: List()
             });
         }
     }
@@ -84,6 +85,7 @@ export default class ListSection extends React.Component {
                     starView={starView}
                     selectedTasks={selectedTasks}
                     selectTask={this.selectTask}
+                    updateTitle={this.updateTitle}
                     buildTask={this.buildTask}
                 />
 
@@ -103,22 +105,44 @@ export default class ListSection extends React.Component {
         const { selectedTasks } = this.state;
         const { openScheduler, tasks } = this.props;
 
+        let props = {
+            selectedTasks,
+            callBack: this.resetSelectedTasks
+        };
+
         if(selectedTasks.size === 1) {
             const _id = selectedTasks.get(0);
             const index = tasks.findIndex( task => task.get("_id") === _id );
-            if(index !== -1) {
-                const schedule = tasks.get(index).get("schedule");
-                return openScheduler(selectedTasks, schedule);
-            };
+            if(index !== -1) props.schedule = tasks.get(index).get("schedule");
         }
 
-        openScheduler(selectedTasks);
+        openScheduler(props);
+    }
+
+    updateTitle(taskID, newTitle, oldTitle) {
+        if(typeof taskID !== 'string' || taskID === '') return;
+        const { api:{updateTasks}, USER } = this.props;
+
+        const selectedTasks = List([taskID]);
+
+        const action = {
+            date: moment().toJSON(),
+            user: USER.get('_id'),
+            display: `Updated tasks title from '${oldTitle}' to '${newTitle}'`
+        };
+
+        const operation = {
+            $set: { title: newTitle },
+            $push: { changeLog: action }
+        };
+
+        updateTasks(selectedTasks, operation);
     }
 
     deleteTasks() {
         const { selectedTasks } = this.state;
         const { api:{deleteTasks} } = this.props;
-        deleteTasks(selectedTasks);
+        deleteTasks(selectedTasks, this.resetSelectedTasks);
     }
 
     toggleStarred() {
@@ -137,7 +161,7 @@ export default class ListSection extends React.Component {
             $push: { changeLog: action }
         };
 
-        updateTasks(selectedTasks, operation);
+        updateTasks(selectedTasks, operation, this.resetSelectedTasks);
     }
 
     toggleCompleted() {
@@ -156,7 +180,7 @@ export default class ListSection extends React.Component {
             $push: { changeLog: action }
         };
 
-        updateTasks(selectedTasks, operation);
+        updateTasks(selectedTasks, operation, this.resetSelectedTasks);
     }
 
     updateFilter(tab, query) {

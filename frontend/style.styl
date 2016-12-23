@@ -45,6 +45,7 @@ $listAccent = rgb(0, 120, 255)
 $hourDivider = _faded(.3)
 $dateDay = linear-gradient(to bottom, $primaryBG 0%, $primaryBG 75%, transparent 100%)
 $shadow = 0 .1rem 1rem #515151
+$star = rgb(241,196,15)
 
 
 // z-index
@@ -90,12 +91,14 @@ body *
     font-family 'Roboto medium', 'Roboto', sans-serif
     align-items center
     color $darkText
+    cursor pointer
     &:focus, &:hover
         background rgba(0,0,0,.12)
     &:active
         background rgba(153, 153, 153, .4)
     &.disabled
         color $darkTextDisabled
+        cursor default
     &.light
         color $lightText
         &:focus, &:hover
@@ -462,6 +465,8 @@ div.ListSection
             div.Icon
                 color _faded(.53)
                 padding-right .5rem
+                &.star
+                    color $star
 
 
 /////////////////////////   ANIMATIONS / TRANSITIONS   /////////////////////////

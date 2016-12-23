@@ -6,6 +6,7 @@ export default class Accordian extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = { open: -1 };
+        this.reset = this.reset.bind(this);
     }
 
     render() {
@@ -25,10 +26,13 @@ export default class Accordian extends React.PureComponent {
         </div>
     }
 
+    reset() { this.setState({ open: -1 }); }
+
     togglePanel(index) {
         if(index === this.state.open) this.setState({ open: -1 });
         else this.setState({ open: index });
     }
+
 }
 
 Accordian.propTypes = {

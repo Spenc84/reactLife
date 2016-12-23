@@ -8,8 +8,6 @@ import Accordian from '../../uiComponents/accordian';
 import Select from '../../uiComponents/select/select';
 import { Button } from '../../uiComponents/ui';
 
-// import DurationPanel from './durationPanel';
-// import DatePanel from './datePanel';
 import OptionPane from './optionPane';
 
 
@@ -24,7 +22,7 @@ const DEFAULT_SCHEDULE = (()=>{
     }
     return Map({
         duration: 0,
-        get startTime() { return formatMoment(moment()); },
+        startTime: formatMoment(),
         softDeadline: '',
         hardDeadline: '',
         availability: fromJS(availability)
@@ -39,15 +37,15 @@ export default class Scheduler extends React.PureComponent {
         super(props);
 
         this.state = {
-            selectedTaskIDs: '',
-            schedule: DEFAULT_SCHEDULE
+            selectedTaskIDs: List(),
+            schedule: DEFAULT_SCHEDULE,
+            callBack: ''
         };
 
         this.openScheduler = this.openScheduler.bind(this);
         this.resetScheduler = this.resetScheduler.bind(this);
 
         this.scheduleTasks = this.scheduleTasks.bind(this);
-        this.updateProperty = this.updateProperty.bind(this);
         this.updateDuration = this.updateDuration.bind(this);
         this.updateStartTime = this.updateStartTime.bind(this);
         this.updateSoftDeadline = this.updateSoftDeadline.bind(this);
@@ -77,7 +75,7 @@ export default class Scheduler extends React.PureComponent {
                         />
                     </header>
 
-                    <Accordian data={DATA} />
+                    <Accordian ref={ref=>this.accordian=ref} data={DATA} />
 
                 </Modal>
             </main>
@@ -86,34 +84,30 @@ export default class Scheduler extends React.PureComponent {
 
 
 
-    updateProperty(key, e) {
-        const { schedule } = this.state;
-        const value = e.target.getAttribute('value');
-        this.setState({
-            schedule: schedule.set(key, value)
-        });
-    }
-
-    openScheduler(selectedTaskIDs, schedule = DEFAULT_SCHEDULE) {
+    openScheduler({selectedTasks:selectedTaskIDs, schedule, callBack}) {
         if(!List.isList(selectedTaskIDs) || selectedTaskIDs.size === 0) {
             console.warn("Scheduler cannot be opened without a selected task");
             alert("An error has occured. Check console for details.");
             return;
         }
 
+        if(typeof callBack !== 'function' && typeof schedule === 'function') callBack = schedule;
+        if( !Map.isMap(schedule) ) schedule = DEFAULT_SCHEDULE.set('startTime', formatMoment());
         this.modal.openModal();
-        this.setState({ selectedTaskIDs, schedule });
+        this.setState({ selectedTaskIDs, schedule, callBack });
     }
 
     resetScheduler() {
         this.setState({
+            schedule: DEFAULT_SCHEDULE.set('startTime', formatMoment()),
             selectedTaskIDs: '',
-            schedule: DEFAULT_SCHEDULE
-        });
+            callBack: ''
+        })
+        this.accordian.reset();
     }
 
     scheduleTasks() {
-        const { selectedTaskIDs, schedule } = this.state;
+        const { selectedTaskIDs, schedule, callBack } = this.state;
         const { scheduleTasks } = this.props;
         if(typeof scheduleTasks !== 'function') {
             console.warn("'scheduleTasks()' prop not passed into Scheduler component");
@@ -121,7 +115,8 @@ export default class Scheduler extends React.PureComponent {
             return;
         }
 
-        scheduleTasks(selectedTaskIDs, schedule);
+        scheduleTasks(selectedTaskIDs, schedule, callBack);
+        this.modal.closeModal();
     }
 
     getDuration() {
@@ -612,7 +607,7 @@ export default class Scheduler extends React.PureComponent {
 
 // ----- HELPER FUNCTIONS -----
 function formatMoment(time) {
-    time = moment(time);
+    time = time ? moment(time) : moment();
     return time.minute( Math.floor(time.minute() / 15) * 15 )
             .startOf('minute')
             .toJSON();

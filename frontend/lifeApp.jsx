@@ -92,7 +92,7 @@ export default class LifeApp extends React.Component {
         const { USER } = this.state;
 
         this.setState({ loading: true });
-        SERVER.post("/api/tasks", newTask.toJS()).then(
+        SERVER.post("/api/tasks", {newTask:newTask.toJS(), userID:USER.get('_id')}).then(
             ({data, data:{data:createdTask}}) => {
                 console.log("SERVER-RESPONSE: ", data);
                 console.log("SERVER: ---Task Created---", createdTask);
@@ -116,31 +116,21 @@ export default class LifeApp extends React.Component {
     buildTask(title, tab) {
         const userID = this.state.USER.get('_id');
         const minute = Math.floor(moment().minute()/15)*15;
-        const now = moment().minute(minute).startOf('minute');
 
-        let status = Map();
-        let schedule = DEFAULT_SCHEDULE;
-        let scheduledTime = "";
-        // Fix pending tasks getting added with the wrong scheduled time
+        const startTime = tab === 'ACTIVE'
+            ? moment().minute(minute).startOf('minute').toJSON()
+            : moment().add(1, 'day').minute(minute).startOf('minute').toJSON();
 
-        if( tab === 'ACTIVE' ) {
-            status = Map({
-                active: true,
-                scheduled: true,
-                inactive: false
-            });
-            scheduledTime = now.toJSON();
-            schedule = schedule.set('startTime', scheduledTime);
-        }
-        if( tab === 'PENDING' ) {
-            status = Map({
-                pending: true,
-                scheduled: true,
-                inactive: false
-            });
-            scheduledTime = now.clone().add(1, 'day').toJSON();
-            schedule = schedule.set('startTime', scheduledTime);
-        }
+        const schedule = tab === 'ACTIVE' || tab === 'PENDING'
+            ? DEFAULT_SCHEDULE.set('startTime', startTime)
+            : DEFAULT_SCHEDULE;
+
+        const status = Map({
+            scheduled: tab === 'ACTIVE' || tab === 'PENDING',
+            active: tab === 'ACTIVE',
+            pending: tab === 'PENDING',
+            inactive: !(tab === 'ACTIVE' || tab === 'PENDING')
+        });
 
         const newTask = Map({
             title,
@@ -149,18 +139,11 @@ export default class LifeApp extends React.Component {
             users: Map({
                 [userID]: {
                     securityAccess: 30,
-                    scheduled: scheduledTime
+                    scheduled: ''
                 }
             }),
-            status,
             schedule,
-            changeLog: List([
-                Map({
-                    date: now.toJSON(),
-                    user: userID,
-                    display: 'Task created.'
-                })
-            ])
+            status
         });
 
         this.createNewTask(newTask);
@@ -229,7 +212,7 @@ export default class LifeApp extends React.Component {
         return agenda;
     }
 
-    updateTasks(selectedTasks, desiredChanges) {
+    updateTasks(selectedTasks, desiredChanges, callBack) {
         if(!List.isList(selectedTasks) || typeof desiredChanges !== 'object') return;
         const { USER } = this.state;
         const userID = USER.get('_id');
@@ -244,6 +227,8 @@ export default class LifeApp extends React.Component {
                     tIndx: Index(taskList),
                     loading: false
                 });
+
+                if(typeof callBack === 'function') callBack();
             },
             rejected => {
                 this.setState({ loading: false });
@@ -253,7 +238,7 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    scheduleTasks(selectedTasks, schedule) {
+    scheduleTasks(selectedTasks, schedule, callBack) {
         if(!Map.isMap(schedule) || !List.isList(selectedTasks) || selectedTasks.size === 0) {
             let error = [];
             if(!Map.isMap(schedule)) error.push(`Invalid input: 'schedule' should be of type <Map>, and not <${typeof schedule}>`, schedule);
@@ -272,7 +257,7 @@ export default class LifeApp extends React.Component {
         this.setState({ loading: true });
         SERVER.put("/api/tasks/schedule", {selectedTasks, schedule, userID}).then(
             approved => {
-                console.log(`SERVER: ---${selectedTasks.size} Tasks scheduled---`, approved.data);
+                console.log(`SERVER: ---${selectedTasks.length} Task${selectedTasks.length>1?'s':''} scheduled---`, approved.data);
                 const updatedUser = approved.data.data;
 
                 this.setState({
@@ -280,6 +265,8 @@ export default class LifeApp extends React.Component {
                     tIndx: Index(updatedUser.tasks),
                     loading: false
                 });
+
+                if(typeof callBack === 'function') callBack();
             },
             rejected => {
                 this.setState({ loading: false });
@@ -289,7 +276,7 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    deleteTasks(selectedTasks) {
+    deleteTasks(selectedTasks, callBack) {
         if(!List.isList(selectedTasks) || selectedTasks.size < 1) return;
         const { USER, tIndx } = this.state;
         const existingTaskList = USER.get('tasks');
@@ -316,6 +303,8 @@ export default class LifeApp extends React.Component {
                     tIndx: Index(updatedUser.tasks),
                     loading: false
                 });
+
+                if(typeof callBack === 'function') callBack();
             },
             rejected => {
                 this.setState({ loading: false });
@@ -325,27 +314,6 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    // refreshTaskData() {
-    //     const { USER, loading } = this.state;
-    //     const userID = USER.get('_id');
-    //     if(!loading) this.setState({ loading: true });
-    //
-    //     SERVER.get(`/api/user/${userID}/tasks`).then(
-    //         ({data:taskList}) => {
-    //             console.log("SERVER: ---Incoming TaskList---", taskList);
-    //             this.setState({
-    //                 USER: USER.set('tasks', fromJS(taskList)),
-    //                 tIndx: Index(taskList),
-    //                 loading: false
-    //             });
-    //         },
-    //         rejected => {
-    //             this.setState({ loading: false });
-    //             console.log('Failed to refresh Task data: ', rejected);
-    //             alert("An error has occured. Check console for details.");
-    //         }
-    //     );
-    // }
 }
 
 ReactDOM.render(<LifeApp/>, document.querySelector("App"));

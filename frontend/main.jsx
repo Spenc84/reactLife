@@ -5,6 +5,7 @@ import CalendarSection from './views/calendar/CalendarSection';
 import ListSection from './views/list/ListSection';
 
 import Scheduler from './components/scheduler/scheduler';
+import TaskDetails from './components/taskDetails/taskDetails';
 
 export default class Main extends React.Component {
     constructor(props) {
@@ -53,6 +54,9 @@ export default class Main extends React.Component {
                 <Scheduler ref={ ref => this.Scheduler = ref }
                     scheduleTasks={this.props.api.scheduleTasks} />
 
+                <TaskDetails ref={ ref => this.TaskDetails = ref }
+                    saveTask={this.props.api.saveTask} />
+
             </main>
         );
 	}
@@ -63,5 +67,9 @@ export default class Main extends React.Component {
 
     openScheduler(selectedTasks, schedule) {
         this.Scheduler.openScheduler(selectedTasks, schedule);
+    }
+
+    openTaskDetails(task, callBack) {
+        this.TaskDetails.open(task, callBack);
     }
 }

@@ -4,6 +4,7 @@ import shallowCompare from 'react-addons-shallow-compare';
 
 import { Icon, Button } from '../ui';
 
+// PROPS: onModalOpen, onModalClose, header, footer, locked
 export default class Modal extends React.Component {
     constructor(props) {
         super(props);
@@ -72,7 +73,7 @@ export default class Modal extends React.Component {
         /* If no header is supplied, then user should be able to close out the Modal
             by clicking on the faded background. The following statement prevents
             handler from firing when a child is clicked.     */
-        if(this.props.headerContent === undefined && e.target !== this.Modal) return;
+        if(this.props.headerContent === undefined && e && e.target !== this.Modal) return;
 
         if(typeof this.props.onModalClose === 'function') this.props.onModalClose();
         this.setState({ open: false });

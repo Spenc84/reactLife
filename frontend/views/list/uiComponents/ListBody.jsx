@@ -1,10 +1,13 @@
 import React from 'react';
+import { Map, List, fromJS } from 'immutable';
 
 import { Icon } from '../../../uiComponents/ui';
 
+
+// PROPS: taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask
 export default class ListBody extends React.PureComponent {
     render() {
-        const { taskList, filter, starView, selectedTasks, selectTask, buildTask } = this.props;
+        const { taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask } = this.props;
 
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
@@ -25,6 +28,7 @@ export default class ListBody extends React.PureComponent {
                             included={included}
                             selected={selected}
                             selectTask={selectTask}
+                            updateTitle={updateTitle}
                         />
                     );
                 })}
@@ -39,15 +43,29 @@ export default class ListBody extends React.PureComponent {
     }
 
     toggleNewItemPane() { console.log("toogleNewItemPane()"); }
-    saveNew() { console.log("saveNew()"); }
 }
 
+//PROPS: task, included, selected, selectTask, updateTitle
 class TaskRow extends React.PureComponent {
     constructor(props) {
         super(props);
+
+        this.state = { title: props.task.get("title") || "" };
+
         this.selectTask = this.selectTask.bind(this);
+        this.updateTitle = this.updateTitle.bind(this);
+        this.saveTitle = this.saveTitle.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
     }
+
+    componentWillReceiveProps(nextProps) {
+        if( this.props.task !== nextProps.task ) {
+            this.setState({ title: nextProps.task.get("title") });
+        }
+    }
+
     render() {
+        const { title } = this.state;
         const { task, included, selected } = this.props;
         const hidden = included ? "" : "hidden ";
         const starred = task.get("status").get("starred");
@@ -57,7 +75,16 @@ class TaskRow extends React.PureComponent {
                 ? <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill={svgInnerColor} />
                 : null;
 
-        console.log('RENDERED: TaskRow'); // __DEV__
+        const titleColumn = selected
+            ?   <input type="text"
+                    value={title}
+                    onChange={this.updateTitle}
+                    onBlur={this.saveTitle}
+                    onKeyDown={this.handleKeyPress}
+                />
+            :   <span>{title}</span>;
+
+        // console.log('RENDERED: TaskRow'); // __DEV__
         return (
             <div className={`${hidden}task row`}>
                 <div className="checkbox column" onClick={this.selectTask}>
@@ -70,14 +97,10 @@ class TaskRow extends React.PureComponent {
                     </svg>
                 </div>
                 <div className="title column">
-                    {task.get("title")}
-                    {/* <form ng-submit="saveTask(task)">
-                        <input type="text" ng-model="task.title" ng-if="!task.status.selected" ng-click="toggleEditItemPane(task)" readonly />
-                        <input type="text" ng-model="task.title" ng-if="task.status.selected" />
-                    </form> */}
+                    {titleColumn}
                 </div>
-                <Icon i={"star"} hidden={!starred} style={{color:"rgb(241,196,15)"}} onClick={this.toggleStarred()} />
-                <Icon i={"info_outline"} hidden={!selected} onClick={this.toggleEditItemPane(task)} />
+                <Icon i={"star"} hidden={!starred} />
+                <Icon i={"info_outline"} hidden={!selected} />
             </div>
         );
     }
@@ -86,10 +109,43 @@ class TaskRow extends React.PureComponent {
         const { task, selected, selectTask } = this.props;
         selectTask(task.get("_id"), !selected);
     }
+
+    updateTitle(e) {
+        this.setState({ title: e.target.value });
+    }
+
+    saveTitle(e) {
+        const { task, updateTitle } = this.props;
+        const { title:newTitle } = this.state;
+        const oldTitle = task.get('title');
+
+        if(e && e.target.value !== oldTitle) {
+            updateTitle(task.get('_id'), newTitle, oldTitle);
+        }
+    }
+
+    handleKeyPress(e) {
+        const { task, updateTitle } = this.props;
+
+        // <27: ESCAPE> <13: ENTER>
+        if(e.keyCode === 27) {
+            e.target.value = this.props.task.get('title');
+            this.setState({ title: this.props.task.get('title') });
+        }
+
+        if(e.keyCode === 27 || e.keyCode === 13) {
+            e.target.blur();
+        }
+    }
+
     toggleEdit(indx) {}
     toggleStarred() {}
     toggleEditItemPane(task) {}
 }
+
+TaskRow.defaultProps = {
+    task: Map()
+};
 
 class NewTaskRow extends React.PureComponent {
     constructor(props) {
