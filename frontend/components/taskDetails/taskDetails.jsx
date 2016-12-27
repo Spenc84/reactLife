@@ -6,7 +6,7 @@ import { Map, List, fromJS } from 'immutable';
 // import Modal from '../../uiComponents/modal/modal';
 // import Accordian from '../../uiComponents/accordian';
 // import Select from '../../uiComponents/select/select';
-import { Icon, Button } from '../../uiComponents/ui';
+import { Icon, Button, Text, TextArea } from '../../uiComponents/ui';
 //
 // import OptionPane from './optionPane';
 
@@ -14,25 +14,40 @@ import { Icon, Button } from '../../uiComponents/ui';
 let TASK = Map();   // Original state of task
 let CALLBACK;       // Callback function to be executed when task is successfully saved.
 
-// PROPS: updateTasks
+// PROPS: saveTask
 export default class TaskDetails extends PureComponent {
     constructor(props) {
         super(props);
 
         this.state = {
             task: TASK,
-            open: false
+            open: false,
+            readOnly: true
         };
 
         this.open = this.open.bind(this);
         this.close = this.close.bind(this);
 
+        this.toggleEdit = this.toggleEdit.bind(this);
         this.handleFormChange = this.handleFormChange.bind(this);
-        this.updateTasks = this.updateTasks.bind(this);
+        this.saveChanges = this.saveChanges.bind(this);
     }
 
     render() {
-        const { task, open } = this.state;
+        const { task, open, readOnly } = this.state;
+
+        const headerAction = readOnly
+            ?   <Button light
+                    label={'EDIT'}
+                    title={'Edit task'}
+                    onClick={this.toggleEdit}
+                />
+            :   <Button light
+                    label={'SAVE'}
+                    title={'Save changes'}
+                    disabled={TASK === task}
+                    onClick={TASK === task ? null : this.saveChanges}
+                />
 
         return (
             <main className={`${open?'':'hidden '}TaskDetails`}>
@@ -41,12 +56,7 @@ export default class TaskDetails extends PureComponent {
 
                     <Icon i={"arrow_back"} onClick={this.close} size={1.25}/>
                     <span>Task Details</span>
-                    <Button light
-                        label={'SAVE'}
-                        title={'Save changes'}
-                        disabled={TASK === task}
-                        onClick={this.updateTasks}
-                    />
+                    {headerAction}
 
                 </header>
 
@@ -54,10 +64,21 @@ export default class TaskDetails extends PureComponent {
 
                     <div className="title row">
                         <span className="label">Title:</span>
-                        <textarea
+                        <Text
                             data-content="title"
                             value={task.get('title') || ""}
                             onChange={this.handleFormChange}
+                            readOnly={readOnly}
+                        />
+                    </div>
+
+                    <div className="description row">
+                        <span className="label">Description:</span>
+                        <TextArea
+                            data-content="description"
+                            value={task.get('description') || ""}
+                            onChange={this.handleFormChange}
+                            readOnly={readOnly}
                         />
                     </div>
 
@@ -77,12 +98,23 @@ export default class TaskDetails extends PureComponent {
     }
 
     close() {
+        const { task, readOnly } = this.state;
+
+        if(!readOnly && task !== TASK)
+            if(!confirm("Discard changes?")) return;
+
         TASK = Map();
         CALLBACK = null;
+
         this.setState({
             task: TASK,
-            open: false
+            open: false,
+            readOnly: true
         });
+    }
+
+    toggleEdit() {
+        this.setState({ readOnly: false });
     }
 
     handleFormChange(e) {
@@ -96,8 +128,14 @@ export default class TaskDetails extends PureComponent {
         });
     }
 
-    updateTasks() {
-        const { updateTasks } = this.props;
+    saveChanges() {
+        const { task } = this.state;
+        const { saveTask } = this.props;
+
+        saveTask(task);
+
+        TASK = task;
+        this.setState({ readOnly: true });
     }
 }
 

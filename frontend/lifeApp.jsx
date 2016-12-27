@@ -40,6 +40,7 @@ export default class LifeApp extends React.Component {
         };
 
         this.buildTask = this.buildTask.bind(this);
+        this.saveTask = this.saveTask.bind(this);
         this.updateTasks = this.updateTasks.bind(this);
         this.scheduleTasks = this.scheduleTasks.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
@@ -58,6 +59,7 @@ export default class LifeApp extends React.Component {
                 agenda={ USER.get("agenda") || List()}
                 api={{
                     buildTask: this.buildTask,
+                    saveTask: this.saveTask,
                     updateTasks: this.updateTasks,
                     scheduleTasks: this.scheduleTasks,
                     deleteTasks: this.deleteTasks
@@ -210,6 +212,58 @@ export default class LifeApp extends React.Component {
         }
 
         return agenda;
+    }
+
+    saveTask(task, callBack) {
+        const { USER } = this.state;
+        const userID = USER.get('_id');
+        const taskID = task.get('_id');
+
+        const index = USER.get("tasks").findIndex(task=>task.get("_id") === taskID)
+        const TASK = USER.getIn(['tasks', index]);
+
+        let update = {};
+        let log = [];
+
+        if(TASK.get("title") !== task.get("title")) {
+            update.title = task.get("title");
+            log.push(` - Changed task's title from '${TASK.get("title")}' to '${task.get("title")}'`);
+        }
+        if(TASK.get("description") !== task.get("description")) {
+            update.description = task.get("description");
+            log.push(` - Changed task's description from '${TASK.get("description")}' to '${task.get("description")}'`);
+        }
+        if(TASK.get("color") !== task.get("color")) {
+            update.color = task.get("color");
+            log.push(` - Changed task's color from '${TASK.get("color")}' to '${task.get("color")}'`);
+        }
+
+        update.changeLog = task.get('changeLog').push({
+            date: moment().toJSON(),
+            user: userID,
+            display: log.join('/n')
+        }).toJS();
+
+        if(log.length === 0) return;
+
+        this.setState({
+            USER: USER.setIn(['tasks', index], task),
+            loading: true
+        });
+
+        SERVER.put(`/api/task/${taskID}`, update).then(
+            approved => {
+                console.log(`SERVER: ---Task '${task.get('title')}' updated---`, approved);
+                this.setState({ loading: false });
+
+                if(typeof callBack === 'function') callBack();
+            },
+            rejected => {
+                this.setState({ loading: false });
+                console.log('Failed to update tasks: ', rejected);
+                alert("An error has occured. Check console for details.");
+            }
+        );
     }
 
     updateTasks(selectedTasks, desiredChanges, callBack) {

@@ -28,7 +28,7 @@ module.exports = function( app ){
         .put(ctrl.scheduleTasks);
     app.route('/api/task/:id')
         .get(ctrl.getTask)
-        .put(ctrl.editTask)
+        .put(ctrl.saveTask)
         .delete(ctrl.deleteTasks);
     app.route('/api/tasks/:ids/:keys/:values')
         .put(ctrl.editTasks);

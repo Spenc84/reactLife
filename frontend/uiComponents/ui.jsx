@@ -1,7 +1,7 @@
 import '../style.styl';
-import React from 'react';
+import React, { PureComponent } from 'react';
 
-export class Icon extends React.PureComponent {
+export class Icon extends PureComponent {
     render() {
         const { style, className, light, hidden, invisible, faded, size, onClick } = this.props;
         let _className = (className) ? `${className} ` : "";
@@ -26,7 +26,7 @@ export class Icon extends React.PureComponent {
     }
 }
 
-export class Button extends React.PureComponent {
+export class Button extends PureComponent {
     render() {
         const { label, title, onClick, type, light, disabled, hidden } = this.props;
         const buttonType = (type === "raised" || type === "floating") ? type : "flat";
@@ -45,4 +45,47 @@ export class Button extends React.PureComponent {
             </div>
         );
     }
+}
+
+export function Text(props) {
+    return props.readOnly
+        ?   <div className="Text">
+                {props.value}
+            </div>
+
+        :   <input
+                type="text"
+                className="Text"
+                {...props}
+            />
+}
+
+export class TextArea extends PureComponent {
+
+    componentDidUpdate() {
+        const rows = Math.floor(this.spacer.scrollHeight/18);
+        if(rows !== this.textarea.getAttribute('rows'))
+            this.textarea.setAttribute('rows', rows);
+    }
+
+    render() {
+        const { value, readOnly } = this.props;
+
+        return (
+            <div className="TextArea">
+
+                <div ref={ref=>this.spacer=ref}
+                    className={`${readOnly?'':'invisible '}spacer`}>
+                    {value}
+                </div>
+
+                <textarea ref={ref=>this.textarea=ref}
+                    className={readOnly?'hidden':''}
+                    {...this.props}
+                />
+
+            </div>
+        )
+    }
+
 }

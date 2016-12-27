@@ -216,9 +216,6 @@ module.exports = {
     getTask: function( req, res ) {
         Task.findById(req.params.id, cb(res));
     },
-    editTask: function( req, res ) {
-        Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
-    },
     editTasks: function( req, res ) {
         console.log(req.params);
         let set = {},
@@ -233,6 +230,9 @@ module.exports = {
         }
         console.log(set);
         Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
+    },
+    saveTask( req, res ) {
+        Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
     },
     updateTasks( req, res ) {
         const { selectedTasks, desiredChanges, userID } = req.body;

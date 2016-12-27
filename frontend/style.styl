@@ -47,6 +47,14 @@ $dateDay = linear-gradient(to bottom, $primaryBG 0%, $primaryBG 75%, transparent
 $shadow = 0 .1rem 1rem #515151
 $star = rgb(241,196,15)
 
+// inputs
+$borderColor = rgba(0,0,0,.12)
+$boxShadow = 0 1px 6px rgba(0, 0, 0, 0.2)
+$hoverBorder = rgba(0, 120, 255, .75)
+$hoverShadow = rgba(0, 120, 255, .75)
+$hoverBackground = rgb(237,247,255)
+$selectedBackground = $hoverBackground * .97
+
 
 // z-index
 $headerIndx = 50
@@ -126,6 +134,35 @@ body *
         cursor default
         cursor inherit
 
+.TextArea
+    position relative
+    textarea, input
+        border 1px solid $borderColor
+        padding .5rem
+        border-radius .3rem
+        transition border-color 400ms, box-shadow 400ms
+        &:hover, &:focus
+            border-color $hoverBorder
+            transition border-color 900ms 100ms, box-shadow 400ms
+    .spacer
+        z-index -1
+        position absolute
+        white-space pre-wrap
+        padding .5rem
+        border 1px solid transparent
+
+div.Text
+    padding .5rem 1rem
+    border 1px solid transparent
+    border-radius .3rem
+input.Text
+    padding .5rem 1rem
+    border 1px solid $borderColor
+    border-radius .3rem
+    transition border-color 400ms, box-shadow 400ms
+    &:hover, &:focus
+        border-color $hoverBorder
+        transition border-color 900ms 100ms, box-shadow 400ms
 
 
 /////////////////////////////   COMPONENTS   ////////////////////////////////
