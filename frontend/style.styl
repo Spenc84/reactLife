@@ -92,20 +92,21 @@ body *
     align-items center
     color $darkText
     cursor pointer
-    &:focus, &:hover
-        background rgba(0,0,0,.12)
-    &:active
-        background rgba(153, 153, 153, .4)
+    &:not(.disabled)
+        &:focus, &:hover
+            background rgba(0,0,0,.12)
+        &:active
+            background rgba(153, 153, 153, .4)
+        &.light
+            color $lightText
+            &:focus, &:hover
+                background rgba(255,255,255,.12)
+            &:active
+                background rgba(204, 204, 204,.25)
     &.disabled
         color $darkTextDisabled
         cursor default
-    &.light
-        color $lightText
-        &:focus, &:hover
-            background rgba(255,255,255,.12)
-        &:active
-            background rgba(204, 204, 204,.25)
-        &.disabled
+        &.light
             color $lightTextDisabled
 
 
@@ -170,6 +171,25 @@ header
                 background #f4f4f4
                 box-shadow inset .1rem .1rem .3rem #666
                 transition all 200ms ease-in-out
+    &.list
+        flex-direction column
+        & > div.Row
+            height 6rem
+            div.Icon
+                flex 0 1 4.8rem
+                align-items center
+                justify-content center
+                &.check_circle
+                    color $completed
+        div.default.Row
+            align-items center
+            background-color $listAccent
+            color $light
+        div.icons.Row
+            justify-content space-between
+            div.icons
+                flex 1
+                justify-content center
 
 
 section.hour-divider
@@ -334,27 +354,6 @@ div.CalendarSection
 
 
 div.ListSection
-
-    header.list
-        flex-direction column
-        & > div.Row
-            height 6rem
-            div.Icon
-                flex 0 1 4.8rem
-                align-items center
-                justify-content center
-                &.check_circle
-                    color $completed
-        div.default.Row
-            align-items center
-            background-color $listAccent
-            color $light
-        div.icons.Row
-            justify-content space-between
-            div.icons
-                flex 1
-                justify-content center
-
 
     .QueryBuilder
         flex-direction column

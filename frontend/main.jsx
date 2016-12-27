@@ -17,6 +17,7 @@ export default class Main extends React.Component {
 
         this.changeSection = this.changeSection.bind(this);
         this.openScheduler = this.openScheduler.bind(this);
+        this.openTaskDetails = this.openTaskDetails.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -40,6 +41,7 @@ export default class Main extends React.Component {
                     <CalendarSection
                         active={(activeSection === "CALENDAR")}
                         changeSection={this.changeSection}
+                        openTaskDetails={this.openTaskDetails}
                         {...this.props} />
                 </section>
 
@@ -48,6 +50,7 @@ export default class Main extends React.Component {
                         active={(activeSection === "LIST")}
                         changeSection={this.changeSection}
                         openScheduler={this.openScheduler}
+                        openTaskDetails={this.openTaskDetails}
                         {...this.props} />
                 </section>
 

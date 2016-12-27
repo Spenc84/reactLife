@@ -57,7 +57,7 @@ export default class ListSection extends React.Component {
 
     render() {
         const { selectedFilter, filter, starView, selectedTasks } = this.state;
-        const { tasks, changeSection, api:{buildTask} } = this.props;
+        const { tasks, changeSection, api:{buildTask}, openTaskDetails } = this.props;
 
         return (
             <div className="ListSection">
@@ -87,6 +87,7 @@ export default class ListSection extends React.Component {
                     selectTask={this.selectTask}
                     updateTitle={this.updateTitle}
                     buildTask={this.buildTask}
+                    openTaskDetails={openTaskDetails}
                 />
 
             </div>

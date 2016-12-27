@@ -1,0 +1,48 @@
+$primaryBG = rgb(255,255,255)
+$listAccent = rgb(0, 120, 255)
+$light = rgb(245,245,245)
+
+main.TaskDetails
+    z-index 50
+    position fixed
+    top 0
+    right 0
+    bottom 0
+    left 0
+    flex-direction column
+    background $primaryBG
+
+    header.task_details
+        height 6rem
+        background-color $listAccent
+        color $light
+
+        & > span
+            flex-grow 1
+            align-items center
+            margin 0 .8rem 0 2.4rem
+            font-size 3.2rem
+
+        & > div.Icon
+            flex 0 0 4.8rem
+            align-items center
+            justify-content center
+
+        & > div.Button
+            align-self center
+            margin-right .8rem
+
+    & > div.body
+        flex-direction column
+
+        div.row
+            flex 0 0 6rem
+            align-items center
+            padding 0 1.8rem
+
+            span.label
+                font-size 2.4rem
+                padding-right 1.8rem
+
+            textarea
+                flex 1 0 0px

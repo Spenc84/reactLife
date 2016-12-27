@@ -7,7 +7,7 @@ import { Icon } from '../../../uiComponents/ui';
 // PROPS: taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask
 export default class ListBody extends React.PureComponent {
     render() {
-        const { taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask } = this.props;
+        const { taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask, openTaskDetails } = this.props;
 
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
@@ -29,6 +29,7 @@ export default class ListBody extends React.PureComponent {
                             selected={selected}
                             selectTask={selectTask}
                             updateTitle={updateTitle}
+                            openTaskDetails={openTaskDetails}
                         />
                     );
                 })}
@@ -56,6 +57,7 @@ class TaskRow extends React.PureComponent {
         this.updateTitle = this.updateTitle.bind(this);
         this.saveTitle = this.saveTitle.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.openTaskDetails = this.openTaskDetails.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -82,7 +84,7 @@ class TaskRow extends React.PureComponent {
                     onBlur={this.saveTitle}
                     onKeyDown={this.handleKeyPress}
                 />
-            :   <span>{title}</span>;
+            :   <span onClick={this.openTaskDetails}>{title}</span>;
 
         // console.log('RENDERED: TaskRow'); // __DEV__
         return (
@@ -100,7 +102,7 @@ class TaskRow extends React.PureComponent {
                     {titleColumn}
                 </div>
                 <Icon i={"star"} hidden={!starred} />
-                <Icon i={"info_outline"} hidden={!selected} />
+                <Icon i={"info_outline"} onClick={this.openTaskDetails} hidden={!selected} />
             </div>
         );
     }
@@ -136,6 +138,11 @@ class TaskRow extends React.PureComponent {
         if(e.keyCode === 27 || e.keyCode === 13) {
             e.target.blur();
         }
+    }
+
+    openTaskDetails() {
+        const { task, openTaskDetails } = this.props;
+        openTaskDetails(task);
     }
 
     toggleEdit(indx) {}

@@ -12,53 +12,88 @@ import { Icon, Button } from '../../uiComponents/ui';
 
 // ----- PLACEHOLDERS -----
 let TASK = Map();   // Original state of task
-let callBack;       // Callback function to be executed when task is successfully saved.
+let CALLBACK;       // Callback function to be executed when task is successfully saved.
 
 // PROPS: updateTasks
 export default class TaskDetails extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.state = { task: TASK };
+        this.state = {
+            task: TASK,
+            open: false
+        };
 
         this.open = this.open.bind(this);
         this.close = this.close.bind(this);
 
+        this.handleFormChange = this.handleFormChange.bind(this);
         this.updateTasks = this.updateTasks.bind(this);
     }
 
     render() {
-        const { task } = this.state;
+        const { task, open } = this.state;
 
         return (
-            <main className="TaskDetails">
+            <main className={`${open?'':'hidden '}TaskDetails`}>
 
                 <header className="task_details">
 
-                    <div className={`${tasksSelected?"hidden ":""}default Row`}>
-                        <Icon i={"arrow_back"} onClick={this.close} size={1.25}/>
-                        <div style={{flexGrow: 1}}>
-                            <span style={{margin: "0 .8rem 0 2.4rem", fontSize: "3.2rem"}}>Projects</span>
-                        </div>
-                        <Button light
-                            label={'SAVE'}
-                            title={'Save changes'}
-                            disabled={TASK !== task}
-                            onClick={this.updateTasks}
+                    <Icon i={"arrow_back"} onClick={this.close} size={1.25}/>
+                    <span>Task Details</span>
+                    <Button light
+                        label={'SAVE'}
+                        title={'Save changes'}
+                        disabled={TASK === task}
+                        onClick={this.updateTasks}
+                    />
+
+                </header>
+
+                <div className="body">
+
+                    <div className="title row">
+                        <span className="label">Title:</span>
+                        <textarea
+                            data-content="title"
+                            value={task.get('title') || ""}
+                            onChange={this.handleFormChange}
                         />
                     </div>
 
-                </header>
+                </div>
+
             </main>
         );
     }
 
-    open() {
-
+    open(task, callback) {
+        TASK = task;
+        CALLBACK = callback;
+        this.setState({
+            task: TASK,
+            open: true
+        });
     }
 
     close() {
+        TASK = Map();
+        CALLBACK = null;
+        this.setState({
+            task: TASK,
+            open: false
+        });
+    }
 
+    handleFormChange(e) {
+        const { task } = this.state;
+
+        const field = e.target.dataset.content;
+        const value = e.target.value;
+
+        this.setState({
+            task: task.set(field, value)
+        });
     }
 
     updateTasks() {
