@@ -5,7 +5,7 @@ import { Map, List, fromJS } from 'immutable';
 export default class Week extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate:unix, updateDate, agenda, tasks, tIndx, userID } = this.props;
+        const { activeDate:unix, updateDate, agenda, tasks, tIndx, userID, openTaskDetails } = this.props;
         let activeDate = moment(unix);
 
         // Style the weekday names of prior weeks as prior
@@ -56,7 +56,8 @@ export default class Week extends React.Component {
                                     top,
                                     backgroundColor: task.get("color"),
                                     height: task.get("schedule").get("duration")
-                                }}>
+                                }}
+                                onClick={openTaskDetails.bind(null, task)}>
                                 {task.get("title")}
                             </div>
                         );

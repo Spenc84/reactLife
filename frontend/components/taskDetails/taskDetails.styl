@@ -1,8 +1,4 @@
-$primaryBG = rgb(255,255,255)
-$listAccent = rgb(0, 120, 255)
-$light = rgb(245,245,245)
-$borderColor = rgba(0,0,0,.12)
-$hoverBorder = rgba(0, 120, 255, .75)
+@require '../../style'
 
 main.TaskDetails
     z-index 50
@@ -47,10 +43,22 @@ main.TaskDetails
                 font-size 1.8rem
                 padding-right 1.8rem
 
-            input
+            input[type='text']
                 flex-grow 1
                 font-size 1.6rem
                 padding 0.5rem 1rem
+
+            input[type='color']
+                height 3rem
+                width 6rem
+                background whitesmoke
+                cursor pointer
+                &:disabled
+                    border none
+                    background none
+                    cursor default
+
+            input:not([disabled])
                 border 1px solid $borderColor
                 border-radius .3rem
                 transition border-color 400ms, box-shadow 400ms
@@ -58,9 +66,11 @@ main.TaskDetails
                     border-color $hoverBorder
                     transition border-color 900ms 100ms, box-shadow 400ms
 
+            div.TextArea
+                font-size 1.4rem
             textarea
                 flex-grow 1
-                font-size 1.6rem
+                font-size 1.4rem
                 font-family 'Roboto medium', 'Roboto', sans-serif
 
             &.description

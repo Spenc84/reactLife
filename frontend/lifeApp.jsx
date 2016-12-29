@@ -8,7 +8,7 @@ import { Index } from './components/tools';
 import Main from './main';
 
 // DEFAULTS
-const TASK_COLOR = 'rgb(0, 120, 255)';
+const TASK_COLOR = '#0078ff';
 const DEFAULT_SCHEDULE = (()=>{
     let availability = [];
     for(let i=0;i<7;i++) {

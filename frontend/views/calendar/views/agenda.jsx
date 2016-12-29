@@ -7,7 +7,7 @@ export default class Agenda extends React.Component {
     componentDidUpdate() { this.refs[this.props.activeDate].scrollIntoView(); }
     componentDidMount() { this.refs[this.props.activeDate].scrollIntoView(); }
     render() {
-        const { activeDate:DATE, agenda, tasks, tIndx, updateDate } = this.props;
+        const { activeDate:DATE, agenda, tasks, tIndx, updateDate, openTaskDetails } = this.props;
         const activeDate = moment(DATE).startOf('day').valueOf();
         const today = moment().startOf('day').valueOf();
 
@@ -43,12 +43,13 @@ export default class Agenda extends React.Component {
                         </div>
                         <div className="tasks">
                             {schedule.map(taskID => {
-                                // const taskID = task.get('taskID');
+                                const task = tasks.get(tIndx[taskID]);
                                 return (
                                     <div key={taskID}
                                         className="task"
-                                        style={{backgroundColor: tasks.get(tIndx[taskID]).get("color")}}>
-                                        {tasks.get(tIndx[taskID]).get("title")}
+                                        style={{backgroundColor: task.get("color")}}
+                                        onClick={openTaskDetails.bind(null, task)}>
+                                        {task.get("title")}
                                     </div>
                                 );
                             })}

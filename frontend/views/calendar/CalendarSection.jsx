@@ -56,7 +56,7 @@ export default class CalendarSection extends React.Component {
 
     buildBody() {
         const { activeView, date } = this.state;
-        const { USER, agenda, tasks, tIndx } = this.props;
+        const { USER, agenda, tasks, tIndx, openTaskDetails } = this.props;
         const userID = USER.get('_id');
 
         let body;
@@ -67,7 +67,7 @@ export default class CalendarSection extends React.Component {
             current: date.isSame(moment(), 'day')
         }
 
-        const taskData = { userID, agenda, tasks, tIndx };
+        const taskData = { userID, agenda, tasks, tIndx, openTaskDetails };
 
         const dayWeekBackground = (activeView === "DAY" || activeView === "WEEK")
                 ?   <HourDivider

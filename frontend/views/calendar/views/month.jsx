@@ -10,7 +10,7 @@ const WEEKDAY_TITLES = moment.weekdaysShort().map((x)=><span key={x} className="
 export default class Month extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate, updateDate, agenda, tasks, tIndx } = this.props;
+        const { activeDate, updateDate, agenda, tasks, tIndx, openTaskDetails } = this.props;
         let day = moment(activeDate).startOf('month');
 
         // Calculate the number of Weeks needed to build the month
@@ -46,7 +46,7 @@ export default class Month extends React.Component {
                                 <span key={`task_${indx}`}
                                     className="task"
                                     style={{ backgroundColor: task.get("color") }}
-                                    onClick={null} />
+                                    onClick={openTaskDetails.bind(null, task)} />
                             );
                         }
                     )

@@ -1,4 +1,4 @@
-import '../style.styl';
+import '../main.styl';
 import React, { PureComponent } from 'react';
 
 export class Icon extends PureComponent {

@@ -82,6 +82,16 @@ export default class TaskDetails extends PureComponent {
                         />
                     </div>
 
+                    <div className="color row">
+                        <span className="label">Color:</span>
+                        <input type="color"
+                            data-content="color"
+                            value={task.get('color') || '#0078ff'}
+                            onChange={this.handleFormChange}
+                            disabled={readOnly}
+                        />
+                    </div>
+
                 </div>
 
             </main>
