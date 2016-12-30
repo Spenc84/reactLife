@@ -3,20 +3,49 @@ import React from 'react';
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
+import Modal from '../../uiComponents/modal/modal';
 import Accordian from '../../uiComponents/accordian';
 import Select from '../../uiComponents/select/select';
+import { Button } from '../../uiComponents/ui';
 
 import OptionPane from './optionPane';
+
+
+const DEFAULT_SCHEDULE = (()=>{
+    let availability = [];
+    for(let i=0;i<7;i++) {
+        let day = [];
+        for(let j=0;j<8;j++) day.push(false);
+        for(let j=8;j<22;j++) day.push(true);
+        for(let j=22;j<24;j++) day.push(false);
+        availability.push(day);
+    }
+    return Map({
+        duration: 0,
+        startTime: formatMoment(),
+        softDeadline: '',
+        hardDeadline: '',
+        availability: fromJS(availability)
+    });
+})();
 
 const MINUTES = [0, 15, 30, 45].map(x=>({value:x,display:x}));
 
 // PROPS: scheduleTasks
-export default class Scheduler extends React.PureComponent {
+export default class ScheduleModal extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        this.reset = this.reset.bind(this);
+        this.state = {
+            selectedTaskIDs: List(),
+            schedule: DEFAULT_SCHEDULE,
+            callBack: ''
+        };
 
+        this.openScheduler = this.openScheduler.bind(this);
+        this.resetScheduler = this.resetScheduler.bind(this);
+
+        this.scheduleTasks = this.scheduleTasks.bind(this);
         this.updateDuration = this.updateDuration.bind(this);
         this.updateStartTime = this.updateStartTime.bind(this);
         this.updateSoftDeadline = this.updateSoftDeadline.bind(this);
@@ -24,33 +53,74 @@ export default class Scheduler extends React.PureComponent {
     }
 
     render() {
+        const { schedule } = this.state;
 
-        const DATA = this.props.schedule
-            ?   List([
-                    this.getDuration(),
-                    this.getStartTime(),
-                    this.getSoftDeadline(),
-                    this.getHardDeadline()
-                ])
-            :   List();
+        const DATA = List([
+            this.getDuration(),
+            this.getStartTime(),
+            this.getSoftDeadline(),
+            this.getHardDeadline()
+        ]);
 
         return (
             <main className="Scheduler">
+                <Modal ref={ref=>this.modal = ref} onModalClose={this.resetScheduler}>
 
-                    <Accordian ref={ref=>this.Accordian=ref} data={DATA} />
+                    <header className="scheduler_header">
+                        <span className="title">Schedule Tasks</span>
+                        <Button light
+                            label={'SAVE'}
+                            title={'Schedule selected tasks'}
+                            onClick={this.scheduleTasks}
+                        />
+                    </header>
 
+                    <Accordian ref={ref=>this.accordian=ref} data={DATA} />
+
+                </Modal>
             </main>
         );
     }
 
 
 
-    reset() {
-        this.Accordian.reset();
+    openScheduler({selectedTasks:selectedTaskIDs, schedule, callBack}) {
+        if(!List.isList(selectedTaskIDs) || selectedTaskIDs.size === 0) {
+            console.warn("Scheduler cannot be opened without a selected task");
+            alert("An error has occured. Check console for details.");
+            return;
+        }
+
+        if(typeof callBack !== 'function' && typeof schedule === 'function') callBack = schedule;
+        if( !Map.isMap(schedule) ) schedule = DEFAULT_SCHEDULE.set('startTime', formatMoment());
+        this.modal.openModal();
+        this.setState({ selectedTaskIDs, schedule, callBack });
+    }
+
+    resetScheduler() {
+        this.setState({
+            schedule: DEFAULT_SCHEDULE.set('startTime', formatMoment()),
+            selectedTaskIDs: '',
+            callBack: ''
+        })
+        this.accordian.reset();
+    }
+
+    scheduleTasks() {
+        const { selectedTaskIDs, schedule, callBack } = this.state;
+        const { scheduleTasks } = this.props;
+        if(typeof scheduleTasks !== 'function') {
+            console.warn("'scheduleTasks()' prop not passed into Scheduler component");
+            alert("An error has occured. Check console for details.");
+            return;
+        }
+
+        scheduleTasks(selectedTaskIDs, schedule, callBack);
+        this.modal.closeModal();
     }
 
     getDuration() {
-        const duration = this.props.schedule.get('duration');
+        const duration = this.state.schedule.get('duration');
 
         const durationDisplay
             =   (duration === 0) ? 'None'
@@ -122,13 +192,12 @@ export default class Scheduler extends React.PureComponent {
     }
 
     updateDuration(value) {
-        const { schedule, updateSchedule } = this.props;
-        const newSchedule = schedule.set('duration', parseInt(value));
-        updateSchedule(newSchedule);
+        const schedule = this.state.schedule.set('duration', parseInt(value));
+        this.setState({ schedule });
     }
 
     getStartTime() {
-        const startTime = this.props.schedule.get('startTime');
+        const startTime = this.state.schedule.get('startTime');
 
         const PM = moment(startTime).hour() > 11;
         const START_TIME_HOURS = (()=>{
@@ -253,25 +322,22 @@ export default class Scheduler extends React.PureComponent {
     }
 
     updateStartTime(value) {
-        const { schedule, updateSchedule } = this.props;
-
-        const newSchedule = value
-            ?   schedule.set('startTime', value)
-            :   schedule.withMutations(
+        const schedule = value
+            ?   this.state.schedule.set('startTime', value)
+            :   this.state.schedule.withMutations(
                 s => (
                     s.set('startTime', '')
                     .set('softDeadline', '')
                     .set('hardDeadline', '')
                 )
             );
-
-        updateSchedule(newSchedule);
+        this.setState({ schedule });
     }
 
     getSoftDeadline() {
-        const startTime = this.props.schedule.get('startTime');
-        const softDeadline = this.props.schedule.get('softDeadline');
-        const hardDeadline = this.props.schedule.get('hardDeadline');
+        const startTime = this.state.schedule.get('startTime');
+        const softDeadline = this.state.schedule.get('softDeadline');
+        const hardDeadline = this.state.schedule.get('hardDeadline');
 
         const PM = moment(softDeadline).hour() > 11;
         const SOFT_DEADLINE_HOURS = (()=>{
@@ -397,15 +463,14 @@ export default class Scheduler extends React.PureComponent {
     }
 
     updateSoftDeadline(value) {
-        const { schedule, updateSchedule } = this.props;
-        const newSchedule = schedule.set('softDeadline', value);
-        updateSchedule(newSchedule);
+        const schedule = this.state.schedule.set('softDeadline', value);
+        this.setState({ schedule });
     }
 
     getHardDeadline() {
-        const startTime = this.props.schedule.get('startTime');
-        const softDeadline = this.props.schedule.get('softDeadline');
-        const hardDeadline = this.props.schedule.get('hardDeadline');
+        const startTime = this.state.schedule.get('startTime');
+        const softDeadline = this.state.schedule.get('softDeadline');
+        const hardDeadline = this.state.schedule.get('hardDeadline');
 
         const PM = moment(hardDeadline).hour() > 11;
         const HARD_DEADLINE_HOURS = (()=>{
@@ -531,9 +596,8 @@ export default class Scheduler extends React.PureComponent {
     }
 
     updateHardDeadline(value) {
-        const { schedule, updateSchedule } = this.props;
-        const newSchedule = this.props.schedule.set('hardDeadline', value);
-        updateSchedule(newSchedule);
+        const schedule = this.state.schedule.set('hardDeadline', value);
+        this.setState({ schedule });
     }
 }
 

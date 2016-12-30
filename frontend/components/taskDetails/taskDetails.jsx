@@ -3,12 +3,9 @@ import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
-// import Modal from '../../uiComponents/modal/modal';
-// import Accordian from '../../uiComponents/accordian';
-// import Select from '../../uiComponents/select/select';
+import Scheduler from '../../components/scheduler/scheduler';
 import { Icon, Button, Text, TextArea } from '../../uiComponents/ui';
-//
-// import OptionPane from './optionPane';
+
 
 // ----- PLACEHOLDERS -----
 let TASK = Map();   // Original state of task
@@ -30,6 +27,7 @@ export default class TaskDetails extends PureComponent {
 
         this.toggleEdit = this.toggleEdit.bind(this);
         this.handleFormChange = this.handleFormChange.bind(this);
+        this.updateSchedule = this.updateSchedule.bind(this);
         this.saveChanges = this.saveChanges.bind(this);
     }
 
@@ -55,22 +53,17 @@ export default class TaskDetails extends PureComponent {
                 <header className="task_details">
 
                     <Icon i={"arrow_back"} onClick={this.close} size={1.25}/>
-                    <span>Task Details</span>
+                    <Text
+                        data-content="title"
+                        value={task.get('title') || ""}
+                        onChange={this.handleFormChange}
+                        readOnly={readOnly}
+                    />
                     {headerAction}
 
                 </header>
 
                 <div className="body">
-
-                    <div className="title row">
-                        <span className="label">Title:</span>
-                        <Text
-                            data-content="title"
-                            value={task.get('title') || ""}
-                            onChange={this.handleFormChange}
-                            readOnly={readOnly}
-                        />
-                    </div>
 
                     <div className="description row">
                         <span className="label">Description:</span>
@@ -80,6 +73,13 @@ export default class TaskDetails extends PureComponent {
                             onChange={this.handleFormChange}
                             readOnly={readOnly}
                         />
+                    </div>
+
+                    <div className="schedule row">
+                        <span className="label">Schedule:</span>
+                        <Scheduler ref={ref=>this.Scheduler=ref}
+                            schedule={task.get('schedule')}
+                            updateSchedule={this.updateSchedule} />
                     </div>
 
                     <div className="color row">
@@ -116,6 +116,8 @@ export default class TaskDetails extends PureComponent {
         TASK = Map();
         CALLBACK = null;
 
+        this.Scheduler.Accordian.reset();
+
         this.setState({
             task: TASK,
             open: false,
@@ -135,6 +137,14 @@ export default class TaskDetails extends PureComponent {
 
         this.setState({
             task: task.set(field, value)
+        });
+    }
+
+    updateSchedule(newSchedule) {
+        const { task } = this.state;
+
+        this.setState({
+            task: task.set('schedule', newSchedule)
         });
     }
 

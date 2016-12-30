@@ -4,7 +4,7 @@ import SplashSection from './views/splash/SplashSection';
 import CalendarSection from './views/calendar/CalendarSection';
 import ListSection from './views/list/ListSection';
 
-import Scheduler from './components/scheduler/scheduler';
+import ScheduleModal from './components/scheduler/scheduleModal';
 import TaskDetails from './components/taskDetails/taskDetails';
 
 export default class Main extends React.Component {
@@ -54,7 +54,7 @@ export default class Main extends React.Component {
                         {...this.props} />
                 </section>
 
-                <Scheduler ref={ ref => this.Scheduler = ref }
+                <ScheduleModal ref={ ref => this.ScheduleModal = ref }
                     scheduleTasks={this.props.api.scheduleTasks} />
 
                 <TaskDetails ref={ ref => this.TaskDetails = ref }
@@ -69,7 +69,7 @@ export default class Main extends React.Component {
     }
 
     openScheduler(selectedTasks, schedule) {
-        this.Scheduler.openScheduler(selectedTasks, schedule);
+        this.ScheduleModal.openScheduler(selectedTasks, schedule);
     }
 
     openTaskDetails(task, callBack) {

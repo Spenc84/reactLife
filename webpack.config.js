@@ -36,20 +36,24 @@ module.exports = {
         path: __dirname + '/public',
         filename: 'bundle.js'
     }
-    // , devServer: {
-    //     contentBase: './public'
-    // }
-    /////  MINIFIES THE ENTIRE PROJECT  //////////
-     /// COMMENT OUT TO RENDER UNMINIFIED ////////
-    // , plugins: [                                  //
-    //     new webpack.optimize.UglifyJsPlugin({   //
-    //         compress: {                         //
-    //             warnings: false,                //
-    //         },                                  //
-    //         output: {                           //
-    //             comments: false,                //
-    //         },                                  //
-    //     }),                                     //
-    // ]                                           //
-    //////////////////////////////////////////////
+    /////  MINIFIES THE ENTIRE PROJECT  //////////////////////
+     /// COMMENT OUT TO RENDER UNMINIFIED ////////////////////
+    // , plugins: [                                         //
+    //     new webpack.DefinePlugin({                       //
+    //         'process.env': {                             //
+    //             NODE_ENV: JSON.stringify('production')   //
+    //         }                                            //
+    //     }),                                              //
+    //     new webpack.optimize.UglifyJsPlugin({            //
+    //         compress: {                                  //
+    //             warnings: false,                         //
+    //         },                                           //
+    //         output: {                                    //
+    //             comments: false,                         //
+    //         },                                           //
+    //     }),                                              //
+    // ]                                                    //
+    //////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////
+
 };
