@@ -82,20 +82,20 @@ module.exports = {
     updateData( req, res ) {
         // const report = new Report(res);
         //
-        User.findByIdAndUpdate(
-            '575350c7b8833bf5125225a5',
-            {
-                $set: {
-                    'agenda': {},
-                    'changeLog': []
-                }
-                // $unset: {
-                //     'agenda.1482300000000': "",
-                //     'agenda.1482386400000': ""
-                // }
-            },
-            sendReport(res)
-        );
+        // User.findByIdAndUpdate(
+        //     '575350c7b8833bf5125225a5',
+        //     {
+        //         $set: {
+        //             'agenda': {},
+        //             'changeLog': []
+        //         }
+        //         $unset: {
+        //             'agenda.1482300000000': "",
+        //             'agenda.1482386400000': ""
+        //         }
+        //     },
+        //     sendReport(res)
+        // );
         //
         // const set = {
         //     'users.575350c7b8833bf5125225a5': {
@@ -231,23 +231,29 @@ module.exports = {
         console.log(set);
         Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
     },
-    saveTask( req, res ) {
-        Task.findByIdAndUpdate(req.params.id, req.body, {new: true}, cb(res));
-    },
     updateTasks( req, res ) {
-        const { selectedTasks, desiredChanges, userID } = req.body;
-        Task.update(
-            {_id: { $in: selectedTasks } },
-            desiredChanges,
-            {multi: true},
-            (error, response) => {
-                if(error) return res.status(500).json(error);
-                User.findById(userID, (error, response) => {
-                    if(error) return res.status(500).json(error);
-                    res.status(200).json(response.tasks);
-                }).populate('tasks');
-            }
-        );
+        const { TYPE, selectedTasks, operation } = req.body;
+
+        const report = new Report(res, TYPE);
+
+        switch(TYPE) {
+
+            case 'MODIFY_TASKS':
+                modifyTasks({ selectedTasks, operation }, report);
+                if(operation['$set']['schedule']) scheduleTasks( req, res );
+            break;
+
+
+            case 'SCHEDULE_TASKS':
+                scheduleTasks( req, res );
+            break;
+
+
+            default:
+                report.criticalError(`<${TYPE}> is not a valid update type. Aborting...`);
+        }
+
+        report.send();
     },
     createNewTask( req, res ) {
         const { body:{newTask, userID} } = req;
@@ -300,114 +306,6 @@ module.exports = {
             });
         });
 
-    },
-    scheduleTasks( req, res ) {
-        const { selectedTasks, schedule, userID } = req.body;
-        const report = new Report(res);
-        const scheduled = schedule.startTime !== '';
-        const pending = scheduled && moment().isBefore(schedule.startTime);
-        const active = scheduled && !pending;
-
-        Task.find( {_id: { $in: selectedTasks } }, (error, tasks)=> {
-            if(error) return report.criticalError(error, `Error finding task(s) in '${selectedTasks}'.`);
-            report.logResponse(`Located tasks: '${selectedTasks}'.`);
-
-            for(let tIndx=0; tIndx<tasks.length; tIndx++) {
-                let task = tasks[tIndx];
-                const taskID = `${task._id}`;
-                const wasScheduled = task.status.scheduled;
-                const oldTask = wasScheduled
-                    ?   {
-                            _id: task._id,
-                            title: task.title,
-                            users: (()=>{
-                                let userObj = {};
-                                for(let userID in task.users) {
-                                    userObj[userID] = {scheduled: task.users[userID].scheduled};
-                                }
-                                return userObj;
-                            })(),
-                            schedule: {
-                                startTime: task.schedule.startTime,
-                                softDeadline: task.schedule.hardDeadline,
-                                hardDeadline: task.schedule.softDeadline
-                            }
-                        }
-                    :       undefined;
-
-                const taskStatus = scheduled && !wasScheduled ? "Scheduled task"
-                    : !scheduled && wasScheduled ? "Unscheduled task"
-                    : "Updated task's schedule";
-
-                task.changeLog.push({
-                    date: moment().toJSON(),
-                    user: userID,
-                    display: taskStatus
-                });
-
-                task.status.scheduled = scheduled;
-                task.status.inactive = !scheduled;
-                task.status.active = active;
-                task.status.pending = pending;
-
-                task.schedule = schedule;
-
-                scheduleTask(task);
-
-                report.wait();
-                task.save( (error, savedTask) => {
-                    if(error) return report.logError(`Error saving task: '${task.title}'`, error);
-                    report.logResponse(`${taskStatus} '${task.title}'`);
-
-                    if(scheduled || wasScheduled) {
-                        const userList = Object.keys(task.users);
-
-                        report.wait();
-                        User.find( {_id: { $in: userList } }, (error, users)=> {
-                            if(error) return report.logError(`Error locating users '${userList}' on task '${task.title}'`, error);
-
-                            for(let uIndx=0; uIndx<users.length; uIndx++) {
-                                let user = users[uIndx];
-                                const userId = `${user._id}`;
-                                const userName = `${user.firstName} ${user.lastName}`;
-
-                                user.changeLog.push({
-                                    date: moment().toJSON(),
-                                    user: userID,
-                                    display: scheduled && !wasScheduled ? `Added task '${task.title}' to your schedule`
-                                        : !scheduled && wasScheduled ? `Removed task '${task.title}' from your schedule`
-                                        : `Modifications to task '${task.title} caused changes to your schedule`
-                                });
-
-                                if(wasScheduled) removeFromSchedule(user, oldTask, report);
-                                if(scheduled) addToSchedule(user, task, report);
-
-                                user.save(
-                                    report.sendResult(
-                                        `User '${userName}' was successfully updated.`,
-                                        `Unable to save changes to user '${userName}'`
-                                    )
-                                );
-
-                                if(userID === userId) user.populate('tasks', report.sendData());
-
-                            }
-
-                            report.doneWaiting();
-                        });
-                    }
-
-                    report.doneWaiting();
-                });
-            }
-        });
-    },
-    getUserTaskList( req, res ) {
-        const { userID } = req.params;
-        User.findById(userID, (error, response) => {
-            if(error) return res.status(500).json(error);
-            res.status(200).json(response.tasks);
-        }).populate('tasks');
     },
     deleteTasks( req, res ) {
         const report = new Report(res);
@@ -505,6 +403,122 @@ module.exports = {
         });
     }
 };
+
+function modifyTasks({ selectedTasks, operation }, report) {
+
+    Task.update(
+        {_id: { $in: selectedTasks } },
+        operation,
+        {multi: true},
+        (error, response) => {
+            if(error) return report.logError('An error occured while updating tasks. Update operation aborted...', error);
+            report.logResponse('Update operation successful.', response);
+        }
+    );
+
+}
+
+function scheduleTasks( req, res ) {
+    const { selectedTasks, schedule, userID } = req.body;
+    const report = new Report(res);
+    const scheduled = schedule.startTime !== '';
+    const pending = scheduled && moment().isBefore(schedule.startTime);
+    const active = scheduled && !pending;
+
+    Task.find( {_id: { $in: selectedTasks } }, (error, tasks)=> {
+        if(error) return report.criticalError(`Error finding task(s) in '${selectedTasks}'.`, error);
+        report.logResponse(`Located tasks: '${selectedTasks}'.`);
+
+        for(let tIndx=0; tIndx<tasks.length; tIndx++) {
+            let task = tasks[tIndx];
+            const taskID = `${task._id}`;
+            const wasScheduled = task.status.scheduled;
+            const oldTask = wasScheduled
+                ?   {
+                        _id: task._id,
+                        title: task.title,
+                        users: (()=>{
+                            let userObj = {};
+                            for(let userID in task.users) {
+                                userObj[userID] = {scheduled: task.users[userID].scheduled};
+                            }
+                            return userObj;
+                        })(),
+                        schedule: {
+                            startTime: task.schedule.startTime,
+                            softDeadline: task.schedule.hardDeadline,
+                            hardDeadline: task.schedule.softDeadline
+                        }
+                    }
+                :       undefined;
+
+            const taskStatus = scheduled && !wasScheduled ? "Scheduled task"
+                : !scheduled && wasScheduled ? "Unscheduled task"
+                : "Updated task's schedule";
+
+            task.changeLog.push({
+                date: moment().toJSON(),
+                user: userID,
+                display: taskStatus
+            });
+
+            task.status.scheduled = scheduled;
+            task.status.inactive = !scheduled;
+            task.status.active = active;
+            task.status.pending = pending;
+
+            task.schedule = schedule;
+
+            scheduleTask(task);
+
+            report.wait();
+            task.save( (error, savedTask) => {
+                if(error) return report.logError(`Error saving task: '${task.title}'`, error);
+                report.logResponse(`${taskStatus} '${task.title}'`);
+
+                if(scheduled || wasScheduled) {
+                    const userList = Object.keys(task.users);
+
+                    report.wait();
+                    User.find( {_id: { $in: userList } }, (error, users)=> {
+                        if(error) return report.logError(`Error locating users '${userList}' on task '${task.title}'`, error);
+
+                        for(let uIndx=0; uIndx<users.length; uIndx++) {
+                            let user = users[uIndx];
+                            const userId = `${user._id}`;
+                            const userName = `${user.firstName} ${user.lastName}`;
+
+                            user.changeLog.push({
+                                date: moment().toJSON(),
+                                user: userID,
+                                display: scheduled && !wasScheduled ? `Added task '${task.title}' to your schedule`
+                                    : !scheduled && wasScheduled ? `Removed task '${task.title}' from your schedule`
+                                    : `Modifications to task '${task.title} caused changes to your schedule`
+                            });
+
+                            if(wasScheduled) removeFromSchedule(user, oldTask, report);
+                            if(scheduled) addToSchedule(user, task, report);
+
+                            user.save(
+                                report.sendResult(
+                                    `User '${userName}' was successfully updated.`,
+                                    `Unable to save changes to user '${userName}'`
+                                )
+                            );
+
+                            if(userID === userId) user.populate('tasks', report.sendData());
+
+                        }
+
+                        report.doneWaiting();
+                    });
+                }
+
+                report.doneWaiting();
+            });
+        }
+    });
+}
 
 function scheduleTask(task) {
     for(let userID in task.users) {
@@ -672,15 +686,21 @@ function addToSchedule(user, task, report) {
 }
 
 class Report {
-    constructor(res) {
+    constructor(res, TYPE = null) {
         this.res = res;
         this.waiting = 0;
         this.report = {
+            TYPE: TYPE,
             status: "SUCCESS",
-            error: [],     // { msg, error }
             response: [],    // { msg, response }
+            error: [],     // { msg, error }
             data: null
         };
+
+        console.log(`REQUEST TYPE: ${TYPE}`);
+        if(typeof TYPE !== null && typeof TYPE !== 'string') {
+            this.criticalError(`<${typeof TYPE}> is not a valid update type. Aborting...`);
+        }
     }
 
     wait() {

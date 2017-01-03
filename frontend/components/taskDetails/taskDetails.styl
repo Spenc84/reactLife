@@ -25,7 +25,7 @@ main.TaskDetails
             align-self: center;
             font-size: 2.2rem;
             color: white;
-            flex: 1 0 0px;
+            flex: 1 0 0rem;
 
         & > input[type='text'].Text
             background: rgba(255,255,255,.25);
@@ -39,13 +39,12 @@ main.TaskDetails
 
         div.row
             min-height 6rem
-            align-items center
-            padding 0 1.8rem
+            padding 1.8rem
 
             & > span.label
                 font-size 1.8rem
                 padding-right 1.8rem
-                flex: 0 0 120px
+                width 12rem
                 justify-content flex-end
 
             input[type='text']
@@ -64,7 +63,7 @@ main.TaskDetails
                     cursor default
 
             input:not([disabled])
-                border 1px solid $borderColor
+                border .1rem solid $borderColor
                 border-radius .3rem
                 transition border-color 400ms, box-shadow 400ms
                 &:hover, &:focus
@@ -78,3 +77,12 @@ main.TaskDetails
                 flex-grow 1
                 font-size 1.4rem
                 font-family 'Roboto medium', 'Roboto', sans-serif
+
+            &.schedule
+                flex-direction column
+
+                & > span.label
+                    padding-bottom .5rem
+
+                div.ExpansionPanel::after
+                    content none

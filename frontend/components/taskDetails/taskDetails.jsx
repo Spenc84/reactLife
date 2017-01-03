@@ -75,13 +75,6 @@ export default class TaskDetails extends PureComponent {
                         />
                     </div>
 
-                    <div className="schedule row">
-                        <span className="label">Schedule:</span>
-                        <Scheduler ref={ref=>this.Scheduler=ref}
-                            schedule={task.get('schedule')}
-                            updateSchedule={this.updateSchedule} />
-                    </div>
-
                     <div className="color row">
                         <span className="label">Color:</span>
                         <input type="color"
@@ -90,6 +83,14 @@ export default class TaskDetails extends PureComponent {
                             onChange={this.handleFormChange}
                             disabled={readOnly}
                         />
+                    </div>
+
+                    <div className="schedule row">
+                        <span className="label">Schedule:</span>
+                        <Scheduler ref={ref=>this.Scheduler=ref}
+                            schedule={task.get('schedule')}
+                            updateSchedule={this.updateSchedule}
+                            disabled={readOnly} />
                     </div>
 
                 </div>

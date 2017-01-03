@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import CalHeader from './uiComponents/calHeader';
 import HourDivider from './uiComponents/HourDivider';
-import Agenda from './views/agenda';
+import Schedule from './views/schedule';
 import Day from './views/day';
 import Week from './views/week';
 import Month from './views/month';
@@ -13,7 +13,7 @@ export default class CalendarSection extends React.Component {
         super(props);
 
         this.state = {
-            activeView: 'AGENDA',
+            activeView: 'SCHEDULE',
             date: moment().startOf('day'),
             showOptionPane: false,
         };
@@ -56,7 +56,7 @@ export default class CalendarSection extends React.Component {
 
     buildBody() {
         const { activeView, date } = this.state;
-        const { USER, agenda, tasks, tIndx, openTaskDetails } = this.props;
+        const { USER, schedule, tasks, tIndx, openTaskDetails } = this.props;
         const userID = USER.get('_id');
 
         let body;
@@ -67,7 +67,7 @@ export default class CalendarSection extends React.Component {
             current: date.isSame(moment(), 'day')
         }
 
-        const taskData = { userID, agenda, tasks, tIndx, openTaskDetails };
+        const taskData = { userID, schedule, tasks, tIndx, openTaskDetails };
 
         const dayWeekBackground = (activeView === "DAY" || activeView === "WEEK")
                 ?   <HourDivider
@@ -79,8 +79,8 @@ export default class CalendarSection extends React.Component {
         return (
             <div id="calendar_body">
 
-                <div className="view" style={(activeView !== "AGENDA") ? {display: "none"} : null}>
-                    <Agenda active={activeView === "AGENDA"}
+                <div className="view" style={(activeView !== "SCHEDULE") ? {display: "none"} : null}>
+                    <Schedule active={activeView === "SCHEDULE"}
                             updateDate={this.updateDate}
                             activeDate={date.valueOf()}
                             {...taskData}

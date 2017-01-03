@@ -52,9 +52,9 @@ export default class calHeader extends React.Component {
     }
     getDropNav() {
         const { activeView, getPrior, getNext } = this.props;
-        let aClass, dClass, wClass, mClass, agenda = false;
+        let aClass, dClass, wClass, mClass, schedule = false;
         switch(activeView) {
-            case 'AGENDA': aClass = 'selected'; agenda = true; break;
+            case 'SCHEDULE': aClass = 'selected'; schedule = true; break;
             case 'DAY': dClass = 'selected'; break;
             case 'WEEK': wClass = 'selected'; break;
             case 'MONTH': mClass = 'selected'; break;
@@ -62,18 +62,18 @@ export default class calHeader extends React.Component {
         }
         return (
             <div className="Row" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.8rem`}}>
-                <Icon i={`chevron_left`} onClick={(agenda)?null:getPrior} invisible={agenda} fluid={agenda} />
+                <Icon i={`chevron_left`} onClick={(schedule)?null:getPrior} invisible={schedule} fluid={schedule} />
                 <nav style={{flexGrow: 1, alignItems: `center`, justifyContent: `space-around`, fontSize: `1.2rem`}}>
-                    <span className={aClass} onClick={(aClass) ? null : this.switchToAgendaView}>AGENDA</span>
+                    <span className={aClass} onClick={(aClass) ? null : this.switchToAgendaView}>SCHEDULE</span>
                     <span className={dClass} onClick={(dClass) ? null : this.switchToDayView}>DAY</span>
                     <span className={wClass} onClick={(wClass) ? null : this.switchToWeekView}>WEEK</span>
                     <span className={mClass} onClick={(mClass) ? null : this.switchToMonthView}>MONTH</span>
                 </nav>
-                <Icon i={`chevron_right`} onClick={(agenda)?null:getNext} invisible={agenda} fluid={agenda} />
+                <Icon i={`chevron_right`} onClick={(schedule)?null:getNext} invisible={schedule} fluid={schedule} />
             </div>
         );
     }
-    switchToAgendaView() {this.props.changeView(`AGENDA`);}
+    switchToAgendaView() {this.props.changeView(`SCHEDULE`);}
     switchToDayView() {this.props.changeView(`DAY`);}
     switchToWeekView() {this.props.changeView(`WEEK`);}
     switchToMonthView() {this.props.changeView(`MONTH`);}

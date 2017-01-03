@@ -10,7 +10,7 @@ import OptionPane from './optionPane';
 
 const MINUTES = [0, 15, 30, 45].map(x=>({value:x,display:x}));
 
-// PROPS: scheduleTasks
+// PROPS: schedule, updateSchedule, disabled
 export default class Scheduler extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -50,6 +50,7 @@ export default class Scheduler extends React.PureComponent {
     }
 
     getDuration() {
+        const { disabled } = this.props;
         const duration = this.props.schedule.get('duration');
 
         const durationDisplay
@@ -89,6 +90,7 @@ export default class Scheduler extends React.PureComponent {
             label: "Duration",
             title: "How long will it take?",
             display: durationDisplay,
+            disabled,
             children: [
                 <div key={1} className="custom row">
 
@@ -128,6 +130,7 @@ export default class Scheduler extends React.PureComponent {
     }
 
     getStartTime() {
+        const { disabled } = this.props;
         const startTime = this.props.schedule.get('startTime');
 
         const PM = moment(startTime).hour() > 11;
@@ -231,6 +234,7 @@ export default class Scheduler extends React.PureComponent {
             label: "Start Time",
             title: "When can you start?",
             display: startTimeDisplay,
+            disabled,
             children: [
                 <div key={1} className="custom row">
 
@@ -269,6 +273,7 @@ export default class Scheduler extends React.PureComponent {
     }
 
     getSoftDeadline() {
+        const { disabled } = this.props;
         const startTime = this.props.schedule.get('startTime');
         const softDeadline = this.props.schedule.get('softDeadline');
         const hardDeadline = this.props.schedule.get('hardDeadline');
@@ -374,7 +379,7 @@ export default class Scheduler extends React.PureComponent {
             label: "Soft Deadline",
             title: startTime ? "When should task be completed by?" : "Please select a Start Time.",
             display: softDeadlineDisplay,
-            disabled: !startTime,
+            disabled: disabled || !startTime,
             children: [
                 <div key={1} className="custom row">
 
@@ -403,6 +408,7 @@ export default class Scheduler extends React.PureComponent {
     }
 
     getHardDeadline() {
+        const { disabled } = this.props;
         const startTime = this.props.schedule.get('startTime');
         const softDeadline = this.props.schedule.get('softDeadline');
         const hardDeadline = this.props.schedule.get('hardDeadline');
@@ -508,7 +514,7 @@ export default class Scheduler extends React.PureComponent {
             label: "Hard Deadline",
             title: startTime ? "When must task be completed by?" : "Please select a Start Time.",
             display: hardDeadlineDisplay,
-            disabled: !startTime,
+            disabled: disabled || !startTime,
             children: [
                 <div key={1} className="custom row">
 

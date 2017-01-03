@@ -6,9 +6,9 @@ import { Map, List, fromJS } from 'immutable';
 export default class Day extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     render() {
-        const { activeDate:unix, prior, current, agenda, tasks, tIndx, userID, openTaskDetails } = this.props;
+        const { activeDate:unix, prior, current, schedule:Schedule, tasks, tIndx, userID, openTaskDetails } = this.props;
         const activeDate = moment(unix);
-        const schedule = agenda.get(`${unix}`);
+        const schedule = Schedule.get(`${unix}`);
 
         // Style each day as inactive, active, or otherwise
         const dateClasses = (prior) ? 'inactive date'

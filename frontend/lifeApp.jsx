@@ -56,7 +56,7 @@ export default class LifeApp extends React.Component {
         return (
             <Main
                 tasks={ USER.get("tasks") || List()}
-                agenda={ USER.get("agenda") || List()}
+                schedule={ USER.get("agenda") || List()}
                 api={{
                     buildTask: this.buildTask,
                     saveTask: this.saveTask,
@@ -100,9 +100,9 @@ export default class LifeApp extends React.Component {
                 console.log("SERVER: ---Task Created---", createdTask);
                 const task = fromJS(createdTask);
                 const taskList = USER.get('tasks').push(task);
-                const agenda = task.getIn(['status', 'scheduled']) ? this.addToAgenda(task) : USER.get('agenda');
+                const schedule = task.getIn(['status', 'scheduled']) ? this.addToSchedule(task) : USER.get('agenda');
                 this.setState({
-                    USER: USER.withMutations(user => user.set('tasks', taskList).set('agenda', agenda)),
+                    USER: USER.withMutations(user => user.set('tasks', taskList).set('agenda', schedule)),
                     tIndx: Index(taskList),
                     loading: false
                 });
@@ -151,9 +151,9 @@ export default class LifeApp extends React.Component {
         this.createNewTask(newTask);
     }
 
-    addToAgenda(task) {
+    addToSchedule(task) {
         const { USER } = this.state;
-        let agenda = USER.get('agenda');
+        let schedule = USER.get('agenda');
 
         const taskID = task.get('_id');
 
@@ -164,9 +164,9 @@ export default class LifeApp extends React.Component {
 
         if(scheduledTime !== '') {
             const scheduledDate = moment(scheduledTime).startOf('day').valueOf().toString();
-            agenda = agenda.has(scheduledDate)
-                ?   agenda.updateIn( [scheduledDate, 'scheduled'], list=>list.push(taskID) )
-                :   agenda.set(scheduledDate, fromJS({
+            schedule = schedule.has(scheduledDate)
+                ?   schedule.updateIn( [scheduledDate, 'scheduled'], list=>list.push(taskID) )
+                :   schedule.set(scheduledDate, fromJS({
                         date: moment(scheduledDate).toJSON(),
                         start: [],
                         soft: [],
@@ -176,9 +176,9 @@ export default class LifeApp extends React.Component {
         }
         if(startTime !== '') {
             const startDate = moment(startTime).startOf('day').valueOf().toString();
-            agenda = agenda.has(startDate)
-                ?   agenda.updateIn( [startDate, 'start'], list=>list.push(taskID) )
-                :   agenda.set(startDate, fromJS({
+            schedule = schedule.has(startDate)
+                ?   schedule.updateIn( [startDate, 'start'], list=>list.push(taskID) )
+                :   schedule.set(startDate, fromJS({
                         date: moment(startDate).toJSON(),
                         start: [taskID],
                         soft: [],
@@ -188,9 +188,9 @@ export default class LifeApp extends React.Component {
         }
         if(softDeadline !== '') {
             const softDate = moment(softDeadline).startOf('day').valueOf().toString();
-            agenda = agenda.has(softDate)
-                ?   agenda.updateIn( [softDate, 'soft'], list=>list.push(taskID) )
-                :   agenda.set(softDate, fromJS({
+            schedule = schedule.has(softDate)
+                ?   schedule.updateIn( [softDate, 'soft'], list=>list.push(taskID) )
+                :   schedule.set(softDate, fromJS({
                         date: moment(softDate).toJSON(),
                         start: [],
                         soft: [taskID],
@@ -200,9 +200,9 @@ export default class LifeApp extends React.Component {
         }
         if(hardDeadline !== '') {
             const hardDate = moment(hardDeadline).startOf('day').valueOf().toString();
-            agenda = agenda.has(hardDate)
-                ?   agenda.updateIn( [hardDate, 'hard'], list=>list.push(taskID) )
-                :   agenda.set(hardDate, fromJS({
+            schedule = schedule.has(hardDate)
+                ?   schedule.updateIn( [hardDate, 'hard'], list=>list.push(taskID) )
+                :   schedule.set(hardDate, fromJS({
                         date: moment(hardDate).toJSON(),
                         start: [],
                         soft: [],
@@ -211,7 +211,7 @@ export default class LifeApp extends React.Component {
                     }));
         }
 
-        return agenda;
+        return schedule;
     }
 
     saveTask(task, callBack) {
@@ -224,6 +224,7 @@ export default class LifeApp extends React.Component {
 
         let update = {};
         let log = [];
+        let scheduleUpdated = false;
 
         if(TASK.get("title") !== task.get("title")) {
             update.title = task.get("title");
@@ -237,55 +238,117 @@ export default class LifeApp extends React.Component {
             update.color = task.get("color");
             log.push(` - Changed task's color from '${TASK.get("color")}' to '${task.get("color")}'`);
         }
+        if(TASK.get("schedule") !== task.get("schedule")) {
+            update.schedule = task.get("schedule");
+            scheduleUpdated = true;
 
-        update.changeLog = task.get('changeLog').push({
-            date: moment().toJSON(),
-            user: userID,
-            display: log.join('/n')
-        }).toJS();
+            const oldDuration = TASK.getIn(["schedule", "duration"]);
+            const newDuration = task.getIn(["schedule", "duration"]);
+            if(oldDuration !== newDuration) {
+                const oldDurationDisplay
+                    =   (oldDuration === 0) ? 'None'
+                    :   (oldDuration < 60) ? `${oldDuration} Minutes`
+                    :   (oldDuration === 60) ? '1 Hour'
+                    :   `${oldDuration / 60} Hours`;
+                const newDurationDisplay
+                    =   (newDuration === 0) ? 'None'
+                    :   (newDuration < 60) ? `${newDuration} Minutes`
+                    :   (newDuration === 60) ? '1 Hour'
+                    :   `${newDuration / 60} Hours`;
+                log.push(` - Changed task's duration from '${oldDurationDisplay}' to '${newDurationDisplay}'`);
+            }
+
+            const oldStartTime = TASK.getIn(["schedule", "startTime"]);
+            const newStartTime = task.getIn(["schedule", "startTime"]);
+            if(oldStartTime !== newStartTime) {
+                log.push(` - Changed task's start time from '${moment(oldStartTime).toString()}' to '${moment(newStartTime).toString()}'`);
+            }
+
+            const oldSoftDeadline = TASK.getIn(["schedule", "softDeadline"]);
+            const newSoftDeadline = task.getIn(["schedule", "softDeadline"]);
+            if(oldSoftDeadline !== newSoftDeadline) {
+                log.push(` - Changed task's soft deadline from '${moment(oldSoftDeadline).toString()}' to '${moment(newSoftDeadline).toString()}'`);
+            }
+
+            const oldHardDeadline = TASK.getIn(["schedule", "hardDeadline"]);
+            const newHardDeadline = task.getIn(["schedule", "hardDeadline"]);
+            if(oldHardDeadline !== newHardDeadline) {
+                log.push(` - Changed task's hard deadline from '${moment(oldHardDeadline).toString()}' to '${moment(newHardDeadline).toString()}'`);
+            }
+        }
 
         if(log.length === 0) return;
+        log = log.join('/n');
+
 
         this.setState({
             USER: USER.setIn(['tasks', index], task),
             loading: true
         });
 
-        SERVER.put(`/api/task/${taskID}`, update).then(
-            approved => {
-                console.log(`SERVER: ---Task '${task.get('title')}' updated---`, approved);
-                this.setState({ loading: false });
+        const uploadData = {
+            update,
+            log,
+            userID,
+            scheduleUpdated
+        }
 
-                if(typeof callBack === 'function') callBack();
-            },
-            rejected => {
-                this.setState({ loading: false });
-                console.log('Failed to update tasks: ', rejected);
-                alert("An error has occured. Check console for details.");
-            }
-        );
-    }
+        SERVER.put(`/api/task/${taskID}`, uploadData).then(
+            ({data}) => {
+                const task = data.data;
+                console.log(`SERVER: ---Task '${task.get('title')}' updated---`, data);
 
-    updateTasks(selectedTasks, desiredChanges, callBack) {
-        if(!List.isList(selectedTasks) || typeof desiredChanges !== 'object') return;
-        const { USER } = this.state;
-        const userID = USER.get('_id');
-        selectedTasks = selectedTasks.toJS();
-
-        this.setState({ loading: true });
-        SERVER.put("/api/tasks", {selectedTasks, desiredChanges, userID}).then(
-            ({data:taskList}) => {
-                console.log("SERVER: ---Tasks updated---", taskList);
                 this.setState({
-                    USER: USER.set('tasks', fromJS(taskList)),
-                    tIndx: Index(taskList),
+                    USER: USER.setIn(['tasks', index], task),
                     loading: false
                 });
 
                 if(typeof callBack === 'function') callBack();
             },
             rejected => {
+                console.log('Failed to save task: ', rejected);
+                this.setState({
+                    USER: USER.setIn(['tasks', index], TASK),
+                    loading: false
+                });
+                alert("An error has occured. Check console for details.");
+            }
+        );
+    }
+
+    updateTasks(selectedTasks, operation, callBack) {
+        if(!List.isList(selectedTasks) || typeof operation !== 'object') return;
+        const { USER } = this.state;
+        const TASKS = USER.get('tasks');
+
+        let tasks = TASKS;
+        selectedTasks.forEach(taskID => {
+            const index = TASKS.findIndex(task => task.get('_id') === taskID);
+            if(index === -1) console.log(`Unable to find taskID '${taskID}' in TASKS`);
+            else {
+                for(let key in operation['$set']) {
+                    tasks = tasks.setIn([index].concat(key.split('.')), operation['$set'][key]);
+                }
+                tasks = tasks.setIn([index, 'changeLog'], tasks.getIn([index, 'changeLog']).push(operation['$push']['changeLog']));
+            }
+        });
+
+        this.setState({
+            USER: USER.set('tasks', tasks),
+            loading: true
+        });
+
+        SERVER.put("/api/tasks", { TYPE: "MODIFY_TASKS", selectedTasks: selectedTasks.toJS(), operation }).then(
+            ({ data }) => {
+                console.log(`SERVER: ---${selectedTasks.size} Task${selectedTasks.size>1?'s':''} updated---`, data);
                 this.setState({ loading: false });
+                if(typeof callBack === 'function') callBack();
+            },
+            rejected => {
+                this.setState({
+                    USER: USER.set('tasks', TASKS),
+                    loading: false
+                });
                 console.log('Failed to update tasks: ', rejected);
                 alert("An error has occured. Check console for details.");
             }

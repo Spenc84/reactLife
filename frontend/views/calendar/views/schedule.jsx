@@ -2,25 +2,25 @@ import React from 'react';
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
-export default class Agenda extends React.Component {
+export default class Schedule extends React.Component {
     shouldComponentUpdate(nextProps) { return nextProps.active; }
     componentDidUpdate() { this.refs[this.props.activeDate].scrollIntoView(); }
     componentDidMount() { this.refs[this.props.activeDate].scrollIntoView(); }
     render() {
-        const { activeDate:DATE, agenda, tasks, tIndx, updateDate, openTaskDetails } = this.props;
+        const { activeDate:DATE, schedule, tasks, tIndx, updateDate, openTaskDetails } = this.props;
         const activeDate = moment(DATE).startOf('day').valueOf();
         const today = moment().startOf('day').valueOf();
 
         let check = {};
         let taskList = [];
 
-        if(agenda === undefined) return (
-            <div className="Agenda view">
+        if(schedule === undefined) return (
+            <div className="Schedule view">
                 <span ref={activeDate}>- No task data found -</span>
             </div>
         );
 
-        agenda.forEach( (items, dateString) => {
+        schedule.forEach( (items, dateString) => {
             const date = parseInt(dateString);
             const schedule = items.get("scheduled");
 
@@ -61,9 +61,9 @@ export default class Agenda extends React.Component {
         taskList.push(<div key={activeDate-1} ref={activeDate} />);
         taskList.sort((a,b)=>a.key-b.key);
 
-        console.log('RENDERED:  --- AGENDA VIEW ---'); // __DEV__
+        console.log('RENDERED:  --- SCHEDULE VIEW ---'); // __DEV__
         return (
-            <div className="Agenda view">
+            <div className="Schedule view">
                 {taskList}
             </div>
         );
