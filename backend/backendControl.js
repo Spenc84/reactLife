@@ -80,16 +80,27 @@ function sendReport(res) {
 // SERVER CONTROLS
 module.exports = {
     updateData( req, res ) {
-        // const report = new Report(res);
+        const report = new Report(res, "UPDATE");
         //
         // User.findByIdAndUpdate(
         //     '575350c7b8833bf5125225a5',
         //     {
         //         $set: {
-        //             'agenda': {},
+        //             'agenda.1482991200000.start': [
+        //                 "5865943cb29f09382802d41c",
+        //                 "586594b2b29f09382802d425",
+        //                 "586594c0b29f09382802d428",
+        //                 "586594ccb29f09382802d42b"
+        //             ],
+        //             'agenda.1482991200000.scheduled': [
+        //                 "5865943cb29f09382802d41c",
+        //                 "586594b2b29f09382802d425",
+        //                 "586594c0b29f09382802d428",
+        //                 "586594ccb29f09382802d42b"
+        //             ],
         //             'changeLog': []
         //         }
-        //         $unset: {
+        //         , $unset: {
         //             'agenda.1482300000000': "",
         //             'agenda.1482386400000': ""
         //         }
@@ -142,13 +153,16 @@ module.exports = {
         // Task.find({}, (err, tasks)=>{
         //
         //     tasks.forEach(task => {
-        //         task.users = {
-        //             "575350c7b8833bf5125225a5": 30
-        //         };
-        //         task.save(report);
+        //         task.users = [{
+        //             user: "575350c7b8833bf5125225a5",
+        //             securityAccess: 30
+        //         }];
+        //         task.schedule.scheduledTime = task.schedule.startTime;
+        //         task.save(report.sendResult());
         //     });
-        // });
         //
+        // });
+
         // Task.collection.update({}, { $rename: { name: 'title' } }, { multi: true }, sendReport(res))
         //
         // Task.update({ _id: { $in: items } }, {$set: set}, {multi: true}, cb(res));
@@ -232,83 +246,39 @@ module.exports = {
         Task.update({ _id: { $in: items } }, {$set: set}, {multi: true, upsert: true}, cb(res));
     },
     updateTasks( req, res ) {
-        const { TYPE, selectedTasks, operation } = req.body;
+        const { ACTION, USER_ID, TASK_LIST, OPERATION, DATA } = req.body;
 
-        const report = new Report(res, TYPE);
+        const report = new Report(res, ACTION);
 
-        switch(TYPE) {
+        switch(ACTION) {
 
-            case 'MODIFY_TASKS':
-                modifyTasks({ selectedTasks, operation }, report);
-                if(operation['$set']['schedule']) scheduleTasks( req, res );
+            case 'CREATE':
+
+                let newTask = cloneObj(DATA);
+
+                updateScheduledTime(newTask, report);
+                createNewTask({ USER_ID, DATA }, report);
+
             break;
 
 
-            case 'SCHEDULE_TASKS':
-                scheduleTasks( req, res );
+            case 'MODIFY':
+                modifyTasks({ TASK_LIST, OPERATION }, report);
+            break;
+
+
+            case 'SCHEDULE':
+                scheduleTasks({ USER_ID, TASK_LIST, OPERATION }, report);
             break;
 
 
             default:
-                report.criticalError(`<${TYPE}> is not a valid update type. Aborting...`);
+                report.criticalError(`<${ACTION}> is not a valid action. Aborting...`);
         }
-
-        report.send();
-    },
-    createNewTask( req, res ) {
-        const { body:{newTask, userID} } = req;
-        const { scheduled } = newTask.status;
-        const report = new Report(res);
-
-        if(scheduled) scheduleTask(newTask);
-
-        newTask.changeLog = [{
-                date: moment().toJSON(),
-                user: userID,
-                display: `Created${scheduled ? ' and scheduled' : ''} task`
-        }];
-
-        Task.create(newTask, (error, task)=> {
-            if(error) return report.criticalError(`Error creating task '${newTask.title}'`, error);
-            report.logResponse(`New task '${newTask.title}' added to database`);
-
-            const taskID = `${task._id}`;
-            const userList = Object.keys(task.users);
-
-            User.find( {_id: { $in: userList } }, (error, users)=> {
-                if(error) return report.criticalError(`Error locating users '${userList}' on task '${task.title}'`, error);
-
-                for(let uIndx=0; uIndx<users.length; uIndx++) {
-                    let user = users[uIndx];
-                    const userId = `${user._id}`;
-                    const userName = `${user.firstName} ${user.lastName}`;
-
-                    user.tasks.push(taskID);
-
-                    if(scheduled) addToSchedule(user, task, report);
-
-                    user.changeLog.push({
-                        date: moment().toJSON(),
-                        user: userID,
-                        display: `Created task '${task.title}' and added it to your ${scheduled?'schedule':'agenda'}`
-                    });
-
-                    user.save(
-                        report.sendResult(
-                            `Saved task to user '${userName}'`,
-                            `Error saving task to user '${userName}'`
-                        )
-                    );
-
-                }
-
-                report.send(task);
-            });
-        });
 
     },
     deleteTasks( req, res ) {
-        const report = new Report(res);
+        const report = new Report(res, 'DELETE');
         // Data comes in as a string of IDs seperated by dashes. The first ID is the USER,
         // and any following IDs belong to the tasks that will be removed from that USER.
         const TASK_IDS = req.params.id.split('-');
@@ -387,7 +357,7 @@ module.exports = {
                 user.changeLog.push({
                     date: moment().toJSON(),
                     user: USER_ID,
-                    display: `Removed task${multiple?'s':''} ${tasksRemovedFromAgenda.join(', ')} from your Agenda`
+                    display: `Removed task${multiple?'s':''} '${tasksRemovedFromAgenda.join("', '")}' from your Agenda`
                 });
 
                 user.save(
@@ -404,210 +374,268 @@ module.exports = {
     }
 };
 
-function modifyTasks({ selectedTasks, operation }, report) {
+function createNewTask({ USER_ID, DATA:newTask }, report) {
+    const { scheduled } = newTask.status;
+
+    newTask.changeLog = [{
+            date: moment().toJSON(),
+            user: USER_ID,
+            display: `Created${scheduled ? ' and scheduled' : ''} task`
+    }];
+
+    Task.create(newTask, (error, task)=> {
+        if(error) return report.criticalError(`Error creating task '${newTask.title}'`, error);
+        report.logResponse(`New task '${newTask.title}' added to database`);
+
+        const taskID = `${task._id}`;
+        const userList = Object.keys(task.users);
+
+        User.find( {_id: { $in: userList } }, (error, users)=> {
+            if(error) return report.criticalError(`Error locating users '${userList}' on task '${task.title}'`, error);
+
+            for(let uIndx=0; uIndx<users.length; uIndx++) {
+                let user = users[uIndx];
+                const userId = `${user._id}`;
+                const userName = `${user.firstName} ${user.lastName}`;
+
+                user.tasks.push(taskID);
+
+                if(scheduled) addToSchedule(user, task, report);
+
+                user.changeLog.push({
+                    date: moment().toJSON(),
+                    user: USER_ID,
+                    display: `Created task '${task.title}' and added it to your ${scheduled?'schedule':'agenda'}`
+                });
+
+                user.save(
+                    report.sendResult(
+                        `Saved task to user '${userName}'`,
+                        `Error saving task to user '${userName}'`
+                    )
+                );
+
+            }
+
+            report.send(task);
+        });
+    });
+
+}
+
+function modifyTasks({ TASK_LIST, OPERATION }, report) {
 
     Task.update(
-        {_id: { $in: selectedTasks } },
-        operation,
+        {_id: { $in: TASK_LIST } },
+        OPERATION,
         {multi: true},
-        (error, response) => {
-            if(error) return report.logError('An error occured while updating tasks. Update operation aborted...', error);
-            report.logResponse('Update operation successful.', response);
-        }
+        report.sendResult(
+            `Update operation successful\n${OPERATION.$push.changeLog.display}`,
+            'An error occured while updating tasks. Update operation aborted...'
+        )
     );
 
 }
 
-function scheduleTasks( req, res ) {
-    const { selectedTasks, schedule, userID } = req.body;
-    const report = new Report(res);
-    const scheduled = schedule.startTime !== '';
-    const pending = scheduled && moment().isBefore(schedule.startTime);
-    const active = scheduled && !pending;
+function scheduleTasks({ USER_ID, TASK_LIST, OPERATION }, report) {
 
-    Task.find( {_id: { $in: selectedTasks } }, (error, tasks)=> {
-        if(error) return report.criticalError(`Error finding task(s) in '${selectedTasks}'.`, error);
-        report.logResponse(`Located tasks: '${selectedTasks}'.`);
+    let USERS = {};
 
-        for(let tIndx=0; tIndx<tasks.length; tIndx++) {
-            let task = tasks[tIndx];
-            const taskID = `${task._id}`;
+    Task.find( {_id: { $in: TASK_LIST } }, (error, tasks)=> {
+        if(error) return report.criticalError(`Error finding task(s) in '${TASK_LIST}'.`, error);
+        report.logResponse(`Located tasks: '${TASK_LIST}'`);
+
+        tasks.forEach( task => {
+            let operation = cloneObj(OPERATION);
+
+            const newStartTime = operation.$set['schedule.startTime'];
             const wasScheduled = task.status.scheduled;
-            const oldTask = wasScheduled
-                ?   {
-                        _id: task._id,
-                        title: task.title,
-                        users: (()=>{
-                            let userObj = {};
-                            for(let userID in task.users) {
-                                userObj[userID] = {scheduled: task.users[userID].scheduled};
-                            }
-                            return userObj;
-                        })(),
-                        schedule: {
-                            startTime: task.schedule.startTime,
-                            softDeadline: task.schedule.hardDeadline,
-                            hardDeadline: task.schedule.softDeadline
-                        }
-                    }
-                :       undefined;
+            const scheduled = operation.$set.hasOwnProperty('schedule.startTime')
+                ? !!operation.$set['schedule.startTime']
+                : wasScheduled;
 
-            const taskStatus = scheduled && !wasScheduled ? "Scheduled task"
-                : !scheduled && wasScheduled ? "Unscheduled task"
-                : "Updated task's schedule";
+            if(scheduled || wasScheduled) {
 
-            task.changeLog.push({
-                date: moment().toJSON(),
-                user: userID,
-                display: taskStatus
-            });
+                operation.$set['status.scheduled'] = scheduled;
+                operation.$set['status.inactive'] = !scheduled;
 
-            task.status.scheduled = scheduled;
-            task.status.inactive = !scheduled;
-            task.status.active = active;
-            task.status.pending = pending;
-
-            task.schedule = schedule;
-
-            scheduleTask(task);
-
-            report.wait();
-            task.save( (error, savedTask) => {
-                if(error) return report.logError(`Error saving task: '${task.title}'`, error);
-                report.logResponse(`${taskStatus} '${task.title}'`);
-
-                if(scheduled || wasScheduled) {
-                    const userList = Object.keys(task.users);
-
-                    report.wait();
-                    User.find( {_id: { $in: userList } }, (error, users)=> {
-                        if(error) return report.logError(`Error locating users '${userList}' on task '${task.title}'`, error);
-
-                        for(let uIndx=0; uIndx<users.length; uIndx++) {
-                            let user = users[uIndx];
-                            const userId = `${user._id}`;
-                            const userName = `${user.firstName} ${user.lastName}`;
-
-                            user.changeLog.push({
-                                date: moment().toJSON(),
-                                user: userID,
-                                display: scheduled && !wasScheduled ? `Added task '${task.title}' to your schedule`
-                                    : !scheduled && wasScheduled ? `Removed task '${task.title}' from your schedule`
-                                    : `Modifications to task '${task.title} caused changes to your schedule`
-                            });
-
-                            if(wasScheduled) removeFromSchedule(user, oldTask, report);
-                            if(scheduled) addToSchedule(user, task, report);
-
-                            user.save(
-                                report.sendResult(
-                                    `User '${userName}' was successfully updated.`,
-                                    `Unable to save changes to user '${userName}'`
-                                )
-                            );
-
-                            if(userID === userId) user.populate('tasks', report.sendData());
-
-                        }
-
-                        report.doneWaiting();
-                    });
+                if(newStartTime) {
+                    operation.$set['status.pending'] = scheduled && moment().isBefore(newStartTime);
+                    operation.$set['status.active'] = scheduled && !operation.$set['status.pending'];
                 }
 
+                scheduleTime({task, operation, USERS});
+
+            }
+
+            task.update(
+                operation,
+                report.sendResult(
+                    `Task '${task.title}' successfully updated\n${operation.$push.changeLog.display}`,
+                    `Failed to update task '${task.title}'`
+                )
+            );
+
+        });
+
+        const userList = Object.keys(USERS);
+        if(userList.length) {
+
+            report.wait();
+            User.find( {_id: { $in: userList } }, (error, users) => {
+                if(error) report.logError(`Error locating users '${userList}'`, error);
+                else {
+                    report.logResponse(`Located users: '${userList}'`);
+
+                    users.forEach( user => {
+                        const userID = `${user._id}`;
+                        const userName = `${user.firstName} ${user.lastName}`;
+
+                        let log = [];
+
+                        USERS[userID].forEach( data => {
+                            modifySchedule(user, log, data);
+                        });
+
+                        const display = log.join('\n');
+
+                        user.changeLog.push({
+                            date: moment().toJSON(),
+                            user: USER_ID,
+                            display
+                        });
+
+                        user.markModified('agenda');
+                        user.save(
+                            report.sendResult(
+                                `User '${userName}' was successfully updated.\n${display}`,
+                                `Unable to save changes to user '${userName}'`
+                            )
+                        );
+
+                    });
+
+                }
                 report.doneWaiting();
             });
+
         }
+
     });
 }
 
-function scheduleTask(task) {
+function scheduleTime({task, operation, USERS}) {
+
+    const oldSchedule = {
+        scheduled: task.schedule.startTime, // This will change
+        start: task.schedule.startTime,
+        soft: task.schedule.softDeadline,
+        hard: task.schedule.hardDeadline
+    }
+
+    // Find a scheduled Time that works for everyone
+    const newSchedule = (()=>{
+        let obj = {
+            // this will change
+            scheduled: operation.$set.hasOwnProperty('schedule.startTime')
+                ? operation.$set['schedule.startTime']
+                : task.schedule.startTime
+        };
+        if( operation.$set.hasOwnProperty('schedule.startTime') ) {
+            obj.start = operation.$set['schedule.startTime'];
+        }
+        if( operation.$set.hasOwnProperty('schedule.softDeadline') ) {
+            obj.soft = operation.$set['schedule.softDeadline'];
+        }
+        if( operation.$set.hasOwnProperty('schedule.hardDeadline') ) {
+            obj.hard = operation.$set['schedule.hardDeadline'];
+        }
+        return obj;
+    })();
+
+    /*
+        Update each user on the task with that new scheduled time and create a list
+        of Users that will need to have their schedules updated
+    */
     for(let userID in task.users) {
-        task.users[userID].scheduled = task.schedule.startTime;
+        operation.$set[`users.${userID}.schedule`] = newSchedule.scheduled;
+
+        if(!USERS.hasOwnProperty(userID)) USERS[userID] = [];
+
+        for(let field in newSchedule) {
+            USERS[userID].push({
+                taskID: `${task._id}`,
+                title: task.title,
+                oldTime: oldSchedule[field],
+                newTime: newSchedule[field],
+                field
+            });
+        }
     }
-    if(task._id) task.markModified('users');
+
+    // Log any operations performed...
+    const oldTime = oldSchedule.scheduled;
+    const newTime = newSchedule.scheduled;
+
+    if(oldTime !== newTime) {
+        operation.$push.changeLog.display += newTime && !oldTime ? `\nScheduled task for '${moment(newTime).toString()}'`
+            : !newTime && oldTime ? "\nUnscheduled task"
+            : `\nChanged task's scheduled time from '${moment(oldTime).toString()}' to '${moment(newTime).toString()}'`;
+    }
 }
 
-function removeFromSchedule(user, task, report) {
+function modifySchedule(user, log, {taskID, title, oldTime, newTime, field}) {
 
-    const { startTime, softDeadline, hardDeadline } = task.schedule;
-    const scheduledTime = task.users[user._id].scheduled;
-    const taskID = `${task._id}`;
-
-    let modified = false;
-
-    if(scheduledTime !== '') {
-        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(scheduledDate)) {
-            const date = user.agenda[scheduledDate];
-            const index = date.scheduled.indexOf(taskID);
-            if(index !== -1) date.scheduled.splice(index, 1);
+    // If dateItem (field) was previously scheduled, remove it from the user's schedule
+    if(oldTime !== '') {
+        const oldDate = moment(oldTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(oldDate)) {
+            const date = user.agenda[oldDate];
+            const index = date[field].indexOf(taskID);
+            if(index !== -1) date[field].splice(index, 1);
             if(
                 date.scheduled.length === 0 &&
                 date.start.length === 0 &&
                 date.soft.length === 0 &&
                 date.hard.length === 0
-            ) delete user.agenda[scheduledDate];
-            modified = true;
+            ) delete user.agenda[oldDate];
         }
     }
 
-    if(startTime !== '') {
-        const startDate = moment(startTime).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(startDate)) {
-            const date = user.agenda[startDate];
-            const index = date.start.indexOf(taskID);
-            if(index !== -1) date.start.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[startDate];
-            modified = true;
-        }
+    // If dateItem (field) has a new time, add it to the correct place on the user's schedule
+    if(newTime !== '') {
+        const newDate = moment(newTime).startOf('day').valueOf();
+        if( !user.agenda[newDate] ) user.agenda[newDate] = {
+            date: moment(newDate).toJSON(),
+            scheduled: [],
+            start: [],
+            soft: [],
+            hard: []
+        };
+        user.agenda[newDate][field].push(taskID);
     }
 
-    if(softDeadline !== '') {
-        const softDate = moment(softDeadline).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(softDate)) {
-            const date = user.agenda[softDate];
-            const index = date.soft.indexOf(taskID);
-            if(index !== -1) date.soft.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[softDate];
-            modified = true;
-        }
-    }
+    // Translate the dateItem (field) into readable english
+    const fieldDisplay
+        = field === 'scheduled' ? 'scheduled time'
+        : field === 'start' ? 'start time'
+        : field === 'soft' ? 'soft deadline'
+        : field === 'hard' ? 'hard deadline'
+        : undefined;
 
-    if(hardDeadline !== '') {
-        const hardDate = moment(hardDeadline).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(hardDate)) {
-            const date = user.agenda[hardDate];
-            const index = date.hard.indexOf(taskID);
-            if(index !== -1) date.hard.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[hardDate];
-            modified = true;
-        }
-    }
-
-    if(modified && user._id) user.markModified('agenda');
-    if(modified && report) report.logResponse(`Removed task '${task.title}' from '${user.firstName} ${user.lastName}'s schedule.`);
+    // Log any changes made
+    log.push(
+        oldTime && newTime ? `Updated task '${title}'s ${fieldDisplay} on your schedule`
+        :   oldTime ? `Removed task '${title}'s ${fieldDisplay} from your schedule`
+        :   `Added task '${title}'s ${fieldDisplay} to your schedule`
+    );
 
 }
 
+// Used by createNewTask
 function addToSchedule(user, task, report) {
 
-    const { startTime, softDeadline, hardDeadline } = task.schedule;
-    const scheduledTime = task.users[user._id].scheduled;
+    const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
     const taskID = `${task._id}`;
 
     let modified = false;
@@ -685,22 +713,114 @@ function addToSchedule(user, task, report) {
 
 }
 
+// Used by deleteTasks
+function removeFromSchedule(user, task, report) {
+
+    const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
+    const taskID = `${task._id}`;
+
+    let modified = false;
+
+    if(scheduledTime !== '') {
+        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(scheduledDate)) {
+            const date = user.agenda[scheduledDate];
+            const index = date.scheduled.indexOf(taskID);
+            if(index !== -1) date.scheduled.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[scheduledDate];
+            modified = true;
+        }
+    }
+
+    if(startTime !== '') {
+        const startDate = moment(startTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(startDate)) {
+            const date = user.agenda[startDate];
+            const index = date.start.indexOf(taskID);
+            if(index !== -1) date.start.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[startDate];
+            modified = true;
+        }
+    }
+
+    if(softDeadline !== '') {
+        const softDate = moment(softDeadline).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(softDate)) {
+            const date = user.agenda[softDate];
+            const index = date.soft.indexOf(taskID);
+            if(index !== -1) date.soft.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[softDate];
+            modified = true;
+        }
+    }
+
+    if(hardDeadline !== '') {
+        const hardDate = moment(hardDeadline).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(hardDate)) {
+            const date = user.agenda[hardDate];
+            const index = date.hard.indexOf(taskID);
+            if(index !== -1) date.hard.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[hardDate];
+            modified = true;
+        }
+    }
+
+    if(modified && user._id) user.markModified('agenda');
+    if(modified && report) report.logResponse(`Removed task '${task.title}' from '${user.firstName} ${user.lastName}'s schedule.`);
+
+}
+
+function updateScheduledTime(task, report) {
+    task.schedule.scheduledTime = task.schedule.startTime;
+    report.logMessage(`Scheduled task for '${moment(task.schedule.scheduledTime).toString()}'`);
+}
+
+
+///// HELPER FUNCTIONS /////
+// Clone an object
+function cloneObj(obj1) {
+    let obj2 = Array.isArray(obj1) ? [] : {};
+    for(let key in obj1) {
+        obj2[key] = typeof obj1[key] === 'object' && obj1[key] !== null
+            ?   obj2[key] = cloneObj(obj1[key])
+            :   obj2[key] = obj1[key];
+    }
+    return obj2;
+}
+
 class Report {
-    constructor(res, TYPE = null) {
+    constructor(res, ACTION) {
         this.res = res;
         this.waiting = 0;
         this.report = {
-            TYPE: TYPE,
+            ACTION: ACTION,
             status: "SUCCESS",
             response: [],    // { msg, response }
             error: [],     // { msg, error }
             data: null
         };
 
-        console.log(`REQUEST TYPE: ${TYPE}`);
-        if(typeof TYPE !== null && typeof TYPE !== 'string') {
-            this.criticalError(`<${typeof TYPE}> is not a valid update type. Aborting...`);
-        }
+        console.log(`REQUEST TYPE: ${ACTION}`);
     }
 
     wait() {

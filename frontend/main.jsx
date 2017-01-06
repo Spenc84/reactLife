@@ -55,10 +55,10 @@ export default class Main extends React.Component {
                 </section>
 
                 <ScheduleModal ref={ ref => this.ScheduleModal = ref }
-                    scheduleTasks={this.props.api.scheduleTasks} />
+                    updateTasks={this.props.api.updateTasks} />
 
                 <TaskDetails ref={ ref => this.TaskDetails = ref }
-                    saveTask={this.props.api.saveTask} />
+                    updateTasks={this.props.api.updateTasks} />
 
             </main>
         );
@@ -72,7 +72,7 @@ export default class Main extends React.Component {
         this.ScheduleModal.openScheduler(selectedTasks, schedule);
     }
 
-    openTaskDetails(task, callBack) {
-        this.TaskDetails.open(task, callBack);
+    openTaskDetails(task, callback) {
+        this.TaskDetails.open(task, callback);
     }
 }

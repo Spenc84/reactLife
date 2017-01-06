@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
+import { getUSER_ID } from '../lifeApp';
 
 
 // Takes in an Array and returns a map object with { _id: 'array index') key-value pairs
@@ -48,4 +49,57 @@ export function filterTasks(list, query) {
             return include;
         }
     );
+}
+
+export function buildOperation(task, TASK, multi) {
+    let $set = {};
+    let display = [];
+
+    task.forEach( (value, key) => {
+        if(TASK.get(key) !== value) {
+            if(key !== 'schedule') {
+                $set[key] = value;
+                display.push(`Changed ${key.toUpperCase()} from '${TASK.get(key)}' to '${value}'`);
+            }
+            else {
+                value.forEach( (value, key) => {
+                    const VALUE = TASK.getIn(['schedule', key]);
+                    if(VALUE !== value) {
+                        $set[`schedule.${key}`] = value;
+
+                        // Format values into readable english for the changeLog
+                        let oldDisp, newDisp;
+                        if(key === 'duration') {
+
+                            oldDisp =   (VALUE === 0) ? 'None'
+                                :   (VALUE < 60) ? `${VALUE} Minutes`
+                                :   (VALUE === 60) ? '1 Hour'
+                                :   `${VALUE / 60} Hours`;
+                            newDisp =   (value === 0) ? 'None'
+                                :   (value < 60) ? `${value} Minutes`
+                                :   (value === 60) ? '1 Hour'
+                                :   `${value / 60} Hours`;
+                        }
+                        else {
+                            oldDisp = VALUE ? moment(VALUE).toString() : 'Someday';
+                            newDisp = value ? moment(value).toString() : 'Someday';
+                        }
+
+                        if(multi) display.push(`Changed ${key.toUpperCase()} to '${newDisp}'`);
+                        else display.push(`Changed ${key.toUpperCase()} from '${oldDisp}' to '${newDisp}'`);
+                    }
+                });
+            }
+        }
+    });
+
+    const $push = {
+        changeLog: {
+            date: moment().toJSON(),
+            user: getUSER_ID(),
+            display: display.join('\n')
+        }
+    };
+
+    return { $set, $push };
 }

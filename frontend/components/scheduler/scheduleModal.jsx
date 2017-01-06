@@ -1,16 +1,18 @@
 import './scheduler.styl';
 import React from 'react';
 import moment from 'moment';
-import { Map, List, fromJS } from 'immutable';
+import Immutable, { Map, List, fromJS } from 'immutable';
 
 import Modal from '../../uiComponents/modal/modal';
 import Accordian from '../../uiComponents/accordian';
 import Select from '../../uiComponents/select/select';
 import { Button } from '../../uiComponents/ui';
 
+import { buildOperation } from '../../components/tools';
+
 import OptionPane from './optionPane';
 
-
+// DEFAULTS
 const DEFAULT_SCHEDULE = (()=>{
     let availability = [];
     for(let i=0;i<7;i++) {
@@ -31,21 +33,24 @@ const DEFAULT_SCHEDULE = (()=>{
 
 const MINUTES = [0, 15, 30, 45].map(x=>({value:x,display:x}));
 
-// PROPS: scheduleTasks
+
+// PLACEHOLDERS (unrelated to state)
+let TASK_IDS, SCHEDULE, CALLBACK;
+
+
+// PROPS: updateTasks
 export default class ScheduleModal extends React.PureComponent {
     constructor(props) {
         super(props);
 
         this.state = {
-            selectedTaskIDs: List(),
-            schedule: DEFAULT_SCHEDULE,
-            callBack: ''
+            schedule: DEFAULT_SCHEDULE
         };
 
         this.openScheduler = this.openScheduler.bind(this);
         this.resetScheduler = this.resetScheduler.bind(this);
 
-        this.scheduleTasks = this.scheduleTasks.bind(this);
+        this.updateTasks = this.updateTasks.bind(this);
         this.updateDuration = this.updateDuration.bind(this);
         this.updateStartTime = this.updateStartTime.bind(this);
         this.updateSoftDeadline = this.updateSoftDeadline.bind(this);
@@ -71,7 +76,8 @@ export default class ScheduleModal extends React.PureComponent {
                         <Button light
                             label={'SAVE'}
                             title={'Schedule selected tasks'}
-                            onClick={this.scheduleTasks}
+                            onClick={this.updateTasks}
+                            disabled={Immutable.is(schedule, SCHEDULE)}
                         />
                     </header>
 
@@ -84,38 +90,32 @@ export default class ScheduleModal extends React.PureComponent {
 
 
 
-    openScheduler({selectedTasks:selectedTaskIDs, schedule, callBack}) {
-        if(!List.isList(selectedTaskIDs) || selectedTaskIDs.size === 0) {
-            console.warn("Scheduler cannot be opened without a selected task");
-            alert("An error has occured. Check console for details.");
-            return;
-        }
+    openScheduler({selectedTasks, schedule, callback}) {
+        TASK_IDS = selectedTasks;
+        SCHEDULE = schedule || Map({});
+        CALLBACK = callback;
 
-        if(typeof callBack !== 'function' && typeof schedule === 'function') callBack = schedule;
         if( !Map.isMap(schedule) ) schedule = DEFAULT_SCHEDULE.set('startTime', formatMoment());
+
+        this.accordian.reset();
+        this.setState({ schedule });
+
         this.modal.openModal();
-        this.setState({ selectedTaskIDs, schedule, callBack });
     }
 
     resetScheduler() {
-        this.setState({
-            schedule: DEFAULT_SCHEDULE.set('startTime', formatMoment()),
-            selectedTaskIDs: '',
-            callBack: ''
-        })
-        this.accordian.reset();
+        TASK_IDS = SCHEDULE = CALLBACK = undefined;
     }
 
-    scheduleTasks() {
-        const { selectedTaskIDs, schedule, callBack } = this.state;
-        const { scheduleTasks } = this.props;
-        if(typeof scheduleTasks !== 'function') {
-            console.warn("'scheduleTasks()' prop not passed into Scheduler component");
-            alert("An error has occured. Check console for details.");
-            return;
-        }
+    updateTasks() {
+        const { schedule } = this.state;
+        const { updateTasks } = this.props;
 
-        scheduleTasks(selectedTaskIDs, schedule, callBack);
+        const operation = buildOperation(Map({schedule}), Map({schedule: SCHEDULE}), SCHEDULE.size === 0);
+
+        updateTasks({selectedTasks: TASK_IDS, operation}, 'SCHEDULE');
+
+        if(typeof CALLBACK === 'function') CALLBACK();
         this.modal.closeModal();
     }
 
@@ -1147,7 +1147,7 @@ function formatMoment(time) {
 //
 // ////////////////////////////////////////////////////////////////////////////////
 // /////////////////////////////////  SUBMIT  /////////////////////////////////////
-//       scope.scheduleTasks = () => {
+//       scope.updateTasks = () => {
 //         let {startTime, softDeadline, hardDeadline} = scope.schedule,
 //             scheduled = startTime.moment ? true : false,
 //             startsNow = scheduled ? startTime.moment.isSameOrBefore(moment()) : false,

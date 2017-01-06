@@ -8,7 +8,7 @@ import { Index } from './components/tools';
 import Main from './main';
 
 // DEFAULTS
-const TASK_COLOR = '#0078ff';
+const DEFAULT_TASK_COLOR = '#0078ff';
 const DEFAULT_SCHEDULE = (()=>{
     let availability = [];
     for(let i=0;i<7;i++) {
@@ -27,6 +27,10 @@ const DEFAULT_SCHEDULE = (()=>{
     });
 })();
 
+// EXTERNAL API
+let USER_ID;
+export function getUSER_ID() { return USER_ID; }
+
 
 export default class LifeApp extends React.Component {
     constructor(props) {
@@ -40,9 +44,7 @@ export default class LifeApp extends React.Component {
         };
 
         this.buildTask = this.buildTask.bind(this);
-        this.saveTask = this.saveTask.bind(this);
         this.updateTasks = this.updateTasks.bind(this);
-        this.scheduleTasks = this.scheduleTasks.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
     }
 
@@ -59,9 +61,7 @@ export default class LifeApp extends React.Component {
                 schedule={ USER.get("agenda") || List()}
                 api={{
                     buildTask: this.buildTask,
-                    saveTask: this.saveTask,
                     updateTasks: this.updateTasks,
-                    scheduleTasks: this.scheduleTasks,
                     deleteTasks: this.deleteTasks
                 }}
                 {...this.state}
@@ -73,7 +73,8 @@ export default class LifeApp extends React.Component {
         return SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
             incoming => {
                 console.log("incoming", incoming);
-                const { data:user, data:{ tasks, agenda } } = incoming;
+                const { data:user, data:{ _id, tasks, agenda } } = incoming;
+                USER_ID = _id;
                 this.setState({
                     authenticated: true,
                     USER: fromJS(user),
@@ -92,6 +93,15 @@ export default class LifeApp extends React.Component {
 
     createNewTask(newTask) {
         const { USER } = this.state;
+
+        // Set status of newTask
+        const startTime = newTask.getIn(['schedule', 'startTime']);
+        newTask.set('status', Map({
+            scheduled: startTime,
+            active: moment().isSameOrAfter(startTime),
+            pending: moment().isBefore(startTime),
+            inactive: !startTime
+        }));
 
         this.setState({ loading: true });
         SERVER.post("/api/tasks", {newTask:newTask.toJS(), userID:USER.get('_id')}).then(
@@ -127,25 +137,15 @@ export default class LifeApp extends React.Component {
             ? DEFAULT_SCHEDULE.set('startTime', startTime)
             : DEFAULT_SCHEDULE;
 
-        const status = Map({
-            scheduled: tab === 'ACTIVE' || tab === 'PENDING',
-            active: tab === 'ACTIVE',
-            pending: tab === 'PENDING',
-            inactive: !(tab === 'ACTIVE' || tab === 'PENDING')
-        });
-
         const newTask = Map({
             title,
-            color: TASK_COLOR,
+            color: DEFAULT_TASK_COLOR,
             description: "",
-            users: Map({
-                [userID]: {
-                    securityAccess: 30,
-                    scheduled: ''
-                }
-            }),
-            schedule,
-            status
+            users: fromJS([{
+                user: userID,
+                securityAccess: 30
+            }]),
+            schedule
         });
 
         this.createNewTask(newTask);
@@ -214,136 +214,53 @@ export default class LifeApp extends React.Component {
         return schedule;
     }
 
-    saveTask(task, callBack) {
-        const { USER } = this.state;
-        const userID = USER.get('_id');
-        const taskID = task.get('_id');
-
-        const index = USER.get("tasks").findIndex(task=>task.get("_id") === taskID)
-        const TASK = USER.getIn(['tasks', index]);
-
-        let update = {};
-        let log = [];
-        let scheduleUpdated = false;
-
-        if(TASK.get("title") !== task.get("title")) {
-            update.title = task.get("title");
-            log.push(` - Changed task's title from '${TASK.get("title")}' to '${task.get("title")}'`);
-        }
-        if(TASK.get("description") !== task.get("description")) {
-            update.description = task.get("description");
-            log.push(` - Changed task's description from '${TASK.get("description")}' to '${task.get("description")}'`);
-        }
-        if(TASK.get("color") !== task.get("color")) {
-            update.color = task.get("color");
-            log.push(` - Changed task's color from '${TASK.get("color")}' to '${task.get("color")}'`);
-        }
-        if(TASK.get("schedule") !== task.get("schedule")) {
-            update.schedule = task.get("schedule");
-            scheduleUpdated = true;
-
-            const oldDuration = TASK.getIn(["schedule", "duration"]);
-            const newDuration = task.getIn(["schedule", "duration"]);
-            if(oldDuration !== newDuration) {
-                const oldDurationDisplay
-                    =   (oldDuration === 0) ? 'None'
-                    :   (oldDuration < 60) ? `${oldDuration} Minutes`
-                    :   (oldDuration === 60) ? '1 Hour'
-                    :   `${oldDuration / 60} Hours`;
-                const newDurationDisplay
-                    =   (newDuration === 0) ? 'None'
-                    :   (newDuration < 60) ? `${newDuration} Minutes`
-                    :   (newDuration === 60) ? '1 Hour'
-                    :   `${newDuration / 60} Hours`;
-                log.push(` - Changed task's duration from '${oldDurationDisplay}' to '${newDurationDisplay}'`);
-            }
-
-            const oldStartTime = TASK.getIn(["schedule", "startTime"]);
-            const newStartTime = task.getIn(["schedule", "startTime"]);
-            if(oldStartTime !== newStartTime) {
-                log.push(` - Changed task's start time from '${moment(oldStartTime).toString()}' to '${moment(newStartTime).toString()}'`);
-            }
-
-            const oldSoftDeadline = TASK.getIn(["schedule", "softDeadline"]);
-            const newSoftDeadline = task.getIn(["schedule", "softDeadline"]);
-            if(oldSoftDeadline !== newSoftDeadline) {
-                log.push(` - Changed task's soft deadline from '${moment(oldSoftDeadline).toString()}' to '${moment(newSoftDeadline).toString()}'`);
-            }
-
-            const oldHardDeadline = TASK.getIn(["schedule", "hardDeadline"]);
-            const newHardDeadline = task.getIn(["schedule", "hardDeadline"]);
-            if(oldHardDeadline !== newHardDeadline) {
-                log.push(` - Changed task's hard deadline from '${moment(oldHardDeadline).toString()}' to '${moment(newHardDeadline).toString()}'`);
-            }
-        }
-
-        if(log.length === 0) return;
-        log = log.join('/n');
-
-
-        this.setState({
-            USER: USER.setIn(['tasks', index], task),
-            loading: true
-        });
-
-        const uploadData = {
-            update,
-            log,
-            userID,
-            scheduleUpdated
-        }
-
-        SERVER.put(`/api/task/${taskID}`, uploadData).then(
-            ({data}) => {
-                const task = data.data;
-                console.log(`SERVER: ---Task '${task.get('title')}' updated---`, data);
-
-                this.setState({
-                    USER: USER.setIn(['tasks', index], task),
-                    loading: false
-                });
-
-                if(typeof callBack === 'function') callBack();
-            },
-            rejected => {
-                console.log('Failed to save task: ', rejected);
-                this.setState({
-                    USER: USER.setIn(['tasks', index], TASK),
-                    loading: false
-                });
-                alert("An error has occured. Check console for details.");
-            }
-        );
-    }
-
-    updateTasks(selectedTasks, operation, callBack) {
-        if(!List.isList(selectedTasks) || typeof operation !== 'object') return;
+    updateTasks({task, selectedTasks, operation}, TYPE = 'MODIFY') {
         const { USER } = this.state;
         const TASKS = USER.get('tasks');
+        const USER_ID = USER.get('_id');
 
-        let tasks = TASKS;
-        selectedTasks.forEach(taskID => {
-            const index = TASKS.findIndex(task => task.get('_id') === taskID);
-            if(index === -1) console.log(`Unable to find taskID '${taskID}' in TASKS`);
-            else {
-                for(let key in operation['$set']) {
-                    tasks = tasks.setIn([index].concat(key.split('.')), operation['$set'][key]);
-                }
-                tasks = tasks.setIn([index, 'changeLog'], tasks.getIn([index, 'changeLog']).push(operation['$push']['changeLog']));
-            }
-        });
+        // Update the local version of each task before sending the changes to the server
+        if(task) {
 
-        this.setState({
-            USER: USER.set('tasks', tasks),
-            loading: true
-        });
+            const taskID = task.get('_id');
+            const index = TASKS.findIndex(task=>task.get("_id") === taskID);
 
-        SERVER.put("/api/tasks", { TYPE: "MODIFY_TASKS", selectedTasks: selectedTasks.toJS(), operation }).then(
+            this.setState({
+                USER: USER.setIn(['tasks', index], task),
+                loading: true
+            });
+
+        }
+        else if(selectedTasks) {
+
+            const tasks = TASKS.withMutations( map => {
+                selectedTasks.forEach(taskID => {
+                    const index = TASKS.findIndex(task => task.get('_id') === taskID);
+                    if(index === -1) return console.log(`Unable to find taskID '${taskID}' in TASKS`);
+
+                    for(let key in operation['$set']) {
+                        map.setIn([index].concat(key.split('.')), operation['$set'][key]);
+                    }
+                    map.setIn([index, 'changeLog'], map.getIn([index, 'changeLog']).push(operation['$push']['changeLog']));
+                });
+            });
+
+            this.setState({
+                USER: USER.set('tasks', tasks),
+                loading: true
+            });
+
+        }
+        else return console.warn("UpdateTasks() called without any tasks selected.");
+
+        const TASK_LIST = task ? [task.get('_id')] : selectedTasks.toJS();
+
+        SERVER.put("/api/tasks", { TYPE, USER_ID, TASK_LIST, OPERATION:operation }).then(
             ({ data }) => {
-                console.log(`SERVER: ---${selectedTasks.size} Task${selectedTasks.size>1?'s':''} updated---`, data);
+                console.log(`SERVER: ---${selectedTasks.length} Task${selectedTasks.length>1?'s':''} updated---`, data);
                 this.setState({ loading: false });
-                if(typeof callBack === 'function') callBack();
             },
+            // If the changes fail on the server, revert the local tasks to their original state
             rejected => {
                 this.setState({
                     USER: USER.set('tasks', TASKS),
@@ -355,45 +272,7 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    scheduleTasks(selectedTasks, schedule, callBack) {
-        if(!Map.isMap(schedule) || !List.isList(selectedTasks) || selectedTasks.size === 0) {
-            let error = [];
-            if(!Map.isMap(schedule)) error.push(`Invalid input: 'schedule' should be of type <Map>, and not <${typeof schedule}>`, schedule);
-            if(!List.isList(selectedTasks)) error.push(`Invalid input: 'selectedTasks' should be of type <List>, and not <${typeof schedule}>`, selectedTasks);
-            else if(selectedTasks.size === 0) error.push("Cannot schedule tasks if no tasks are selected.", schedule.toJS());
-            for(let i=0;i<error.length;i++) console.warn(error[i]);
-            alert("An error has occured. Check console for details.");
-            return;
-        }
-        const { USER } = this.state;
-
-        const userID = USER.get('_id');
-        selectedTasks = selectedTasks.toJS();
-        schedule = schedule.toJS();
-
-        this.setState({ loading: true });
-        SERVER.put("/api/tasks/schedule", {selectedTasks, schedule, userID}).then(
-            approved => {
-                console.log(`SERVER: ---${selectedTasks.length} Task${selectedTasks.length>1?'s':''} scheduled---`, approved.data);
-                const updatedUser = approved.data.data;
-
-                this.setState({
-                    USER: fromJS(updatedUser),
-                    tIndx: Index(updatedUser.tasks),
-                    loading: false
-                });
-
-                if(typeof callBack === 'function') callBack();
-            },
-            rejected => {
-                this.setState({ loading: false });
-                console.log('Failed to schedule task(s): ', rejected);
-                alert("An error has occured. Check console for details.");
-            }
-        );
-    }
-
-    deleteTasks(selectedTasks, callBack) {
+    deleteTasks(selectedTasks, callback) {
         if(!List.isList(selectedTasks) || selectedTasks.size < 1) return;
         const { USER, tIndx } = this.state;
         const existingTaskList = USER.get('tasks');
@@ -421,7 +300,7 @@ export default class LifeApp extends React.Component {
                     loading: false
                 });
 
-                if(typeof callBack === 'function') callBack();
+                if(typeof callback === 'function') callback();
             },
             rejected => {
                 this.setState({ loading: false });

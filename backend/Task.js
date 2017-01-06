@@ -3,21 +3,19 @@ var mongoose = require('mongoose');
 var taskSchema = new mongoose.Schema({
     title: {type: String, required: true},
     schedule: {
-        startTime: {type: String, default: ''},
+        scheduledTime: {type: String, default: ''},
         duration: {type: Number, default: 0},
+        startTime: {type: String, default: ''},
         softDeadline: {type: String, default: ''},
         hardDeadline: {type: String, default: ''},
         availability: []
     },
     color: {type: String, default: '#0078ff'},
     description: {type: String, default: ''},
-    users: {},
-    /*  {
-            userID <string> : {
-                securityAccess: <number>,
-                scheduled: <ISO formatted Date string> || ""
-            }
-        }                                                       */
+    users: [{
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+        securityAccess: Number
+    }],
     changeLog: [{
         date: String,
         user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},

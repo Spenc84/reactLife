@@ -108,7 +108,7 @@ export default class ListSection extends React.Component {
 
         let props = {
             selectedTasks,
-            callBack: this.resetSelectedTasks
+            callback: this.resetSelectedTasks
         };
 
         if(selectedTasks.size === 1) {
@@ -137,7 +137,7 @@ export default class ListSection extends React.Component {
             $push: { changeLog: action }
         };
 
-        updateTasks(selectedTasks, operation);
+        updateTasks({selectedTasks, operation});
     }
 
     deleteTasks() {
@@ -162,7 +162,8 @@ export default class ListSection extends React.Component {
             $push: { changeLog: action }
         };
 
-        updateTasks(selectedTasks, operation, this.resetSelectedTasks);
+        updateTasks({selectedTasks, operation});
+        this.resetSelectedTasks();
     }
 
     toggleCompleted() {
@@ -181,7 +182,8 @@ export default class ListSection extends React.Component {
             $push: { changeLog: action }
         };
 
-        updateTasks(selectedTasks, operation, this.resetSelectedTasks);
+        updateTasks({selectedTasks, operation});
+        this.resetSelectedTasks();
     }
 
     updateFilter(tab, query) {

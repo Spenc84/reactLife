@@ -40,7 +40,7 @@ export class Button extends PureComponent {
         return(
             <div className={buttonClass}
                 title={title}
-                onClick={onClick}>
+                onClick={disabled ? null : onClick}>
                 {label}
             </div>
         );

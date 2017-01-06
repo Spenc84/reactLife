@@ -5,13 +5,18 @@ import { Map, List, fromJS } from 'immutable';
 
 import Scheduler from '../../components/scheduler/scheduler';
 import { Icon, Button, Text, TextArea } from '../../uiComponents/ui';
+import { buildOperation } from '../../components/tools';
 
 
 // ----- PLACEHOLDERS -----
 let TASK = Map();   // Original state of task
 let CALLBACK;       // Callback function to be executed when task is successfully saved.
 
-// PROPS: saveTask
+// ----- DATA UNRELATED TO STATE -----
+let ACTIONS = Map();
+let CHANGELOG = List();
+
+// PROPS: updateTasks
 export default class TaskDetails extends PureComponent {
     constructor(props) {
         super(props);
@@ -100,12 +105,17 @@ export default class TaskDetails extends PureComponent {
     }
 
     open(task, callback) {
+
         TASK = task;
         CALLBACK = callback;
+        ACTIONS = Map();
+        CHANGELOG = List();
+
         this.setState({
             task: TASK,
             open: true
         });
+
     }
 
     close() {
@@ -137,7 +147,7 @@ export default class TaskDetails extends PureComponent {
         const value = e.target.value;
 
         this.setState({
-            task: task.set(field, value)
+            task: task.setIn(field.split('.'), value)
         });
     }
 
@@ -151,9 +161,12 @@ export default class TaskDetails extends PureComponent {
 
     saveChanges() {
         const { task } = this.state;
-        const { saveTask } = this.props;
+        const { updateTasks } = this.props;
 
-        saveTask(task);
+        const TYPE = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
+        const operation = buildOperation(task, TASK);
+
+        updateTasks({task, operation}, TYPE);
 
         TASK = task;
         this.setState({ readOnly: true });
