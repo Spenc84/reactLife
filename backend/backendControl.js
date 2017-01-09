@@ -254,35 +254,64 @@ module.exports = {
 
             case 'CREATE':
 
-                // let newTask = cloneObj(DATA);
-                //
-                // updateScheduledTime(newTask, report);
-                //
-                // Promise.all([
-                //     createNewTask(newTask),
-                //     getUserList(newTask)
-                // ])
-                // function getUserList({task, result}) {
-                // .then(
-                //     task => {
-                //         report.logResponse(`New task '${newTask.title}' added to database`);
-                //
-                //         User.find( {_id: { $in: userList } }, (error, users) => {
-                //
-                //         }
-                //     // get users
-                //     // add task to users
-                //     // ? Add task to users schedule
-                //     // Save users
-                //     },
-                //     error => report.criticalError(`Error creating task '${newTask.title}'`, error);
-                // );
+                let newTask = cloneObj(DATA);
+                const userList = getUserList(newTask);
+
+                const scheduled = newTask.status.scheduled;
+
+                if(scheduled) updateScheduledTime({task:newTask}, report);
+
+                Promise.all([
+                    createNewTask(newTask),
+                    getUsers(userList)
+                ])
+
+                .then( ([task, users]) => {
+
+                    if(task) {
+                        report.logResponse(`New task '${task.title}' added to database`);
+                        report.setData(task);
+                    }
+                    if(users) report.logResponse(`Users pending update: '${userList}'`);
+
+                    users.forEach( user => {
+                        const userName = `${user.firstName} ${user.lastName}`;
+
+                        if(scheduled) addTaskToAgendaAndSchedule(user, task, report);
+                        else addTaskToAgenda(user, task, report);
+
+                        user.changeLog.push({
+                            date: moment().toJSON(),
+                            user: USER_ID,
+                            display: `Created task '${task.title}' and added it to your ${scheduled?'schedule':'agenda'}`
+                        });
+
+                        user.save(
+                            report.sendResult(
+                                `User '${userName}' updated successfully`,
+                                `Error occured while saving user '${userName}'`
+                            )
+                        );
+                    });
+
+                })
+                .catch( error => report.criticalError(`Error creating task '${newTask.title}'`, error) );
 
             break;
 
 
             case 'MODIFY':
-                modifyTasks({ TASK_LIST, OPERATION }, report);
+                report.logResponse(`(${TASK_LIST.length}) task${TASK_LIST.length>1?'s':''} pending update: '${TASK_LIST}'`);
+                Task.update(
+                    {_id: { $in: TASK_LIST } },
+                    OPERATION,
+                    {multi: true},
+                    report.sendResult(
+                        `${OPERATION.$push.changeLog.display}\nUpdate operation successful`,
+                        'An error occured while updating tasks. Update operation aborted...'
+                    )
+                );
+
             break;
 
 
@@ -291,179 +320,212 @@ module.exports = {
             break;
 
 
+            case 'DELETE':
+                deleteTasks({ USER_ID, TASK_LIST }, report);
+            break;
+
+
             default:
                 report.criticalError(`<${ACTION}> is not a valid action. Aborting...`);
         }
 
-    },
-    deleteTasks( req, res ) {
-        const report = new Report(res, 'DELETE');
-        // Data comes in as a string of IDs seperated by dashes. The first ID is the USER,
-        // and any following IDs belong to the tasks that will be removed from that USER.
-        const TASK_IDS = req.params.id.split('-');
-        const USER_ID = TASK_IDS.shift();
-        report.logResponse(`Requesting User: '${USER_ID}'`);
-        report.logResponse(`Tasks pending removal: '${TASK_IDS}'`);
-
-        let tasksRemovedFromAgenda = [];
-
-        // GET USER
-        User.findById(USER_ID, (error, user)=> {
-            if(error) return report.criticalError(`User '${USER_ID}' could not be found`, error);
-
-            const USER_NAME = `${user.firstName} ${user.lastName}`;
-
-            // GET TASKS
-            Task.find({ _id: { $in: TASK_IDS } }, (error, tasks)=> {
-                if(error) return report.criticalError('Unable to locate tasks', error);
-
-                // For each task, perform the following opertions.
-                tasks.forEach(task => {
-                    const { _id, title, status:{scheduled}, schedule:{startTime, softDeadline, hardDeadline} } = task;
-                    const taskID = `${_id}`;
-
-                    // ----- UPDATE THE USER -----
-                        // If the task is scheduled, it will need to be removed from the User's Schedule
-                        if(scheduled) removeFromSchedule(user, task, report);
-
-                        // Remove this task's ID from the User's Agenda as well
-                        const taskIndex = user.tasks.indexOf(taskID);
-                        if(taskIndex !== -1) {
-                            user.tasks.splice(taskIndex, 1);
-                            tasksRemovedFromAgenda.push(title);
-                            report.logResponse(`Removed task '${title}' from '${USER_NAME}'s agenda.`);
-                        }
-                        else return report.logError(`Task '${title}' not found on user '${USER_NAME}'`);
-
-
-
-                    // ----- UPDATE THE TASK -----
-                        /* If the task belongs solely to the user requesting the removal
-                            then it will be removed completely from the TASK database, but
-                            it the task is shared with other users, then it will remain in
-                            the database attached to those other users and will only be
-                            removed from the USER requesting the removal.               */
-
-                        if(Object.keys(task.users).length > 1) {
-                            delete task.users[USER_ID];
-                            task.markModified('users');
-
-                            task.changeLog.push({
-                                date: moment().toJSON(),
-                                user: USER_ID,
-                                display: `Removed '${USER_NAME}' from task`
-                            });
-
-                            task.save(
-                                report.sendResult(
-                                    `User '${USER_NAME}' was successfully removed from Task '${title}'`,
-                                    `Failed to save Task '${title}'`
-                                )
-                            );
-                        }
-                        else task.remove(
-                            report.sendResult(
-                                `!!! Task '${title}' was REMOVED from the TASK Database !!!`,
-                                `Failed to remove Task '${title}' from the TASK Database`
-                            )
-                        );
-
-                })
-
-                // Log and save changes to the user and send the updated user object back to the Client
-                const multiple = tasksRemovedFromAgenda.length > 1;
-                if(multiple) tasksRemovedFromAgenda.push(`and ${tasksRemovedFromAgenda.pop()}`);
-                user.changeLog.push({
-                    date: moment().toJSON(),
-                    user: USER_ID,
-                    display: `Removed task${multiple?'s':''} '${tasksRemovedFromAgenda.join("', '")}' from your Agenda`
-                });
-
-                user.save(
-                    report.sendResult(
-                        `User '${USER_NAME}' was successfully modified`,
-                        `Error saving User '${USER_NAME}'`
-                    )
-                );
-
-                user.populate('tasks', report.sendData());
-            });
-
-        });
     }
 };
 
-function updateScheduledTime(task, report) {
-    task.schedule.scheduledTime = task.schedule.startTime; // This will change
-    report.logMessage(`Scheduled task for '${moment(task.schedule.scheduledTime).toString()}'`);
+////////////////////   USER   ////////////////////
+//////////   ACCESSOR FUNCTIONS
+
+//////////   MUTATOR FUNCTIONS
+function addTaskToAgenda(user, task, report) {
+    user.tasks.push(task._id);
+    if(report) report.logResponse(`Added task '${task.title}' to user '${user.firstName} ${user.lastName}'s agenda`);
 }
 
+function addTaskToSchedule(user, task, report) {
+    const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
+    const taskID = `${task._id}`;
+
+    if(scheduledTime !== '') {
+        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
+        if( user.agenda[scheduledDate] ) {
+            user.agenda[scheduledDate].scheduled.push(taskID);
+        }
+        else {
+            user.agenda[scheduledDate] = {
+                date: moment(scheduledDate).toJSON(),
+                start: [],
+                soft: [],
+                hard: [],
+                scheduled: [taskID]
+            }
+        }
+    }
+
+    if(startTime !== '') {
+        const startDate = moment(startTime).startOf('day').valueOf();
+        if( user.agenda[startDate] ) {
+            user.agenda[startDate].start.push(taskID);
+        }
+        else {
+            user.agenda[startDate] = {
+                date: moment(startDate).toJSON(),
+                start: [taskID],
+                soft: [],
+                hard: [],
+                scheduled: []
+            }
+        }
+    }
+
+    if(softDeadline !== '') {
+        const softDate = moment(softDeadline).startOf('day').valueOf();
+        if( user.agenda[softDate] ) {
+            user.agenda[softDate].soft.push(taskID);
+        }
+        else {
+            user.agenda[softDate] = {
+                date: moment(softDate).toJSON(),
+                start: [],
+                soft: [taskID],
+                hard: [],
+                scheduled: []
+            }
+        }
+    }
+
+    if(hardDeadline !== '') {
+        const hardDate = moment(hardDeadline).startOf('day').valueOf();
+        if( user.agenda[hardDate] ) {
+            user.agenda[hardDate].hard.push(taskID);
+        }
+        else {
+            user.agenda[hardDate] = {
+                date: moment(hardDate).toJSON(),
+                start: [],
+                soft: [],
+                hard: [taskID],
+                scheduled: []
+            }
+        }
+    }
+
+    user.markModified('agenda');
+
+    if(report) report.logResponse(`Added task '${task.title}' to '${user.firstName} ${user.lastName}'s schedule.`);
+}
+
+function addTaskToAgendaAndSchedule(user, task, report) {
+    addTaskToAgenda(user, task);
+    addTaskToSchedule(user, task);
+    if(report) report.logResponse(`Added task '${task.title}' to user '${user.firstName} ${user.lastName}'s agenda and schedule`);
+}
+
+function removeTaskFromSchedule(user, task, report) {
+    const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
+    const taskID = `${task._id}`;
+
+    if(scheduledTime !== '') {
+        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(scheduledDate)) {
+            const date = user.agenda[scheduledDate];
+            const index = date.scheduled.indexOf(taskID);
+            if(index !== -1) date.scheduled.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[scheduledDate];
+        }
+    }
+
+    if(startTime !== '') {
+        const startDate = moment(startTime).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(startDate)) {
+            const date = user.agenda[startDate];
+            const index = date.start.indexOf(taskID);
+            if(index !== -1) date.start.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[startDate];
+        }
+    }
+
+    if(softDeadline !== '') {
+        const softDate = moment(softDeadline).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(softDate)) {
+            const date = user.agenda[softDate];
+            const index = date.soft.indexOf(taskID);
+            if(index !== -1) date.soft.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[softDate];
+        }
+    }
+
+    if(hardDeadline !== '') {
+        const hardDate = moment(hardDeadline).startOf('day').valueOf();
+        if(user.agenda.hasOwnProperty(hardDate)) {
+            const date = user.agenda[hardDate];
+            const index = date.hard.indexOf(taskID);
+            if(index !== -1) date.hard.splice(index, 1);
+            if(
+                date.scheduled.length === 0 &&
+                date.start.length === 0 &&
+                date.soft.length === 0 &&
+                date.hard.length === 0
+            ) delete user.agenda[hardDate];
+        }
+    }
+
+    user.markModified('agenda');
+
+    if(report) report.logResponse(`Removed task '${task.title}' from '${user.firstName} ${user.lastName}'s schedule.`);
+}
+
+
+
+////////////////////   TASK   ////////////////////
+//////////   ACCESSOR FUNCTIONS
+function getUserList(task) {
+    return task.users.map( data => data.user );
+}
+
+//////////   MUTATOR FUNCTIONS
+function updateScheduledTime({task, operation}, report) {
+    const scheduledTime = task.schedule.startTime; // This will change
+
+    if(operation) operation.$set['schedule.scheduledTime'] = scheduledTime;
+    else task.schedule.scheduledTime = scheduledTime;
+
+    report.logResponse(`Scheduled task '${task.title}' for '${moment(scheduledTime).toString()}'`);
+}
+
+
+
+////////////////////   DATABASE   ////////////////////
+//////////   ACCESSOR FUNCTIONS
+function getUsers(userList) {
+    return User.find( {_id: { $in: userList } } ).exec();
+}
+
+//////////   MUTATOR FUNCTIONS
 function createNewTask(newTask) {
     const { scheduled } = newTask.status;
 
     newTask.changeLog = [{
             date: moment().toJSON(),
-            user: USER_ID,
+            user: newTask.users[0].user,
             display: `Created${scheduled ? ' and scheduled' : ''} task`
     }];
 
     return Task.create(newTask);
-
-}
-
-function addTaskToUsers
-
-function Schedule_Tasks () {
-        if(error) return report.criticalError(`Error creating task '${newTask.title}'`, error);
-        report.logResponse(`New task '${newTask.title}' added to database`);
-
-        const taskID = `${task._id}`;
-        const userList = Object.keys(task.users);
-
-        User.find( {_id: { $in: userList } }, (error, users)=> {
-            if(error) return report.criticalError(`Error locating users '${userList}' on task '${task.title}'`, error);
-
-            for(let uIndx=0; uIndx<users.length; uIndx++) {
-                let user = users[uIndx];
-                const userId = `${user._id}`;
-                const userName = `${user.firstName} ${user.lastName}`;
-
-                user.tasks.push(taskID);
-
-                if(scheduled) addToSchedule(user, task, report);
-
-                user.changeLog.push({
-                    date: moment().toJSON(),
-                    user: USER_ID,
-                    display: `Created task '${task.title}' and added it to your ${scheduled?'schedule':'agenda'}`
-                });
-
-                user.save(
-                    report.sendResult(
-                        `Saved task to user '${userName}'`,
-                        `Error saving task to user '${userName}'`
-                    )
-                );
-
-            }
-
-            report.send(task);
-        });
-    });
-
-}
-
-function modifyTasks({ TASK_LIST, OPERATION }, report) {
-
-    Task.update(
-        {_id: { $in: TASK_LIST } },
-        OPERATION,
-        {multi: true},
-        report.sendResult(
-            `Update operation successful\n${OPERATION.$push.changeLog.display}`,
-            'An error occured while updating tasks. Update operation aborted...'
-        )
-    );
 
 }
 
@@ -472,31 +534,20 @@ function scheduleTasks({ USER_ID, TASK_LIST, OPERATION }, report) {
     let USERS = {};
 
     Task.find( {_id: { $in: TASK_LIST } }, (error, tasks)=> {
-        if(error) return report.criticalError(`Error finding task(s) in '${TASK_LIST}'.`, error);
-        report.logResponse(`Located tasks: '${TASK_LIST}'`);
+        if(error) return report.criticalError(`Error finding task${TASK_LIST.length>1?'s':''}: '${TASK_LIST}'`, error);
+        report.logResponse(`(${TASK_LIST.length}) task${TASK_LIST.length>1?'s':''} pending update: '${TASK_LIST}'`);
 
         tasks.forEach( task => {
             let operation = cloneObj(OPERATION);
 
-            const newStartTime = operation.$set['schedule.startTime'];
             const wasScheduled = task.status.scheduled;
-            const scheduled = operation.$set.hasOwnProperty('schedule.startTime')
-                ? !!operation.$set['schedule.startTime']
+            const scheduled = operation.$set.hasOwnProperty('status.scheduled')
+                ? operation.$set['status.scheduled']
                 : wasScheduled;
 
-            if(scheduled || wasScheduled) {
+            if(scheduled || wasScheduled) updateScheduledTime({task, operation}, report);
 
-                operation.$set['status.scheduled'] = scheduled;
-                operation.$set['status.inactive'] = !scheduled;
-
-                if(newStartTime) {
-                    operation.$set['status.pending'] = scheduled && moment().isBefore(newStartTime);
-                    operation.$set['status.active'] = scheduled && !operation.$set['status.pending'];
-                }
-
-                scheduleTime({task, operation, USERS});
-
-            }
+            // scheduleTime({task, operation, USERS});
 
             task.update(
                 operation,
@@ -553,68 +604,67 @@ function scheduleTasks({ USER_ID, TASK_LIST, OPERATION }, report) {
 
     });
 }
+    // Children functions of scheduleTasks
+    function scheduleTime({task, operation, USERS}) {
 
-function scheduleTime({task, operation, USERS}) {
-
-    const oldSchedule = {
-        scheduled: task.schedule.startTime, // This will change
-        start: task.schedule.startTime,
-        soft: task.schedule.softDeadline,
-        hard: task.schedule.hardDeadline
-    }
-
-    // Find a scheduled Time that works for everyone
-    const newSchedule = (()=>{
-        let obj = {
-            // this will change
-            scheduled: operation.$set.hasOwnProperty('schedule.startTime')
-                ? operation.$set['schedule.startTime']
-                : task.schedule.startTime
+        const oldSchedule = {
+            scheduled: task.schedule.scheduledTime, // This will change
+            start: task.schedule.startTime,
+            soft: task.schedule.softDeadline,
+            hard: task.schedule.hardDeadline
         };
-        if( operation.$set.hasOwnProperty('schedule.startTime') ) {
-            obj.start = operation.$set['schedule.startTime'];
-        }
-        if( operation.$set.hasOwnProperty('schedule.softDeadline') ) {
-            obj.soft = operation.$set['schedule.softDeadline'];
-        }
-        if( operation.$set.hasOwnProperty('schedule.hardDeadline') ) {
-            obj.hard = operation.$set['schedule.hardDeadline'];
-        }
-        return obj;
-    })();
 
-    /*
-        Update each user on the task with that new scheduled time and create a list
-        of Users that will need to have their schedules updated
-    */
-    for(let userID in task.users) {
-        operation.$set[`users.${userID}.schedule`] = newSchedule.scheduled;
+        // Find a scheduled Time that works for everyone
+        const newSchedule = (()=>{
+            let obj = {
+                // this will change
+                scheduled: operation.$set.hasOwnProperty('schedule.startTime')
+                    ? operation.$set['schedule.startTime']
+                    : task.schedule.startTime
+            };
+            if( operation.$set.hasOwnProperty('schedule.startTime') ) {
+                obj.start = operation.$set['schedule.startTime'];
+            }
+            if( operation.$set.hasOwnProperty('schedule.softDeadline') ) {
+                obj.soft = operation.$set['schedule.softDeadline'];
+            }
+            if( operation.$set.hasOwnProperty('schedule.hardDeadline') ) {
+                obj.hard = operation.$set['schedule.hardDeadline'];
+            }
+            return obj;
+        })();
 
-        if(!USERS.hasOwnProperty(userID)) USERS[userID] = [];
+        /*
+            Update each user on the task with that new scheduled time and create a list
+            of Users that will need to have their schedules updated
+        */
+        for(let userID in task.users) {
+            operation.$set[`users.${userID}.schedule`] = newSchedule.scheduled;
 
-        for(let field in newSchedule) {
-            USERS[userID].push({
-                taskID: `${task._id}`,
-                title: task.title,
-                oldTime: oldSchedule[field],
-                newTime: newSchedule[field],
-                field
-            });
+            if(!USERS.hasOwnProperty(userID)) USERS[userID] = [];
+
+            for(let field in newSchedule) {
+                USERS[userID].push({
+                    taskID: `${task._id}`,
+                    title: task.title,
+                    oldTime: oldSchedule[field],
+                    newTime: newSchedule[field],
+                    field
+                });
+            }
+        }
+
+        // Log any operations performed...
+        const oldTime = oldSchedule.scheduled;
+        const newTime = newSchedule.scheduled;
+
+        if(oldTime !== newTime) {
+            operation.$push.changeLog.display += newTime && !oldTime ? `\nScheduled task for '${moment(newTime).toString()}'`
+                : !newTime && oldTime ? "\nUnscheduled task"
+                : `\nChanged task's scheduled time from '${moment(oldTime).toString()}' to '${moment(newTime).toString()}'`;
         }
     }
-
-    // Log any operations performed...
-    const oldTime = oldSchedule.scheduled;
-    const newTime = newSchedule.scheduled;
-
-    if(oldTime !== newTime) {
-        operation.$push.changeLog.display += newTime && !oldTime ? `\nScheduled task for '${moment(newTime).toString()}'`
-            : !newTime && oldTime ? "\nUnscheduled task"
-            : `\nChanged task's scheduled time from '${moment(oldTime).toString()}' to '${moment(newTime).toString()}'`;
-    }
-}
-
-function modifySchedule(user, log, {taskID, title, oldTime, newTime, field}) {
+    function modifySchedule(user, log, {taskID, title, oldTime, newTime, field}) {
 
     // If dateItem (field) was previously scheduled, remove it from the user's schedule
     if(oldTime !== '') {
@@ -662,162 +712,95 @@ function modifySchedule(user, log, {taskID, title, oldTime, newTime, field}) {
 
 }
 
-// Used by createNewTask
-function addToSchedule(user, task, report) {
+function deleteTasks({ USER_ID, TASK_LIST }, report) {
+    report.logResponse(`Requesting User: '${USER_ID}'`);
+    report.logResponse(`Tasks pending removal: '${TASK_LIST.join("', '")}'`);
 
-    const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
-    const taskID = `${task._id}`;
+    let tasksRemovedFromAgenda = [];
 
-    let modified = false;
+    // GET USER
+    User.findById(USER_ID, (error, user)=> {
+        if(error) return report.criticalError(`User '${USER_ID}' could not be found`, error);
 
-    if(scheduledTime !== '') {
-        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
-        if( user.agenda[scheduledDate] ) {
-            user.agenda[scheduledDate].scheduled.push(taskID);
-        }
-        else {
-            user.agenda[scheduledDate] = {
-                date: moment(scheduledDate).toJSON(),
-                start: [],
-                soft: [],
-                hard: [],
-                scheduled: [taskID]
-            }
-        }
-        modified = true;
-    }
+        const USER_NAME = `${user.firstName} ${user.lastName}`;
 
-    if(startTime !== '') {
-        const startDate = moment(startTime).startOf('day').valueOf();
-        if( user.agenda[startDate] ) {
-            user.agenda[startDate].start.push(taskID);
-        }
-        else {
-            user.agenda[startDate] = {
-                date: moment(startDate).toJSON(),
-                start: [taskID],
-                soft: [],
-                hard: [],
-                scheduled: []
-            }
-        }
-        modified = true;
-    }
+        // GET TASKS
+        Task.find({ _id: { $in: TASK_LIST } }, (error, tasks)=> {
+            if(error) return report.criticalError('Unable to locate tasks', error);
 
-    if(softDeadline !== '') {
-        const softDate = moment(softDeadline).startOf('day').valueOf();
-        if( user.agenda[softDate] ) {
-            user.agenda[softDate].soft.push(taskID);
-        }
-        else {
-            user.agenda[softDate] = {
-                date: moment(softDate).toJSON(),
-                start: [],
-                soft: [taskID],
-                hard: [],
-                scheduled: []
-            }
-        }
-        modified = true;
-    }
+            // For each task, perform the following opertions.
+            tasks.forEach(task => {
+                const { _id, title, status:{scheduled}, schedule:{startTime, softDeadline, hardDeadline} } = task;
+                const taskID = `${_id}`;
 
-    if(hardDeadline !== '') {
-        const hardDate = moment(hardDeadline).startOf('day').valueOf();
-        if( user.agenda[hardDate] ) {
-            user.agenda[hardDate].hard.push(taskID);
-        }
-        else {
-            user.agenda[hardDate] = {
-                date: moment(hardDate).toJSON(),
-                start: [],
-                soft: [],
-                hard: [taskID],
-                scheduled: []
-            }
-        }
-        modified = true;
-    }
+                // ----- UPDATE THE USER -----
+                    // If the task is scheduled, it will need to be removed from the User's Schedule
+                    if(scheduled) removeTaskFromSchedule(user, task);
 
-    if(modified && user._id) user.markModified('agenda');
-    if(modified && report) report.logResponse(`Added task '${task.title}' to '${user.firstName} ${user.lastName}'s schedule.`);
+                    // Remove this task's ID from the User's Agenda as well
+                    const taskIndex = user.tasks.indexOf(taskID);
+                    if(taskIndex !== -1) {
+                        user.tasks.splice(taskIndex, 1);
+                        tasksRemovedFromAgenda.push(title);
+                        report.logResponse(`Removed task '${title}' from '${USER_NAME}'s ${scheduled?'schedule and ':''}agenda.`);
+                    }
+                    else return report.logError(`Task '${title}' not found on user '${USER_NAME}'`);
 
-}
 
-// Used by deleteTasks
-function removeFromSchedule(user, task, report) {
+                // ----- UPDATE THE TASK -----
+                    /* If the task belongs solely to the user requesting the removal
+                        then it will be removed completely from the TASK database, but
+                        it the task is shared with other users, then it will remain in
+                        the database attached to those other users and will only be
+                        removed from the USER requesting the removal.               */
 
-    const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
-    const taskID = `${task._id}`;
+                    if(task.users.length > 1) {
+                        const userIndex = task.users.findIndex( data => `${data.user}` === USER_ID )
+                        if(userIndex !== -1) {
+                            task.changeLog.push({
+                                date: moment().toJSON(),
+                                user: USER_ID,
+                                display: `Removed '${USER_NAME}' from task`
+                            });
 
-    let modified = false;
+                            task.save(
+                                report.sendResult(
+                                    `User '${USER_NAME}' was successfully removed from Task '${title}'`,
+                                    `Failed to save Task '${title}'`
+                                )
+                            );
+                        }
+                        else report.logError(`Unable to locate user '${USER_NAME}' on task '${title}'`);
+                    }
+                    else task.remove(
+                        report.sendResult(
+                            `!!! Task '${title}' was REMOVED from the TASK Database !!!`,
+                            `Failed to remove Task '${title}' from the TASK Database`
+                        )
+                    );
 
-    if(scheduledTime !== '') {
-        const scheduledDate = moment(scheduledTime).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(scheduledDate)) {
-            const date = user.agenda[scheduledDate];
-            const index = date.scheduled.indexOf(taskID);
-            if(index !== -1) date.scheduled.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[scheduledDate];
-            modified = true;
-        }
-    }
+            })
 
-    if(startTime !== '') {
-        const startDate = moment(startTime).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(startDate)) {
-            const date = user.agenda[startDate];
-            const index = date.start.indexOf(taskID);
-            if(index !== -1) date.start.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[startDate];
-            modified = true;
-        }
-    }
+            // Log and save changes to the user and send the updated user object back to the Client
+            const multiple = tasksRemovedFromAgenda.length > 1;
+            if(multiple) tasksRemovedFromAgenda.push(`and ${tasksRemovedFromAgenda.pop()}`);
+            user.changeLog.push({
+                date: moment().toJSON(),
+                user: USER_ID,
+                display: `Removed task${multiple?'s':''} '${tasksRemovedFromAgenda.join("', '")}' from your Agenda`
+            });
 
-    if(softDeadline !== '') {
-        const softDate = moment(softDeadline).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(softDate)) {
-            const date = user.agenda[softDate];
-            const index = date.soft.indexOf(taskID);
-            if(index !== -1) date.soft.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[softDate];
-            modified = true;
-        }
-    }
+            user.save(
+                report.sendResult(
+                    `User '${USER_NAME}' was successfully modified`,
+                    `Error saving User '${USER_NAME}'`
+                )
+            );
 
-    if(hardDeadline !== '') {
-        const hardDate = moment(hardDeadline).startOf('day').valueOf();
-        if(user.agenda.hasOwnProperty(hardDate)) {
-            const date = user.agenda[hardDate];
-            const index = date.hard.indexOf(taskID);
-            if(index !== -1) date.hard.splice(index, 1);
-            if(
-                date.scheduled.length === 0 &&
-                date.start.length === 0 &&
-                date.soft.length === 0 &&
-                date.hard.length === 0
-            ) delete user.agenda[hardDate];
-            modified = true;
-        }
-    }
+            user.populate('tasks', report.sendData());
+        });
 
-    if(modified && user._id) user.markModified('agenda');
-    if(modified && report) report.logResponse(`Removed task '${task.title}' from '${user.firstName} ${user.lastName}'s schedule.`);
-
+    });
 }
 
 

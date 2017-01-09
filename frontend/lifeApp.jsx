@@ -69,62 +69,7 @@ export default class LifeApp extends React.Component {
         );
 	}
 
-    getUser() {
-        return SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
-            incoming => {
-                console.log("incoming", incoming);
-                const { data:user, data:{ _id, tasks, agenda } } = incoming;
-                USER_ID = _id;
-                this.setState({
-                    authenticated: true,
-                    USER: fromJS(user),
-                    tIndx: (tasks) ? Index(tasks) : {},
-                    loading: false
-                });
-                console.log(`User Authenticated: `, user);
-            },
-            rejected => {
-                this.setState({ loading: false });
-                console.log('Failed to acquire user', rejected);
-                alert("An error has occured. Check console for details.");
-            }
-        );
-    }
-
-    createNewTask(newTask) {
-        const { USER } = this.state;
-
-        // Set status of newTask
-        const startTime = newTask.getIn(['schedule', 'startTime']);
-        newTask.set('status', Map({
-            scheduled: startTime,
-            active: moment().isSameOrAfter(startTime),
-            pending: moment().isBefore(startTime),
-            inactive: !startTime
-        }));
-
-        this.setState({ loading: true });
-        SERVER.post("/api/tasks", {newTask:newTask.toJS(), userID:USER.get('_id')}).then(
-            ({data, data:{data:createdTask}}) => {
-                console.log("SERVER-RESPONSE: ", data);
-                console.log("SERVER: ---Task Created---", createdTask);
-                const task = fromJS(createdTask);
-                const taskList = USER.get('tasks').push(task);
-                const schedule = task.getIn(['status', 'scheduled']) ? this.addToSchedule(task) : USER.get('agenda');
-                this.setState({
-                    USER: USER.withMutations(user => user.set('tasks', taskList).set('agenda', schedule)),
-                    tIndx: Index(taskList),
-                    loading: false
-                });
-            },
-            rejected => {
-                this.setState({ loading: false });
-                console.log('Failed to create task: ', rejected);
-                alert("An error has occured. Check console for details.");
-            }
-        );
-    }
-
+    // LOCAL FUNCTIONS
     buildTask(title, tab) {
         const userID = this.state.USER.get('_id');
         const minute = Math.floor(moment().minute()/15)*15;
@@ -214,7 +159,65 @@ export default class LifeApp extends React.Component {
         return schedule;
     }
 
-    updateTasks({task, selectedTasks, operation}, TYPE = 'MODIFY') {
+
+    // SERVER FUNCTIONS
+    getUser() {
+        return SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
+            incoming => {
+                console.log("incoming", incoming);
+                const { data:user, data:{ _id, tasks, agenda } } = incoming;
+                USER_ID = _id;
+                this.setState({
+                    authenticated: true,
+                    USER: fromJS(user),
+                    tIndx: (tasks) ? Index(tasks) : {},
+                    loading: false
+                });
+                console.log(`User Authenticated: `, user);
+            },
+            rejected => {
+                console.log('Failed to acquire user', rejected);
+                this.setState({ loading: false });
+                alert("An error has occured. Check console for details.");
+            }
+        );
+    }
+
+    createNewTask(newTask) {
+        const { USER } = this.state;
+
+        // Set status of newTask
+        const startTime = newTask.getIn(['schedule', 'startTime']);
+        newTask = newTask.set('status', Map({
+            scheduled: startTime,
+            active: moment().isSameOrAfter(startTime),
+            pending: moment().isBefore(startTime),
+            inactive: !startTime
+        }));
+
+        this.setState({ loading: true });
+        SERVER.post("/api/tasks", {ACTION: 'CREATE', USER_ID: USER.get('_id'), DATA:newTask.toJS()}).then(
+            ({data, data:{data:createdTask}}) => {
+                console.log("SERVER-RESPONSE: ", data);
+                console.log("SERVER: ---Task Created---", createdTask);
+                const task = fromJS(createdTask);
+                const taskList = USER.get('tasks').push(task);
+                const schedule = task.getIn(['status', 'scheduled']) ? this.addToSchedule(task) : USER.get('agenda');
+                this.setState({
+                    USER: USER.withMutations(user => user.set('tasks', taskList).set('agenda', schedule)),
+                    tIndx: Index(taskList),
+                    loading: false
+                });
+            },
+            rejected => {
+                console.log('Failed to create task: ', rejected);
+                this.setState({ loading: false });
+                alert("An error has occured. Check console for details.");
+            }
+        );
+    }
+
+    updateTasks({task, selectedTasks, operation}, ACTION = 'MODIFY') {
         const { USER } = this.state;
         const TASKS = USER.get('tasks');
         const USER_ID = USER.get('_id');
@@ -255,18 +258,18 @@ export default class LifeApp extends React.Component {
 
         const TASK_LIST = task ? [task.get('_id')] : selectedTasks.toJS();
 
-        SERVER.put("/api/tasks", { TYPE, USER_ID, TASK_LIST, OPERATION:operation }).then(
+        SERVER.put("/api/tasks", { ACTION, USER_ID, TASK_LIST, OPERATION:operation }).then(
             ({ data }) => {
-                console.log(`SERVER: ---${selectedTasks.length} Task${selectedTasks.length>1?'s':''} updated---`, data);
+                console.log(`SERVER: ---${selectedTasks.size} Task${selectedTasks.size>1?'s':''} updated---`, data);
                 this.setState({ loading: false });
             },
             // If the changes fail on the server, revert the local tasks to their original state
             rejected => {
+                console.log('Failed to update tasks: ', rejected);
                 this.setState({
-                    USER: USER.set('tasks', TASKS),
+                    USER,
                     loading: false
                 });
-                console.log('Failed to update tasks: ', rejected);
                 alert("An error has occured. Check console for details.");
             }
         );
@@ -282,14 +285,17 @@ export default class LifeApp extends React.Component {
             if( !confirm(`Are you sure you want to delete task '${taskName}'?`) ) return;
         }
         else {
-            if( !confirm(`Are you sure you want to delete these ${selectedTasks.size} tasks?'`) ) return;
+            if( !confirm(`Are you sure you want to delete (${selectedTasks.size}) tasks?'`) ) return;
         }
 
-        const taskIDs = selectedTasks.join('-');
-        const IDs = `${USER.get('_id')}-${taskIDs}`;
-
         this.setState({ loading: true });
-        SERVER.delete(`/api/task/${IDs}`).then(
+
+        SERVER.put("/api/tasks", {
+            ACTION: 'DELETE',
+            USER_ID: USER.get('_id'),
+            TASK_LIST: selectedTasks.toJS()
+        })
+        .then(
             approved => {
                 console.log(`SERVER: ---${selectedTasks.size} Tasks deleted---`, approved.data);
                 const updatedUser = approved.data.data;
@@ -303,8 +309,11 @@ export default class LifeApp extends React.Component {
                 if(typeof callback === 'function') callback();
             },
             rejected => {
-                this.setState({ loading: false });
                 console.log('Failed to delete task(s): ', rejected);
+                this.setState({
+                    USER,
+                    loading: false
+                });
                 alert("An error has occured. Check console for details.");
             }
         );

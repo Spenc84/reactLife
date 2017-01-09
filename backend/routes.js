@@ -24,7 +24,6 @@ module.exports = function( app ){
         .post(ctrl.updateTasks);
     app.route('/api/task/:id')
         .get(ctrl.getTask)
-        .delete(ctrl.deleteTasks);
     app.route('/api/tasks/:ids/:keys/:values')
         .put(ctrl.editTasks);
 };

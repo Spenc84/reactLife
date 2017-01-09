@@ -111,7 +111,11 @@ export default class ScheduleModal extends React.PureComponent {
         const { schedule } = this.state;
         const { updateTasks } = this.props;
 
-        const operation = buildOperation(Map({schedule}), Map({schedule: SCHEDULE}), SCHEDULE.size === 0);
+        const task = Map({schedule});
+        const TASK = Map({schedule: SCHEDULE});
+        const multiple = SCHEDULE.size === 0;
+
+        const operation = buildOperation(task, TASK, multiple);
 
         updateTasks({selectedTasks: TASK_IDS, operation}, 'SCHEDULE');
 

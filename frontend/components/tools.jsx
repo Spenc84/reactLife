@@ -56,16 +56,19 @@ export function buildOperation(task, TASK, multi) {
     let display = [];
 
     task.forEach( (value, key) => {
-        if(TASK.get(key) !== value) {
-            if(key !== 'schedule') {
-                $set[key] = value;
-                display.push(`Changed ${key.toUpperCase()} from '${TASK.get(key)}' to '${value}'`);
-            }
-            else {
+        if(value !== TASK.get(key)) {
+            if(key === 'schedule') {
                 value.forEach( (value, key) => {
                     const VALUE = TASK.getIn(['schedule', key]);
                     if(VALUE !== value) {
                         $set[`schedule.${key}`] = value;
+
+                        if(key === 'startTime') {
+                            $set['status.scheduled'] = !!value;
+                            $set['status.inactive'] = !value;
+                            $set['status.active'] = moment().isSameOrAfter(value);
+                            $set['status.pending'] = moment().isBefore(value);
+                        }
 
                         // Format values into readable english for the changeLog
                         let oldDisp, newDisp;
@@ -89,6 +92,10 @@ export function buildOperation(task, TASK, multi) {
                         else display.push(`Changed ${key.toUpperCase()} from '${oldDisp}' to '${newDisp}'`);
                     }
                 });
+            }
+            else {
+                $set[key] = value;
+                display.push(`Changed ${key.toUpperCase()} from '${TASK.get(key)}' to '${value}'`);
             }
         }
     });
