@@ -254,10 +254,29 @@ module.exports = {
 
             case 'CREATE':
 
-                let newTask = cloneObj(DATA);
-
-                updateScheduledTime(newTask, report);
-                createNewTask({ USER_ID, DATA }, report);
+                // let newTask = cloneObj(DATA);
+                //
+                // updateScheduledTime(newTask, report);
+                //
+                // Promise.all([
+                //     createNewTask(newTask),
+                //     getUserList(newTask)
+                // ])
+                // function getUserList({task, result}) {
+                // .then(
+                //     task => {
+                //         report.logResponse(`New task '${newTask.title}' added to database`);
+                //
+                //         User.find( {_id: { $in: userList } }, (error, users) => {
+                //
+                //         }
+                //     // get users
+                //     // add task to users
+                //     // ? Add task to users schedule
+                //     // Save users
+                //     },
+                //     error => report.criticalError(`Error creating task '${newTask.title}'`, error);
+                // );
 
             break;
 
@@ -374,7 +393,12 @@ module.exports = {
     }
 };
 
-function createNewTask({ USER_ID, DATA:newTask }, report) {
+function updateScheduledTime(task, report) {
+    task.schedule.scheduledTime = task.schedule.startTime; // This will change
+    report.logMessage(`Scheduled task for '${moment(task.schedule.scheduledTime).toString()}'`);
+}
+
+function createNewTask(newTask) {
     const { scheduled } = newTask.status;
 
     newTask.changeLog = [{
@@ -383,7 +407,13 @@ function createNewTask({ USER_ID, DATA:newTask }, report) {
             display: `Created${scheduled ? ' and scheduled' : ''} task`
     }];
 
-    Task.create(newTask, (error, task)=> {
+    return Task.create(newTask);
+
+}
+
+function addTaskToUsers
+
+function Schedule_Tasks () {
         if(error) return report.criticalError(`Error creating task '${newTask.title}'`, error);
         report.logResponse(`New task '${newTask.title}' added to database`);
 
@@ -788,11 +818,6 @@ function removeFromSchedule(user, task, report) {
     if(modified && user._id) user.markModified('agenda');
     if(modified && report) report.logResponse(`Removed task '${task.title}' from '${user.firstName} ${user.lastName}'s schedule.`);
 
-}
-
-function updateScheduledTime(task, report) {
-    task.schedule.scheduledTime = task.schedule.startTime;
-    report.logMessage(`Scheduled task for '${moment(task.schedule.scheduledTime).toString()}'`);
 }
 
 
