@@ -20,6 +20,7 @@ const DEFAULT_SCHEDULE = (()=>{
     }
     return Map({
         duration: 0,
+        scheduledTime: '',
         startTime: '',
         softDeadline: '',
         hardDeadline: '',
@@ -96,13 +97,13 @@ export default class LifeApp extends React.Component {
         this.createNewTask(newTask);
     }
 
-    addToSchedule(task) {
+    addToSchedule(task, schedule) {
         const { USER } = this.state;
-        let schedule = USER.get('agenda');
+        schedule = schedule || USER.get('agenda');
 
         const taskID = task.get('_id');
 
-        const scheduledTime = task.getIn(['users', USER.get('_id'), 'scheduled']);
+        const scheduledTime = task.getIn(['schedule', 'scheduledTime']);
         const startTime = task.getIn(['schedule', 'startTime']);
         const softDeadline = task.getIn(['schedule', 'softDeadline']);
         const hardDeadline = task.getIn(['schedule', 'hardDeadline']);
@@ -154,6 +155,38 @@ export default class LifeApp extends React.Component {
                         hard: [taskID],
                         scheduled: []
                     }));
+        }
+
+        return schedule;
+    }
+
+    removeFromSchedule(task, schedule) {
+        const { USER } = this.state;
+        schedule = schedule || USER.get('agenda');
+
+        const taskID = task.get('_id');
+
+        const time = {
+            scheduled: task.getIn(['schedule', 'scheduledTime']),
+            start: task.getIn(['schedule', 'startTime']),
+            soft: task.getIn(['schedule', 'softDeadline']),
+            hard: task.getIn(['schedule', 'hardDeadline'])
+        };
+
+        for(let key in time) {
+            if(time[key]) {
+                const unix = `${moment(time[key]).startOf('day').valueOf()}`;
+                if(schedule.has(unix)) {
+                    const index = schedule.getIn([unix, key]).indexOf(taskID);
+                    if(index !== -1) schedule = schedule.deleteIn([unix, key, index]);
+                    if(
+                        schedule.getIn([unix, 'scheduled']).size === 0 &&
+                        schedule.getIn([unix, 'start']).size === 0 &&
+                        schedule.getIn([unix, 'soft']).size === 0 &&
+                        schedule.getIn([unix, 'hard']).size === 0
+                    ) schedule = schedule.delete(unix);
+                }
+            }
         }
 
         return schedule;
@@ -218,7 +251,7 @@ export default class LifeApp extends React.Component {
     }
 
     updateTasks({task, selectedTasks, operation}, ACTION = 'MODIFY') {
-        const { USER } = this.state;
+        const { USER, tIndx } = this.state;
         const TASKS = USER.get('tasks');
         const USER_ID = USER.get('_id');
 
@@ -226,30 +259,41 @@ export default class LifeApp extends React.Component {
         if(task) {
 
             const taskID = task.get('_id');
-            const index = TASKS.findIndex(task=>task.get("_id") === taskID);
+            const index = tIndx[ task.get('_id') ];
+            const oldTask = TASKS.get( index );
+
+            const user = oldTask.getIn(['status', 'scheduled'])
+                ? USER.withMutations( user => user.set('agenda', this.removeFromSchedule(oldTask)).setIn(['tasks', index], task) )
+                : USER.setIn(['tasks', index], task);
 
             this.setState({
-                USER: USER.setIn(['tasks', index], task),
+                USER: user,
                 loading: true
             });
 
         }
         else if(selectedTasks) {
 
-            const tasks = TASKS.withMutations( map => {
-                selectedTasks.forEach(taskID => {
-                    const index = TASKS.findIndex(task => task.get('_id') === taskID);
-                    if(index === -1) return console.log(`Unable to find taskID '${taskID}' in TASKS`);
+            const schedule = USER.get('agenda').withMutations( schedule => {
+                selectedTasks.forEach( taskID => {
+                    const oldTask = TASKS.get( tIndx[ taskID ] );
+                    if(oldTask.getIn(['status', 'scheduled'])) this.removeFromSchedule(oldTask, schedule);
+                });
+            });
+
+            const tasks = TASKS.withMutations( tasks => {
+                selectedTasks.forEach( taskID => {
+                    const index = tIndx[ taskID ];
 
                     for(let key in operation['$set']) {
-                        map.setIn([index].concat(key.split('.')), operation['$set'][key]);
+                        tasks.setIn([index].concat(key.split('.')), operation['$set'][key]);
                     }
-                    map.setIn([index, 'changeLog'], map.getIn([index, 'changeLog']).push(operation['$push']['changeLog']));
+                    tasks.setIn([index, 'changeLog'], tasks.getIn([index, 'changeLog']).push(operation['$push']['changeLog']));
                 });
             });
 
             this.setState({
-                USER: USER.set('tasks', tasks),
+                USER: USER.withMutations( user => user.set('agenda', schedule).set('tasks', tasks) ),
                 loading: true
             });
 
@@ -257,11 +301,30 @@ export default class LifeApp extends React.Component {
         else return console.warn("UpdateTasks() called without any tasks selected.");
 
         const TASK_LIST = task ? [task.get('_id')] : selectedTasks.toJS();
+        const numTasks = task ? 1 : selectedTasks.size;
 
         SERVER.put("/api/tasks", { ACTION, USER_ID, TASK_LIST, OPERATION:operation }).then(
             ({ data }) => {
-                console.log(`SERVER: ---${selectedTasks.size} Task${selectedTasks.size>1?'s':''} updated---`, data);
-                this.setState({ loading: false });
+                console.log(`SERVER: ---${numTasks} Task${numTasks>1?'s':''} updated---`, data);
+
+                if( !data.data ) return this.setState({ loading: false });
+
+                const taskData = fromJS(data.data);
+
+                // Update user's schedule
+                const schedule = this.state.USER.get('agenda').withMutations( schedule => {
+                    taskData.forEach( task => { if(task.getIn(['status', 'scheduled'])) this.addToSchedule(task, schedule) });
+                });
+
+                // Update task list with any new tasks returned from the server (now that scheduledTime has been set)
+                const tasks = this.state.USER.get('tasks').withMutations( tasks => {
+                    taskData.forEach( task => tasks.set( tIndx[ task.get('_id') ], task ) );
+                });
+
+                this.setState({
+                    USER: USER.withMutations( user => user.set('agenda', schedule).set('tasks', tasks) ),
+                    loading: false
+                });
             },
             // If the changes fail on the server, revert the local tasks to their original state
             rejected => {

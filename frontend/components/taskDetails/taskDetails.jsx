@@ -166,7 +166,16 @@ export default class TaskDetails extends PureComponent {
         const TYPE = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
         const operation = buildOperation(task, TASK);
 
-        updateTasks({task, operation}, TYPE);
+        const newTask = operation['$set'].hasOwnProperty('status.scheduled')
+            ?   task.withMutations( task => {
+                    task.setIn(['status', 'scheduled'], operation['$set']['status.scheduled'])
+                        .setIn(['status', 'inactive'], operation['$set']['status.inactive'])
+                        .setIn(['status', 'active'], operation['$set']['status.active'])
+                        .setIn(['status', 'pending'], operation['$set']['status.pending']);
+                })
+            :   task;
+
+        updateTasks({task: newTask, operation}, TYPE);
 
         TASK = task;
         this.setState({ readOnly: true });
