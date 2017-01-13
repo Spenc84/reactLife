@@ -58,6 +58,8 @@ export default class Main extends React.Component {
                     updateTasks={this.props.api.updateTasks} />
 
                 <TaskDetails ref={ ref => this.TaskDetails = ref }
+                    userID={this.props.USER.get('_id')}
+                    createNewTask={this.props.api.createNewTask}
                     updateTasks={this.props.api.updateTasks} />
 
             </main>

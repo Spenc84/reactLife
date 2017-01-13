@@ -6,17 +6,16 @@ import { Map, List, fromJS } from 'immutable';
 import Scheduler from '../../components/scheduler/scheduler';
 import { Icon, Button, Text, TextArea } from '../../uiComponents/ui';
 import { buildOperation } from '../../components/tools';
+import { DEFAULT_TASK } from '../../defaults';
 
 
 // ----- PLACEHOLDERS -----
 let TASK = Map();   // Original state of task
 let CALLBACK;       // Callback function to be executed when task is successfully saved.
+let IS_NEW;         // Indicates whether or not to save the task as a new or existing task.
 
-// ----- DATA UNRELATED TO STATE -----
-let ACTIONS = Map();
-let CHANGELOG = List();
 
-// PROPS: updateTasks
+// PROPS: userID, createNewTask, updateTasks
 export default class TaskDetails extends PureComponent {
     constructor(props) {
         super(props);
@@ -24,7 +23,8 @@ export default class TaskDetails extends PureComponent {
         this.state = {
             task: TASK,
             open: false,
-            readOnly: true
+            readOnly: true,
+            isNew: false
         };
 
         this.open = this.open.bind(this);
@@ -105,11 +105,20 @@ export default class TaskDetails extends PureComponent {
     }
 
     open(task, callback) {
+        if(typeof task === 'function' && callback === undefined) {
+            callback = task;
+            task = undefined;
+        }
+
+        if(task === undefined) {
+            IS_NEW = true;
+            task = DEFAULT_TASK.update('users', users => users.push(
+                Map({ user: this.props.userID, securityAccess: 30 })
+            ));
+        }
 
         TASK = task;
         CALLBACK = callback;
-        ACTIONS = Map();
-        CHANGELOG = List();
 
         this.setState({
             task: TASK,
@@ -126,6 +135,7 @@ export default class TaskDetails extends PureComponent {
 
         TASK = Map();
         CALLBACK = null;
+        IS_NEW = false;
 
         this.Scheduler.Accordian.reset();
 
@@ -161,21 +171,25 @@ export default class TaskDetails extends PureComponent {
 
     saveChanges() {
         const { task } = this.state;
-        const { updateTasks } = this.props;
+        const { createNewTask, updateTasks } = this.props;
 
-        const TYPE = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
-        const operation = buildOperation(task, TASK);
 
-        const newTask = operation['$set'].hasOwnProperty('status.scheduled')
-            ?   task.withMutations( task => {
-                    task.setIn(['status', 'scheduled'], operation['$set']['status.scheduled'])
-                        .setIn(['status', 'inactive'], operation['$set']['status.inactive'])
-                        .setIn(['status', 'active'], operation['$set']['status.active'])
-                        .setIn(['status', 'pending'], operation['$set']['status.pending']);
-                })
-            :   task;
+        if(IS_NEW) createNewTask(task);
+        else {
+            const operation = buildOperation(task, TASK);
 
-        updateTasks({task: newTask, operation}, TYPE);
+            const newTask = operation['$set'].hasOwnProperty('status.scheduled')
+                ?   task.withMutations( task => {
+                        task.setIn(['status', 'scheduled'], operation['$set']['status.scheduled'])
+                            .setIn(['status', 'inactive'], operation['$set']['status.inactive'])
+                            .setIn(['status', 'active'], operation['$set']['status.active'])
+                            .setIn(['status', 'pending'], operation['$set']['status.pending']);
+                    })
+                :   task;
+
+            const ACTION = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
+            updateTasks({task: newTask, operation}, ACTION);
+        }
 
         TASK = task;
         this.setState({ readOnly: true });

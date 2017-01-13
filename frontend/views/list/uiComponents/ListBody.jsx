@@ -35,15 +35,13 @@ export default class ListBody extends React.PureComponent {
                 })}
 
                 <NewTaskRow
-                    toggleNewItemPane={this.toggleNewItemPane}
                     buildTask={buildTask}
+                    openTaskDetails={openTaskDetails}
                 />
 
             </div>
         );
     }
-
-    toggleNewItemPane() { console.log("toogleNewItemPane()"); }
 }
 
 //PROPS: task, included, selected, selectTask, updateTitle
@@ -167,7 +165,7 @@ class NewTaskRow extends React.PureComponent {
         const { title } = this.state;
         return (
             <div className="add task row">
-                <div className="svg column" onClick={this.props.toggleNewItemPane}>
+                <div className="svg column" onClick={this.props.openTaskDetails}>
                     <svg width="4.8rem" height="4.8rem">
                         <line x1="2.4rem" x2="2.4rem" y1="1.2rem" y2="3.6rem" />
                         <line x1="1.2rem" x2="3.6rem" y1="2.4rem" y2="2.4rem" />
@@ -194,8 +192,10 @@ class NewTaskRow extends React.PureComponent {
             e.target.blur();
         }
         if(e.keyCode === 13) {
-            this.props.buildTask(e.target.value)
-            e.target.value = "";
+            if(e.target.value !== "") {
+                this.props.buildTask(e.target.value);
+                e.target.value = "";
+            }
             e.target.blur();
         }
     }
