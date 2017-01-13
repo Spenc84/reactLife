@@ -132,10 +132,10 @@ export default class TaskDetails extends PureComponent {
 
     }
 
-    close() {
+    close(skipConfirm) {
         const { task, readOnly } = this.state;
 
-        if(!readOnly && task !== TASK)
+        if(!readOnly && task !== TASK && skipConfirm !== true)
             if(!confirm("Discard changes?")) return;
             else if(IS_NEW && typeof CALLBACK === 'function') CALLBACK();
 
@@ -182,7 +182,7 @@ export default class TaskDetails extends PureComponent {
 
         if(IS_NEW) {
             createNewTask(task);
-            this.close();
+            this.close(true);
             return;
         }
 
