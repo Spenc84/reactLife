@@ -12,7 +12,7 @@ import { DEFAULT_TASK } from '../../defaults';
 // ----- PLACEHOLDERS -----
 let TASK = Map();   // Original state of task
 let CALLBACK;       // Callback function to be executed when task is successfully saved.
-let IS_NEW;         // Indicates whether or not to save the task as a new or existing task.
+let IS_NEW = false;         // Indicates whether or not to save the task as a new or existing task.
 
 
 // PROPS: userID, createNewTask, updateTasks
@@ -23,8 +23,7 @@ export default class TaskDetails extends PureComponent {
         this.state = {
             task: TASK,
             open: false,
-            readOnly: true,
-            isNew: false
+            readOnly: true
         };
 
         this.open = this.open.bind(this);
@@ -110,11 +109,16 @@ export default class TaskDetails extends PureComponent {
             task = undefined;
         }
 
-        if(task === undefined) {
+        if(!Map.isMap(task)) {
+
             IS_NEW = true;
-            task = DEFAULT_TASK.update('users', users => users.push(
-                Map({ user: this.props.userID, securityAccess: 30 })
-            ));
+            const title = typeof task === 'string' ? task : '';
+            task = DEFAULT_TASK
+                .set('title', title)
+                .update('users', users => users.push(
+                    Map({ user: this.props.userID, securityAccess: 30 })
+                ));
+
         }
 
         TASK = task;
@@ -122,7 +126,8 @@ export default class TaskDetails extends PureComponent {
 
         this.setState({
             task: TASK,
-            open: true
+            open: true,
+            readOnly: !IS_NEW
         });
 
     }
@@ -132,6 +137,7 @@ export default class TaskDetails extends PureComponent {
 
         if(!readOnly && task !== TASK)
             if(!confirm("Discard changes?")) return;
+            else if(IS_NEW && typeof CALLBACK === 'function') CALLBACK();
 
         TASK = Map();
         CALLBACK = null;
@@ -174,22 +180,25 @@ export default class TaskDetails extends PureComponent {
         const { createNewTask, updateTasks } = this.props;
 
 
-        if(IS_NEW) createNewTask(task);
-        else {
-            const operation = buildOperation(task, TASK);
-
-            const newTask = operation['$set'].hasOwnProperty('status.scheduled')
-                ?   task.withMutations( task => {
-                        task.setIn(['status', 'scheduled'], operation['$set']['status.scheduled'])
-                            .setIn(['status', 'inactive'], operation['$set']['status.inactive'])
-                            .setIn(['status', 'active'], operation['$set']['status.active'])
-                            .setIn(['status', 'pending'], operation['$set']['status.pending']);
-                    })
-                :   task;
-
-            const ACTION = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
-            updateTasks({task: newTask, operation}, ACTION);
+        if(IS_NEW) {
+            createNewTask(task);
+            this.close();
+            return;
         }
+
+        const operation = buildOperation(task, TASK);
+
+        const newTask = operation['$set'].hasOwnProperty('status.scheduled')
+            ?   task.withMutations( task => {
+                    task.setIn(['status', 'scheduled'], operation['$set']['status.scheduled'])
+                        .setIn(['status', 'inactive'], operation['$set']['status.inactive'])
+                        .setIn(['status', 'active'], operation['$set']['status.active'])
+                        .setIn(['status', 'pending'], operation['$set']['status.pending']);
+                })
+            :   task;
+
+        const ACTION = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
+        updateTasks({task: newTask, operation}, ACTION);
 
         TASK = task;
         this.setState({ readOnly: true });

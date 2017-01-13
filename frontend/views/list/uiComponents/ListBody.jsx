@@ -157,6 +157,7 @@ class NewTaskRow extends React.PureComponent {
         super(props);
         this.state = { title: "" };
 
+        this.openTaskDetails = this.openTaskDetails.bind(this);
         this.updateTitle = this.updateTitle.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
     }
@@ -165,14 +166,15 @@ class NewTaskRow extends React.PureComponent {
         const { title } = this.state;
         return (
             <div className="add task row">
-                <div className="svg column" onClick={this.props.openTaskDetails}>
+                <div className="svg column" onClick={this.openTaskDetails}>
                     <svg width="4.8rem" height="4.8rem">
                         <line x1="2.4rem" x2="2.4rem" y1="1.2rem" y2="3.6rem" />
                         <line x1="1.2rem" x2="3.6rem" y1="2.4rem" y2="2.4rem" />
                     </svg>
                 </div>
                 <div className="title column">
-                    <input type="text"
+                    <input ref={ref => this.title = ref}
+                        type="text"
                         value={title}
                         onChange={this.updateTitle}
                         onKeyDown={this.handleKeyPress}
@@ -180,6 +182,12 @@ class NewTaskRow extends React.PureComponent {
                 </div>
             </div>
         );
+    }
+
+    openTaskDetails() {
+        this.props.openTaskDetails(this.title.value, () => {
+            this.title.value = "";
+        });
     }
 
     updateTitle(e) {
