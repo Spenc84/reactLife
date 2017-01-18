@@ -46,7 +46,7 @@ export default class Month extends React.Component {
                                 <span key={`task_${indx}`}
                                     className="task"
                                     style={{ backgroundColor: task.get("color") }}
-                                    onClick={openTaskDetails.bind(null, task)} />
+                                    onClick={openTaskDetails.bind(null, {task})} />
                             );
                         }
                     )

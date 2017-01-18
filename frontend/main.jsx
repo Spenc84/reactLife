@@ -18,6 +18,7 @@ export default class Main extends React.Component {
         this.changeSection = this.changeSection.bind(this);
         this.openScheduler = this.openScheduler.bind(this);
         this.openTaskDetails = this.openTaskDetails.bind(this);
+        this.modifySelected = this.modifySelected.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -46,7 +47,7 @@ export default class Main extends React.Component {
                 </section>
 
                 <section style={(activeSection === "LIST") ? null : {display: "none"}}>
-                    <ListSection
+                    <ListSection ref={ref => this.ListSection = ref}
                         active={(activeSection === "LIST")}
                         changeSection={this.changeSection}
                         openScheduler={this.openScheduler}
@@ -58,9 +59,10 @@ export default class Main extends React.Component {
                     updateTasks={this.props.api.updateTasks} />
 
                 <TaskDetails ref={ ref => this.TaskDetails = ref }
-                    userID={this.props.USER.get('_id')}
                     createNewTask={this.props.api.createNewTask}
-                    updateTasks={this.props.api.updateTasks} />
+                    updateTasks={this.props.api.updateTasks}
+                    deleteTasks={this.props.api.deleteTasks}
+                    modifySelected={this.modifySelected} />
 
             </main>
         );
@@ -70,11 +72,15 @@ export default class Main extends React.Component {
         this.setState({ activeSection });
     }
 
+    modifySelected(props) {
+        this.ListSection.modifySelected(props);
+    }
+
     openScheduler(selectedTasks, schedule) {
         this.ScheduleModal.openScheduler(selectedTasks, schedule);
     }
 
-    openTaskDetails(task, callback) {
-        this.TaskDetails.open(task, callback);
+    openTaskDetails(props) {
+        this.TaskDetails.open(props);
     }
 }

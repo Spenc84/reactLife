@@ -1,13 +1,15 @@
 import React from 'react';
+import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 
+import { getDefaultTask } from '../../../defaults';
 import { Icon } from '../../../uiComponents/ui';
 
 
-// PROPS: taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask
+// PROPS: taskList, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask
 export default class ListBody extends React.PureComponent {
     render() {
-        const { taskList, filter, starView, selectedTasks, selectTask, updateTitle, buildTask, openTaskDetails } = this.props;
+        const { tab, taskList, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask, openTaskDetails } = this.props;
 
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
@@ -35,8 +37,9 @@ export default class ListBody extends React.PureComponent {
                 })}
 
                 <NewTaskRow
-                    buildTask={buildTask}
+                    createNewTask={createNewTask}
                     openTaskDetails={openTaskDetails}
+                    tab={tab}
                 />
 
             </div>
@@ -140,7 +143,7 @@ class TaskRow extends React.PureComponent {
 
     openTaskDetails() {
         const { task, openTaskDetails } = this.props;
-        openTaskDetails(task);
+        openTaskDetails({task});
     }
 
     toggleEdit(indx) {}
@@ -185,9 +188,11 @@ class NewTaskRow extends React.PureComponent {
     }
 
     openTaskDetails() {
-        this.props.openTaskDetails(this.title.value, () => {
-            this.title.value = "";
+        this.props.openTaskDetails({
+            type: 'NEW',
+            task: this.buildTask()
         });
+        this.setState({ title: '' });
     }
 
     updateTitle(e) {
@@ -196,15 +201,39 @@ class NewTaskRow extends React.PureComponent {
 
     handleKeyPress(e) {
         if(e.keyCode === 27) {
-            e.target.value = "";
-            e.target.blur();
+            this.setState({ title: '' });
+            this.title.blur();
         }
         if(e.keyCode === 13) {
             if(e.target.value !== "") {
-                this.props.buildTask(e.target.value);
-                e.target.value = "";
+                const newTask = this.buildTask();
+                this.props.createNewTask(newTask);
+                this.setState({ title: '' });
             }
-            e.target.blur();
+            this.title.blur();
         }
     }
+
+    buildTask() {
+        const { tab, createNewTask } = this.props;
+
+        let task;
+        if( tab === 'ACTIVE' || tab === 'PENDING' ) {
+
+            const minute = Math.floor(moment().minute()/15)*15;
+
+            const startTime = tab === 'ACTIVE'
+                ? moment().minute(minute).startOf('minute').toJSON()
+                : moment().add(1, 'day').minute(minute).startOf('minute').toJSON();
+
+            task = getDefaultTask().withMutations(
+                task => task.set('title', this.title.value).setIn( ['schedule', 'startTime'], startTime )
+            );
+
+        }
+        else task = getDefaultTask().set('title', this.title.value);
+
+        return task;
+    }
+
 }

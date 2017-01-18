@@ -270,7 +270,12 @@ module.exports = {
                     if(task) {
                         report.logResponse(`New task '${task.title}' added to database`);
                         report.setData(task);
+
+                        if(task.parentTask) addTaskToParent({task, report});
+                        if(task.childTasks) addTaskToChildren({task, report});
+
                     }
+
                     if(users) report.logResponse(`Users pending update: '${userList}'`);
 
                     users.forEach( user => {
@@ -307,7 +312,7 @@ module.exports = {
                     OPERATION,
                     {multi: true},
                     report.sendResult(
-                        `${OPERATION.$push.changeLog.display}\nUpdate operation successful`,
+                        `Update operation successful\n${OPERATION.$push.changeLog.display}`,
                         'An error occured while updating tasks. Update operation aborted...'
                     )
                 );
@@ -548,6 +553,7 @@ function updateScheduledTime({task, operation}, report) {
 
 
 
+
 ////////////////////////////////////////   DATABASE   ////////////////////////////////////////
 //////////   ACCESSOR FUNCTIONS
 function getUsers(userList) {
@@ -607,6 +613,51 @@ function scheduleTask({task, operation, postpone, report}) {
         )
     );
 
+}
+
+function addTaskToParent({task, report}) {
+    if(!(task && report)) return console.log('Unable to addTaskToParent(). Invalid input...');
+
+    const operation = {
+        $push: {
+            'childTasks': task._id,
+            'changeLog': {
+                date: moment().toJSON(),
+                user: USER_ID,
+                display: `Added task '${task.title}'`
+            }
+        }
+    };
+
+    report.wait();
+    Task.findByIdAndUpdate( task.parentTask, operation, (error, parentTask) => {
+        if(error) report.logError(`Error occured while adding task '${task.title}' to Project '${task.parentTask}'`);
+        else report.logResponse(`Added task '${task.title}' to Project '${parentTask.title}'`);
+        report.doneWaiting();
+    });
+}
+
+function addTaskToChildren({task, report}) {
+    if(!(task && report)) return console.log('Unable to addTaskToChildren(). Invalid input...');
+
+    Task.update(
+        { _id: { $in: task.childTasks } },
+        {
+            $set: { 'parentTask': task._id },
+            $push: {
+                'changeLog': {
+                    date: moment().toJSON(),
+                    user: USER_ID,
+                    display: `Added to Project '${task.title}'`
+                }
+            }
+        },
+        {multi: true},
+        report.sendResult(
+            `Added tasks '${task.childTasks}' to Project '${task.title}'`,
+            `Error occured while adding tasks '${task.childTasks}' to Project '${task.title}'`
+        )
+    );
 }
 
 function deleteTasks({ USER_ID, TASK_LIST }, report) {

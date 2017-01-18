@@ -1,4 +1,5 @@
 import { Map, List, fromJS } from 'immutable';
+import { getUSER_ID } from './lifeApp';
 
 // Sky blue
 const DEFAULT_TASK_COLOR = '#0078ff';
@@ -30,12 +31,18 @@ const DEFAULT_TASK = Map({
     color: DEFAULT_TASK_COLOR,
     description: '',
     users: List(),
-    schedule: DEFAULT_SCHEDULE
+    schedule: DEFAULT_SCHEDULE,
+    status: Map()
 });
+
+function getDefaultTask() {
+    return DEFAULT_TASK.set( 'users', fromJS([{ user: getUSER_ID(), securityAccess: 30 }]) );
+}
 
 export {
     DEFAULT_TASK_COLOR,
     DEFAULT_AVAILABILITY,
     DEFAULT_SCHEDULE,
-    DEFAULT_TASK
+    DEFAULT_TASK,
+    getDefaultTask
 };

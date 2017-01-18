@@ -48,7 +48,7 @@ export default class Schedule extends React.Component {
                                     <div key={taskID}
                                         className="task"
                                         style={{backgroundColor: task.get("color")}}
-                                        onClick={openTaskDetails.bind(null, task)}>
+                                        onClick={openTaskDetails.bind(null, {task})}>
                                         {task.get("title")}
                                     </div>
                                 );

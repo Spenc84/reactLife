@@ -93,6 +93,15 @@ export function buildOperation(task, TASK, multi) {
                     }
                 });
             }
+            else if(key === 'status') {
+                value.forEach( (value, key) => {
+                    const VALUE = TASK.getIn(['status', key]);
+                    if(VALUE !== value) {
+                        $set[`status.${key}`] = value;
+                        display.push(`Changed ${key.toUpperCase()} STATUS from '${VALUE}' to '${value}'`);
+                    }
+                });
+            }
             else {
                 $set[key] = value;
                 display.push(`Changed ${key.toUpperCase()} from '${TASK.get(key)}' to '${value}'`);

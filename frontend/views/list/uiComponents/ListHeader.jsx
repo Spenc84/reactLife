@@ -1,5 +1,5 @@
 import React from 'react';
-import Animator from 'react-addons-css-transition-group';
+import { getDefaultTask } from '../../../defaults';
 import { Icon } from '../../../uiComponents/ui';
 
 export default class ListHeader extends React.PureComponent {
@@ -7,20 +7,21 @@ export default class ListHeader extends React.PureComponent {
         super(props);
 
         this.switchToCalendarView = this.switchToCalendarView.bind(this);
+        this.createProject = this.createProject.bind(this);
     }
 
     render() {
-        const { tasksSelected, resetSelectedTasks, toggleStarView, deleteTasks, toggleStarred, toggleCompleted, openScheduler } = this.props;
+        const { selectedTasks, resetSelectedTasks, toggleStarView, deleteTasks, toggleStarred, toggleCompleted, openScheduler } = this.props;
 
         console.log('RENDERED:  --- LISTHEADER ---'); // __DEV__
         return (
             <header className="list">
 
-                <div className={`${tasksSelected?"":"hidden "}icons Row`}>
+                <div className={`${selectedTasks.size?"":"hidden "}icons Row`}>
                     <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.25}/>
                     <div className="functional icons">
                         <Icon i={'delete'} onClick={deleteTasks} />
-                        <Icon i={'group_work'} />
+                        <Icon i={'group_work'} onClick={this.createProject} />
                         <Icon i={'linear_scale'} />
                         <Icon i={'info'} />
                         <Icon i={'group_add'} />
@@ -31,7 +32,7 @@ export default class ListHeader extends React.PureComponent {
                     <Icon i={'check_circle'} onClick={toggleCompleted} size={1.25} />
                 </div>
 
-                <div className={`${tasksSelected?"hidden ":""}default Row`}>
+                <div className={`${selectedTasks.size?"hidden ":""}default Row`}>
                     <Icon i={'today'} onClick={this.switchToCalendarView} size={1.25} />
                     <div style={{flexGrow: 1}}>
                         <span style={{margin: "0 .8rem 0 2.4rem", fontSize: "3.2rem"}}>Projects</span>
@@ -45,6 +46,10 @@ export default class ListHeader extends React.PureComponent {
 
     switchToCalendarView() { this.props.changeSection('CALENDAR'); }
 
-    verifyDelete() { console.log("verifyDelete()"); }
-    openQuickScheduler() { console.log("openQuickScheduler()"); }
+    createProject() {
+        this.props.openTaskDetails({
+            type: 'NEW_PROJECT',
+            task: getDefaultTask().set('childTasks', this.props.selectedTasks)
+        });
+    }
 }

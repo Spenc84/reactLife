@@ -28,7 +28,8 @@ export default class ListSection extends React.Component {
             selectedTasks: List()
         };
 
-        this.buildTask = this.buildTask.bind(this);
+        this.modifySelected = this.modifySelected.bind(this);
+
         this.openScheduler = this.openScheduler.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
         this.updateTitle = this.updateTitle.bind(this);
@@ -57,13 +58,13 @@ export default class ListSection extends React.Component {
 
     render() {
         const { selectedFilter, filter, starView, selectedTasks } = this.state;
-        const { tasks, changeSection, api:{buildTask}, openTaskDetails } = this.props;
+        const { tasks, changeSection, openTaskDetails, api:{createNewTask} } = this.props;
 
         return (
             <div className="ListSection">
 
                 <ListHeader
-                    tasksSelected={selectedTasks.size > 0}
+                    selectedTasks={selectedTasks}
                     changeSection={changeSection}
                     resetSelectedTasks={this.resetSelectedTasks}
                     toggleStarView={this.toggleStarView}
@@ -71,6 +72,7 @@ export default class ListSection extends React.Component {
                     toggleStarred={this.toggleStarred}
                     toggleCompleted={this.toggleCompleted}
                     openScheduler={this.openScheduler}
+                    openTaskDetails={openTaskDetails}
                 />
 
                 <QueryBuilder ref="QB"
@@ -80,13 +82,14 @@ export default class ListSection extends React.Component {
                 />
 
                 <ListBody
+                    tab={selectedFilter}
                     taskList={tasks}
                     filter={filter}
                     starView={starView}
                     selectedTasks={selectedTasks}
                     selectTask={this.selectTask}
                     updateTitle={this.updateTitle}
-                    buildTask={this.buildTask}
+                    createNewTask={createNewTask}
                     openTaskDetails={openTaskDetails}
                 />
 
@@ -95,11 +98,10 @@ export default class ListSection extends React.Component {
     }
 
 
-    buildTask(title) {
-        const { selectedFilter } = this.state;
-        const { api:{buildTask} } = this.props;
-
-        buildTask(title, selectedFilter);
+    modifySelected(callback) {
+        const { selectedTasks } = this.state;
+        const newSelection = typeof callback === 'function' ? callback(selectedTasks) : null;
+        if(newSelection) this.setState({ selectedTasks: newSelection });
     }
 
     openScheduler() {

@@ -57,7 +57,7 @@ export default class Week extends React.Component {
                                     backgroundColor: task.get("color"),
                                     height: task.get("schedule").get("duration")
                                 }}
-                                onClick={openTaskDetails.bind(null, task)}>
+                                onClick={openTaskDetails.bind(null, {task})}>
                                 {task.get("title")}
                             </div>
                         );

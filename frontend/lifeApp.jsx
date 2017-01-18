@@ -4,7 +4,7 @@ import SERVER from 'axios';
 import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 import { Index } from './components/tools';
-import { DEFAULT_TASK } from './defaults';
+import { getDefaultTask } from './defaults';
 
 import Main from './main';
 
@@ -24,7 +24,6 @@ export default class LifeApp extends React.Component {
             loading: true
         };
 
-        this.buildTask = this.buildTask.bind(this);
         this.createNewTask = this.createNewTask.bind(this);
         this.updateTasks = this.updateTasks.bind(this);
         this.deleteTasks = this.deleteTasks.bind(this);
@@ -42,7 +41,6 @@ export default class LifeApp extends React.Component {
                 tasks={ USER.get("tasks") || List()}
                 schedule={ USER.get("agenda") || List()}
                 api={{
-                    buildTask: this.buildTask,
                     createNewTask: this.createNewTask,
                     updateTasks: this.updateTasks,
                     deleteTasks: this.deleteTasks
@@ -53,24 +51,6 @@ export default class LifeApp extends React.Component {
 	}
 
     // LOCAL FUNCTIONS
-    buildTask(title, tab) {
-        const user = this.state.USER.get('_id');
-        const minute = Math.floor(moment().minute()/15)*15;
-
-        const startTime = tab === 'ACTIVE'
-            ? moment().minute(minute).startOf('minute').toJSON()
-            : moment().add(1, 'day').minute(minute).startOf('minute').toJSON();
-
-        const newTask = tab === 'ACTIVE' || tab === 'PENDING'
-            ?   DEFAULT_TASK.set( 'users', fromJS([{ user, securityAccess: 30 }]) )
-            :   DEFAULT_TASK.withMutations( task =>
-                    task.set( 'users', fromJS([{ user, securityAccess: 30 }]) )
-                    .setIn( ['schedule', 'startTime'], startTime )
-                );
-
-        this.createNewTask(newTask);
-    }
-
     addToSchedule(task, schedule) {
         const { USER } = this.state;
         schedule = schedule || USER.get('agenda');
@@ -195,12 +175,12 @@ export default class LifeApp extends React.Component {
 
         // Set status of newTask
         const startTime = newTask.getIn(['schedule', 'startTime']);
-        newTask = newTask.set('status', Map({
-            scheduled: startTime,
-            active: moment().isSameOrAfter(startTime),
-            pending: moment().isBefore(startTime),
-            inactive: !startTime
-        }));
+        newTask = newTask.withMutations( task =>
+            task.setIn(['status', 'scheduled'], !!startTime)
+                .setIn(['status', 'active'], moment().isSameOrAfter(startTime))
+                .setIn(['status', 'pending'], moment().isBefore(startTime))
+                .setIn(['status', 'inactive'], !startTime)
+        );
 
         this.setState({ loading: true });
         SERVER.post("/api/tasks", {ACTION: 'CREATE', USER_ID: USER.get('_id'), DATA:newTask.toJS()}).then(

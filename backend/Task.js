@@ -38,13 +38,13 @@ var taskSchema = new mongoose.Schema({
         multiday: {type: Boolean, default: false},
         carryOver: {type: Boolean, default: false},
         carriedOver: {type: Number, default: 0}
-    }
+    },
+    parentTask: {type: mongoose.Schema.Types.ObjectId, ref: 'Task'},
+    childTasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}]
   // prereq: {},
   // context: {},
   // reminders: [{}],
   // priority: Number,
-  // childTasks: [{type: Schema.Types.ObjectId, ref: 'Task', default: null}],
-  // parentTask: {type: Schema.Types.ObjectId, ref: 'Task', default: null},
   // creationDate: {
   //   // date: {type: Date, required: true},
   //   // user: {type: Schema.Types.ObjectId, ref: 'Task', required: true}
