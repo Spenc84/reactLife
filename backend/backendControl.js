@@ -82,30 +82,30 @@ module.exports = {
     updateData( req, res ) {
         const report = new Report(res, "UPDATE");
         //
-        User.findByIdAndUpdate(
-            '575350c7b8833bf5125225a5',
-            {
-                // $set: {
-                //     'agenda.1482991200000.start': [
-                //         "5865943cb29f09382802d41c",
-                //         "586594b2b29f09382802d425",
-                //         "586594c0b29f09382802d428",
-                //         "586594ccb29f09382802d42b"
-                //     ],
-                //     'agenda.1482991200000.scheduled': [
-                //         "5865943cb29f09382802d41c",
-                //         "586594b2b29f09382802d425",
-                //         "586594c0b29f09382802d428",
-                //         "586594ccb29f09382802d42b"
-                //     ],
-                //     'changeLog': []
-                // } ,
-                $unset: {
-                    'agenda.1485928800000': ""
-                }
-            },
-            sendReport(res)
-        );
+        // User.findByIdAndUpdate(
+        //     '575350c7b8833bf5125225a5',
+        //     {
+        //         // $set: {
+        //         //     'agenda.1482991200000.start': [
+        //         //         "5865943cb29f09382802d41c",
+        //         //         "586594b2b29f09382802d425",
+        //         //         "586594c0b29f09382802d428",
+        //         //         "586594ccb29f09382802d42b"
+        //         //     ],
+        //         //     'agenda.1482991200000.scheduled': [
+        //         //         "5865943cb29f09382802d41c",
+        //         //         "586594b2b29f09382802d425",
+        //         //         "586594c0b29f09382802d428",
+        //         //         "586594ccb29f09382802d42b"
+        //         //     ],
+        //         //     'changeLog': []
+        //         // } ,
+        //         $unset: {
+        //             'agenda.1485928800000': ""
+        //         }
+        //     },
+        //     sendReport(res)
+        // );
         //
         // const set = {
         //     'users.575350c7b8833bf5125225a5': {
@@ -182,6 +182,7 @@ module.exports = {
         //     'status.inactive': false,
         //     'status.scheduled': true
         // }}, sendReport(res));
+        // Task.findByIdAndRemove('587fa09df467bd3451741b01', report.sendResult('Done', 'Error'));
     },
     getTest( req, res ){
         console.log(req.query);
@@ -271,8 +272,8 @@ module.exports = {
                         report.logResponse(`New task '${task.title}' added to database`);
                         report.setData(task);
 
-                        if(task.parentTask) addTaskToParent({task, report});
-                        if(task.childTasks) addTaskToChildren({task, report});
+                        if(task.parentTasks) addTaskToParents({task, report, USER_ID});
+                        if(task.childTasks) addTaskToChildren({task, report, USER_ID});
 
                     }
 
@@ -615,36 +616,37 @@ function scheduleTask({task, operation, postpone, report}) {
 
 }
 
-function addTaskToParent({task, report}) {
+function addTaskToParents({task, report, USER_ID}) {
     if(!(task && report)) return console.log('Unable to addTaskToParent(). Invalid input...');
 
-    const operation = {
-        $push: {
-            'childTasks': task._id,
-            'changeLog': {
-                date: moment().toJSON(),
-                user: USER_ID,
-                display: `Added task '${task.title}'`
+    Task.update(
+        { _id: { $in: task.parentTasks } },
+        {
+            $push: {
+                'childTasks': task._id,
+                'changeLog': {
+                    date: moment().toJSON(),
+                    user: USER_ID,
+                    display: `Added task '${task.title}'`
+                }
             }
-        }
-    };
-
-    report.wait();
-    Task.findByIdAndUpdate( task.parentTask, operation, (error, parentTask) => {
-        if(error) report.logError(`Error occured while adding task '${task.title}' to Project '${task.parentTask}'`);
-        else report.logResponse(`Added task '${task.title}' to Project '${parentTask.title}'`);
-        report.doneWaiting();
-    });
+        },
+        {multi: true},
+        report.sendResult(
+            `Added task '${task.title}' to Projects '${task.parentTasks}'`,
+            `Error occured while adding task '${task.title}' to Projects '${task.parentTasks}'`
+        )
+    );
 }
 
-function addTaskToChildren({task, report}) {
+function addTaskToChildren({task, report, USER_ID}) {
     if(!(task && report)) return console.log('Unable to addTaskToChildren(). Invalid input...');
 
     Task.update(
         { _id: { $in: task.childTasks } },
         {
-            $set: { 'parentTask': task._id },
             $push: {
+                'parentTasks': task._id,
                 'changeLog': {
                     date: moment().toJSON(),
                     user: USER_ID,

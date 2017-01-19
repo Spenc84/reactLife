@@ -13,7 +13,8 @@ const DEFAULT_QUERY = {
     rInclude: ['active'],
     rExclude: ['completed'],
     include: [],
-    exclude: []
+    exclude: [],
+    search: ''
 };
 
 
@@ -25,7 +26,8 @@ export default class ListSection extends React.Component {
             selectedFilter: "ACTIVE",
             filter: filterTasks(props.tasks, DEFAULT_QUERY),
             starView: false,
-            selectedTasks: List()
+            selectedTasks: List(),
+            selectedProject: null
         };
 
         this.modifySelected = this.modifySelected.bind(this);
@@ -40,6 +42,7 @@ export default class ListSection extends React.Component {
         this.selectTask = this.selectTask.bind(this);
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
+        this.updateSelectedProject = this.updateSelectedProject.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -57,8 +60,11 @@ export default class ListSection extends React.Component {
     }
 
     render() {
-        const { selectedFilter, filter, starView, selectedTasks } = this.state;
+        const { selectedFilter, filter, starView, selectedTasks, selectedProject } = this.state;
         const { tasks, changeSection, openTaskDetails, api:{createNewTask} } = this.props;
+
+        const tasksInProject = selectedProject ? selectedProject.get('childTasks') : List();
+        const projectID = selectedProject ? selectedProject.get('_id') : '';
 
         return (
             <div className="ListSection">
@@ -73,6 +79,8 @@ export default class ListSection extends React.Component {
                     toggleCompleted={this.toggleCompleted}
                     openScheduler={this.openScheduler}
                     openTaskDetails={openTaskDetails}
+                    project={selectedProject}
+                    closeProject={this.updateSelectedProject}
                 />
 
                 <QueryBuilder ref="QB"
@@ -91,6 +99,9 @@ export default class ListSection extends React.Component {
                     updateTitle={this.updateTitle}
                     createNewTask={createNewTask}
                     openTaskDetails={openTaskDetails}
+                    projectID={projectID}
+                    tasksInProject={tasksInProject}
+                    openProject={this.updateSelectedProject}
                 />
 
             </div>
@@ -213,6 +224,10 @@ export default class ListSection extends React.Component {
 
     toggleStarView() {
         this.setState({ starView: !this.state.starView });
+    }
+
+    updateSelectedProject(selectedProject) {
+        this.setState({selectedProject});
     }
 
 }

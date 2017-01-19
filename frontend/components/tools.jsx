@@ -27,13 +27,14 @@ export function filterTasks(list, query) {
     if(!query.rExclude) query.rExclude = [];
     if(!query.include) query.include = [];
     if(!query.exclude) query.exclude = [];
-    if(!query.search) query.search = "";
+    if(!query.search) query.search = '';
 
     return list.map(
         task => {
-            const status = task.get("status");
-            const title = task.get("title").toLowerCase();
-            const include = (
+            const status = task.get('status');
+            const title = task.get('title').toLowerCase();
+
+            return (
                 query.rInclude.every(item=>status.get(item)) &&
                 query.rExclude.every(item=>!status.get(item)) &&
                 (
@@ -42,11 +43,10 @@ export function filterTasks(list, query) {
                     query.exclude.some(item=>!status.get(item))
                 ) &&
                 (
-                    query.search === "" ||
+                    query.search === '' ||
                     title.indexOf(query.search.toLowerCase()) !== -1
                 )
             );
-            return include;
         }
     );
 }

@@ -40,6 +40,9 @@ export default class TaskDetails extends PureComponent {
     render() {
         const { task, open } = this.state;
 
+        const completed = task.getIn(['status', 'completed']);
+        const starred = task.getIn(['status', 'starred']);
+
         return (
             <main className={`${open?'':'hidden '}TaskDetails`}>
 
@@ -53,10 +56,10 @@ export default class TaskDetails extends PureComponent {
                         <Icon i={'info'} />
                         <Icon i={'group_add'} />
                         <Icon i={'schedule'} onClick={openScheduler} /> */}
-                        <Icon i={'star'} style={{color:'rgb(241,196,15)'}} onClick={this.toggleStarred} />
+                        <Icon i={'star'} onClick={this.toggleStarred} className={starred?'starred':''} />
                         {/* <Icon i={'more_vert'} /> */}
                     </div>
-                    <Icon i={'check_circle'} onClick={this.toggleCompleted} size={1.25} />
+                    <Icon i={'check_circle'} onClick={this.toggleCompleted} size={1.25} className={completed?'completed':''} />
                     <Button light
                         label={'SAVE'}
                         title={'Save changes'}
@@ -185,10 +188,17 @@ export default class TaskDetails extends PureComponent {
             :   task;
 
         const ACTION = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
-        updateTasks({task: newTask, operation}, ACTION);
 
-        TASK = newTask;
-        this.setState({task: TASK});
+        const callback = this.props.modifySelected.bind(this, selectedTasks => {
+            const _id = TASK.get('_id');
+            const index = selectedTasks.findIndex( id => id === _id );
+            return index === -1 ? selectedTasks : selectedTasks.delete(index);
+        });
+
+        updateTasks({task: newTask, operation, callback}, ACTION);
+
+        TASK = task;
+        this.forceUpdate();
     }
 
     deleteTask() {

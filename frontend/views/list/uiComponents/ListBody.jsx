@@ -9,7 +9,9 @@ import { Icon } from '../../../uiComponents/ui';
 // PROPS: taskList, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask
 export default class ListBody extends React.PureComponent {
     render() {
-        const { tab, taskList, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask, openTaskDetails } = this.props;
+        const { tab, taskList, filter, starView, selectedTasks, selectTask,
+                updateTitle, createNewTask, openTaskDetails, projectID,
+                tasksInProject, openProject } = this.props;
 
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
@@ -19,9 +21,12 @@ export default class ListBody extends React.PureComponent {
                     const ID = task.get("_id");
                     const selected = selectedTasks.some(id=>id===ID);
                     const starred = task.get("status").get("starred");
-                    const included = !filter.get(index) ? false
-                            : (starView && !starred) ? false
-                            : true;
+
+                    const included
+                        = filter.get(index)
+                        && !(tasksInProject.size && tasksInProject.indexOf(ID) === -1)
+                        && !(tab !== "SEARCH" && task.get('parentTasks').size && task.get('parentTasks').indexOf(projectID))
+                        && !(starView && !starred);
 
                     return (
                         <TaskRow
@@ -32,6 +37,7 @@ export default class ListBody extends React.PureComponent {
                             selectTask={selectTask}
                             updateTitle={updateTitle}
                             openTaskDetails={openTaskDetails}
+                            openProject={openProject}
                         />
                     );
                 })}
@@ -59,6 +65,7 @@ class TaskRow extends React.PureComponent {
         this.saveTitle = this.saveTitle.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.openTaskDetails = this.openTaskDetails.bind(this);
+        this.openProject = this.openProject.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -73,10 +80,13 @@ class TaskRow extends React.PureComponent {
         const hidden = included ? "" : "hidden ";
         const starred = task.get("status").get("starred");
         const completed = task.get("status").get("completed");
-        const svgInnerColor = (selected) ? 'rgb(0,120,255)' : 'rgb(50,200,50)';
-        const svgInner = (selected || completed)
-                ? <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill={svgInnerColor} />
-                : null;
+        const isProject = task.get('childTasks').size;
+
+        const svgInnerColor = (selected) ? 'rgb(0,120,255)'
+                : (isProject) ? task.get('color')
+                : 'rgb(50,200,50)';
+
+        const onRowClick = isProject ? this.openProject : this.openTaskDetails;
 
         const titleColumn = selected
             ?   <input type="text"
@@ -85,7 +95,7 @@ class TaskRow extends React.PureComponent {
                     onBlur={this.saveTitle}
                     onKeyDown={this.handleKeyPress}
                 />
-            :   <span onClick={this.openTaskDetails}>{title}</span>;
+            :   <span onClick={onRowClick}>{title}</span>;
 
         // console.log('RENDERED: TaskRow'); // __DEV__
         return (
@@ -93,11 +103,11 @@ class TaskRow extends React.PureComponent {
                 <div className="checkbox column" onClick={this.selectTask}>
                     <svg width="4.8rem" height="4.8rem">
                         <circle cx="2.4rem" cy="2.4rem" r="1.2rem" fill="white"/>
-                        <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill="rgb(50,200,50)" style={(!selected&&completed)?null:{display:"none"}} />
+                        <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill={svgInnerColor} style={selected||completed||isProject?null:{display:"none"}} />
                         <line x1="1.92rem" x2="2.24rem" y1="2.4rem" y2="2.72rem" style={(!selected&&completed)?null:{display:"none"}} />
                         <line x1="2.24rem" x2="2.88rem" y1="2.72rem" y2="2.08rem" style={(!selected&&completed)?null:{display:"none"}} />
-                        <circle cx="2.4rem" cy="2.4rem" r=".8rem" fill="rgb(0,120,255)" style={selected?null:{display:"none"}} />
                     </svg>
+                    {isProject ? <span className="projectSize" style={selected?{display:'none'}:null}>{isProject}</span> : null}
                 </div>
                 <div className="title column">
                     {titleColumn}
@@ -146,14 +156,17 @@ class TaskRow extends React.PureComponent {
         openTaskDetails({task});
     }
 
-    toggleEdit(indx) {}
-    toggleStarred() {}
-    toggleEditItemPane(task) {}
+    openProject() {
+        const { task, openProject } = this.props;
+        openProject(task);
+    }
+
 }
 
 TaskRow.defaultProps = {
     task: Map()
 };
+
 
 class NewTaskRow extends React.PureComponent {
     constructor(props) {

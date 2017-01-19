@@ -171,7 +171,7 @@ export default class LifeApp extends React.Component {
     }
 
     createNewTask(newTask) {
-        const { USER } = this.state;
+        const { USER, tIndx } = this.state;
 
         // Set status of newTask
         const startTime = newTask.getIn(['schedule', 'startTime']);
@@ -188,8 +188,19 @@ export default class LifeApp extends React.Component {
                 console.log("SERVER-RESPONSE: ", data);
                 console.log("SERVER: ---Task Created---", createdTask);
                 const task = fromJS(createdTask);
-                const taskList = USER.get('tasks').push(task);
+
+                const taskID = task.get('_id');
+                const parentTasks = task.get('parentTasks');
+                const childTasks = task.get('childTasks');
+
+                const taskList = USER.get('tasks').withMutations( tasks => {
+                    tasks.push(task);
+                    parentTasks.forEach( ID => tasks.updateIn([tIndx[ID], 'childTasks'], value => value.push(taskID)) );
+                    childTasks.forEach( ID => tasks.updateIn([tIndx[ID], 'parentTasks'], value => value.push(taskID)) );
+                });
+
                 const schedule = task.getIn(['status', 'scheduled']) ? this.addToSchedule(task) : USER.get('agenda');
+
                 this.setState({
                     USER: USER.withMutations(user => user.set('tasks', taskList).set('agenda', schedule)),
                     tIndx: Index(taskList),
@@ -204,7 +215,7 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    updateTasks({task, selectedTasks, operation}, ACTION = 'MODIFY') {
+    updateTasks({task, selectedTasks, operation, callback}, ACTION = 'MODIFY') {
         const { USER, tIndx } = this.state;
         const TASKS = USER.get('tasks');
         const USER_ID = USER.get('_id');
@@ -216,7 +227,7 @@ export default class LifeApp extends React.Component {
             const index = tIndx[ task.get('_id') ];
             const oldTask = TASKS.get( index );
 
-            const user = oldTask.getIn(['status', 'scheduled'])
+            const user = ACTION === 'SCHEDULE' && oldTask.getIn(['status', 'scheduled'])
                 ? USER.withMutations( user => user.set('agenda', this.removeFromSchedule(oldTask)).setIn(['tasks', index], task) )
                 : USER.setIn(['tasks', index], task);
 
@@ -228,12 +239,14 @@ export default class LifeApp extends React.Component {
         }
         else if(selectedTasks) {
 
-            const schedule = USER.get('agenda').withMutations( schedule => {
-                selectedTasks.forEach( taskID => {
-                    const oldTask = TASKS.get( tIndx[ taskID ] );
-                    if(oldTask.getIn(['status', 'scheduled'])) this.removeFromSchedule(oldTask, schedule);
-                });
-            });
+            const schedule = ACTION === 'SCHEDULE'
+                ?   USER.get('agenda').withMutations( schedule => {
+                        selectedTasks.forEach( taskID => {
+                            const oldTask = TASKS.get( tIndx[ taskID ] );
+                            if(oldTask.getIn(['status', 'scheduled'])) this.removeFromSchedule(oldTask, schedule);
+                        });
+                    })
+                :   undefined;
 
             const tasks = TASKS.withMutations( tasks => {
                 selectedTasks.forEach( taskID => {
@@ -246,8 +259,12 @@ export default class LifeApp extends React.Component {
                 });
             });
 
+            const user = ACTION === 'SCHEDULE'
+                ?   USER.withMutations( user => user.set('agenda', schedule).set('tasks', tasks) )
+                :   USER.set('tasks', tasks);
+
             this.setState({
-                USER: USER.withMutations( user => user.set('agenda', schedule).set('tasks', tasks) ),
+                USER: user,
                 loading: true
             });
 
@@ -261,22 +278,28 @@ export default class LifeApp extends React.Component {
             ({ data }) => {
                 console.log(`SERVER: ---${numTasks} Task${numTasks>1?'s':''} updated---`, data);
 
-                if( !data.data ) return this.setState({ loading: false });
-                const taskData = fromJS(data.data);
+                if( ACTION === 'SCHEDULE' ) {
 
-                // Update user's schedule
-                const schedule = this.state.USER.get('agenda').withMutations( schedule => {
-                    taskData.forEach( task => { if(task.getIn(['status', 'scheduled'])) this.addToSchedule(task, schedule) });
-                });
-                // Update task list with any new tasks returned from the server (now that scheduledTime has been set)
-                const tasks = this.state.USER.get('tasks').withMutations( tasks => {
-                    taskData.forEach( task => tasks.set( tIndx[ task.get('_id') ], task ) );
-                });
+                    const taskData = fromJS(data.data);
 
-                this.setState({
-                    USER: USER.withMutations( user => user.set('agenda', schedule).set('tasks', tasks) ),
-                    loading: false
-                });
+                    // Update user's schedule
+                    const schedule = this.state.USER.get('agenda').withMutations( schedule => {
+                        taskData.forEach( task => { if(task.getIn(['status', 'scheduled'])) this.addToSchedule(task, schedule) });
+                    });
+                    // Update task list with any new tasks returned from the server (now that scheduledTime has been set)
+                    const tasks = this.state.USER.get('tasks').withMutations( tasks => {
+                        taskData.forEach( task => tasks.set( tIndx[ task.get('_id') ], task ) );
+                    });
+
+                    this.setState({
+                        USER: USER.withMutations( user => user.set('agenda', schedule).set('tasks', tasks) ),
+                        loading: false
+                    });
+
+                }
+                else this.setState({ loading: false });
+
+                if(typeof callback === 'function') callback();
             },
             // If the changes fail on the server, revert the local tasks to their original state
             rejected => {
