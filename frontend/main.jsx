@@ -72,8 +72,8 @@ export default class Main extends React.Component {
         this.setState({ activeSection });
     }
 
-    modifySelected(props) {
-        this.ListSection.modifySelected(props);
+    modifySelected(callback1, callback2) {
+        this.ListSection.modifySelected(callback1, callback2);
     }
 
     openScheduler(selectedTasks, schedule) {

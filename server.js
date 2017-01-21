@@ -2,12 +2,12 @@ import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { PORT, mongoUri, corsOptions } from './config/session';
+import { PORT, mongoUri, corsOptions, ENV } from './config/session';
 import webpackDevServer from "./webpackDevServer";
 
 mongoose.Promise = Promise;
 
-const PROD = process.env.NODE_ENV === "production";
+const PROD = process.env.NODE_ENV === "production" || ENV === "production";
 const app = express();
 
 if (PROD) {

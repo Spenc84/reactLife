@@ -224,12 +224,15 @@ export default class TaskDetails extends PureComponent {
     }
 
     deleteTask() {
-        this.props.deleteTasks( List([TASK.get('_id')]), () => {
-            this.props.modifySelected( selectedTasks => {
-                const _id = TASK.get('_id');
-                const index = selectedTasks.findIndex( id => id === _id );
-                return index === -1 ? selectedTasks : selectedTasks.delete(index);
-            });
+        const ID = TASK.get('_id');
+        this.props.deleteTasks( List([ID] ), () => {
+            this.props.modifySelected(
+                selectedTasks => {
+                    const index = selectedTasks.findIndex( id => id === ID );
+                    return index === -1 ? selectedTasks : selectedTasks.delete(index);
+                },
+                selectedProject => selectedProject.get('_id') === ID ? null : selectedProject
+            );
             this.close();
         });
     }

@@ -110,10 +110,15 @@ export default class ListSection extends React.Component {
     }
 
 
-    modifySelected(callback) {
-        const { selectedTasks } = this.state;
-        const newSelection = typeof callback === 'function' ? callback(selectedTasks) : null;
-        if(newSelection) this.setState({ selectedTasks: newSelection });
+    modifySelected(callback1, callback2) {
+        const { selectedTasks, selectedProject } = this.state;
+
+        if( callback1 || callback2 ) {
+            this.setState({
+                selectedTasks: typeof callback1 === 'function' ? callback1(selectedTasks) : selectedTasks,
+                selectedProject: typeof callback2 === 'function' ? callback2(selectedProject) : selectedProject
+            });
+        }
     }
 
     openScheduler() {

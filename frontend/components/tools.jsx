@@ -161,13 +161,13 @@ export function updateTaskOnList(list, task, tIndx) {
 
 export function removeTaskFromParents(list, task, tIndx) {
     task.get('parentTasks').forEach( ID => {
-        const index = list.getIn([tIndx[ID], 'childTasks']).indexOf(task.get('_id'));
+        const index = (list.getIn([tIndx[ID], 'childTasks']) || List()).indexOf(task.get('_id'));
         if(index !== -1) list.deleteIn([tIndx[ID], 'childTasks', index]);
     });
 }
 export function removeTaskFromChildren(list, task, tIndx) {
     task.get('childTasks').forEach( ID => {
-        const index = list.getIn([tIndx[ID], 'parentTasks']).indexOf(task.get('_id'));
+        const index = (list.getIn([tIndx[ID], 'parentTasks']) || List()).indexOf(task.get('_id'));
         if(index !== -1) list.deleteIn([tIndx[ID], 'parentTasks', index]);
     });
 }
