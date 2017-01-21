@@ -66,6 +66,7 @@ export default class ListSection extends React.Component {
         const tasksInProject = selectedProject ? selectedProject.get('childTasks') : List();
         const projectID = selectedProject ? selectedProject.get('_id') : '';
 
+        console.log('RENDERED: --- LIST_SECTION ---'); // __DEV__
         return (
             <div className="ListSection">
 

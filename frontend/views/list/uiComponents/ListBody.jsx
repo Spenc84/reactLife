@@ -219,8 +219,7 @@ class NewTaskRow extends React.PureComponent {
         }
         if(e.keyCode === 13) {
             if(e.target.value !== "") {
-                const newTask = this.buildTask();
-                this.props.createNewTask(newTask);
+                this.props.createNewTask( this.buildTask() );
                 this.setState({ title: '' });
             }
             this.title.blur();
@@ -228,9 +227,10 @@ class NewTaskRow extends React.PureComponent {
     }
 
     buildTask() {
-        const { tab, createNewTask } = this.props;
+        const { tab } = this.props;
 
-        let task;
+        let task = getDefaultTask().set('title', this.title.value);
+
         if( tab === 'ACTIVE' || tab === 'PENDING' ) {
 
             const minute = Math.floor(moment().minute()/15)*15;
@@ -239,12 +239,18 @@ class NewTaskRow extends React.PureComponent {
                 ? moment().minute(minute).startOf('minute').toJSON()
                 : moment().add(1, 'day').minute(minute).startOf('minute').toJSON();
 
-            task = getDefaultTask().withMutations(
-                task => task.set('title', this.title.value).setIn( ['schedule', 'startTime'], startTime )
+            task = task.withMutations(
+                task => task
+                    .set('title', this.title.value)
+                    .setIn( ['schedule', 'startTime'], startTime )
+                    .setIn(['status', 'scheduled'], true)
+                    .setIn(['status', 'active'], tab === 'ACTIVE')
+                    .setIn(['status', 'pending'], tab === 'PENDING')
+                    .setIn(['status', 'inactive'], false)
+                    .setIn(['changeLog', 0, 'display'], 'Created and scheduled task')
             );
 
         }
-        else task = getDefaultTask().set('title', this.title.value);
 
         return task;
     }

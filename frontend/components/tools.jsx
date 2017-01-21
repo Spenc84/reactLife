@@ -119,3 +119,118 @@ export function buildOperation(task, TASK, multi) {
 
     return { $set, $push };
 }
+
+
+////////////////////   MUTATOR FUNCTIONS   ////////////////////
+////////// TASK //////////
+export function buildTaskList(TASKS, selectedTasks, operation) {
+    return TASKS
+        .filter( task => selectedTasks.indexOf(task.get('_id')) !== -1 )
+        .map( task => task.withMutations( task => {
+            for(let key in operation['$set']) {
+                task.setIn(key.split('.'), operation['$set'][key]);
+            }
+            task.update('changeLog', value => value.push(operation['$push']['changeLog']));
+        }));
+}
+
+////////// TASK LIST //////////
+export function addTaskToList(list, task) {
+    list.push(task);
+}
+export function addTaskToParents(list, task, tIndx) {
+    task.get('parentTasks').forEach(
+        ID => list.updateIn(
+            [tIndx[ID], 'childTasks'],
+            value => value.push( task.get('_id') )
+        )
+    );
+}
+export function addTaskToChildren(list, task, tIndx) {
+    task.get('childTasks').forEach(
+        ID => list.updateIn(
+            [tIndx[ID], 'parentTasks'],
+            value => value.push( task.get('_id') )
+        )
+    );
+}
+
+export function updateTaskOnList(list, task, tIndx) {
+    list.set( tIndx[ task.get('_id') ], task );
+}
+
+export function removeTaskFromParents(list, task, tIndx) {
+    task.get('parentTasks').forEach( ID => {
+        const index = list.getIn([tIndx[ID], 'childTasks']).indexOf(task.get('_id'));
+        if(index !== -1) list.deleteIn([tIndx[ID], 'childTasks', index]);
+    });
+}
+export function removeTaskFromChildren(list, task, tIndx) {
+    task.get('childTasks').forEach( ID => {
+        const index = list.getIn([tIndx[ID], 'parentTasks']).indexOf(task.get('_id'));
+        if(index !== -1) list.deleteIn([tIndx[ID], 'parentTasks', index]);
+    });
+}
+export function removeTasksFromList(TASKS, selectedTasks, tIndx) {
+
+    return TASKS.withMutations( list => {
+        selectedTasks.forEach( taskID => {
+            const task = TASKS.get( tIndx[taskID] );
+            removeTaskFromParents(list, task, tIndx);
+            removeTaskFromChildren(list, task, tIndx);
+        });
+    })
+    .filter( task => selectedTasks.indexOf(task.get('_id')) === -1 );
+}
+
+////////// SCHEDULE //////////
+export function addTaskToSchedule(schedule, task) {
+    const taskID = task.get('_id');
+
+    const time = {
+        scheduled: task.getIn(['schedule', 'scheduledTime']),
+        start: task.getIn(['schedule', 'startTime']),
+        soft: task.getIn(['schedule', 'softDeadline']),
+        hard: task.getIn(['schedule', 'hardDeadline'])
+    };
+
+    for(let key in time) {
+        if(time[key]) {
+            const date = moment(time[key]).startOf('day').valueOf().toString();
+            if( !schedule.has(date) ) schedule.set(date, fromJS({
+                date: moment(date).toJSON(),
+                start: [],
+                soft: [],
+                hard: [],
+                scheduled: []
+            }));
+            schedule.updateIn( [date, key], value => value.push(taskID) );
+        }
+    }
+}
+export function removeTaskFromSchedule(schedule, task) {
+    const taskID = task.get('_id');
+
+    const time = {
+        scheduled: task.getIn(['schedule', 'scheduledTime']),
+        start: task.getIn(['schedule', 'startTime']),
+        soft: task.getIn(['schedule', 'softDeadline']),
+        hard: task.getIn(['schedule', 'hardDeadline'])
+    };
+
+    for(let key in time) {
+        if(time[key]) {
+            const unix = `${moment(time[key]).startOf('day').valueOf()}`;
+            if(schedule.has(unix)) {
+                const index = schedule.getIn([unix, key]).indexOf(taskID);
+                if(index !== -1) schedule.deleteIn([unix, key, index]);
+                if(
+                    schedule.getIn([unix, 'scheduled']).size === 0 &&
+                    schedule.getIn([unix, 'start']).size === 0 &&
+                    schedule.getIn([unix, 'soft']).size === 0 &&
+                    schedule.getIn([unix, 'hard']).size === 0
+                ) schedule.delete(unix);
+            }
+        }
+    }
+}

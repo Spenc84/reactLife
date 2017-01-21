@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Map, List, fromJS } from 'immutable';
 import { getUSER_ID } from './lifeApp';
 
@@ -32,11 +33,24 @@ const DEFAULT_TASK = Map({
     description: '',
     users: List(),
     schedule: DEFAULT_SCHEDULE,
-    status: Map()
+    status: Map(),
+    changeLog: List()
 });
 
 function getDefaultTask() {
-    return DEFAULT_TASK.set( 'users', fromJS([{ user: getUSER_ID(), securityAccess: 30 }]) );
+    const user = getUSER_ID();
+    return DEFAULT_TASK.withMutations(
+        task => task
+        .set( 'users', fromJS([{
+            user,
+            securityAccess: 30
+        }]))
+        .set( 'changeLog', fromJS([{
+            date: moment().toJSON(),
+            user,
+            display: 'Created task'
+        }]))
+    );
 }
 
 export {

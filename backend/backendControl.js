@@ -249,6 +249,8 @@ module.exports = {
         const { ACTION, USER_ID, TASK_LIST, OPERATION, DATA } = req.body;
 
         const report = new Report(res, ACTION);
+        const postpone = new Postpone({USER_ID, report});
+
 
         switch(ACTION) {
 
@@ -262,7 +264,7 @@ module.exports = {
                 if(scheduled) updateScheduledTime({task:newTask}, report);
 
                 Promise.all([
-                    createNewTask(newTask),
+                    Task.create(newTask),
                     getUsers(userList)
                 ])
 
@@ -272,32 +274,34 @@ module.exports = {
                         report.logResponse(`New task '${task.title}' added to database`);
                         report.setData(task);
 
-                        if(task.parentTasks) addTaskToParents({task, report, USER_ID});
-                        if(task.childTasks) addTaskToChildren({task, report, USER_ID});
+                        if(task.parentTasks.length) addTaskToParents({task, report, USER_ID});
+                        if(task.childTasks.length) addTaskToChildren({task, report, USER_ID});
 
                     }
 
-                    if(users) report.logResponse(`Users pending update: '${userList}'`);
+                    if(users) {
+                        report.logResponse(`Users pending update: '${userList}'`);
 
-                    users.forEach( user => {
-                        const userName = `${user.firstName} ${user.lastName}`;
+                        users.forEach( user => {
+                            const userName = `${user.firstName} ${user.lastName}`;
 
-                        if(scheduled) addTaskToAgendaAndSchedule(user, task, report);
-                        else addTaskToAgenda(user, task, report);
+                            if(scheduled) addTaskToAgendaAndSchedule(user, task, report);
+                            else addTaskToAgenda(user, task, report);
 
-                        user.changeLog.push({
-                            date: moment().toJSON(),
-                            user: USER_ID,
-                            display: `Created task '${task.title}' and added it to your ${scheduled?'schedule':'agenda'}`
+                            user.changeLog.push({
+                                date: moment().toJSON(),
+                                user: USER_ID,
+                                display: `Created task '${task.title}' and added it to your ${scheduled?'schedule':'agenda'}`
+                            });
+
+                            user.save(
+                                report.sendResult(
+                                    `User '${userName}' updated successfully`,
+                                    `Error occured while saving user '${userName}'`
+                                )
+                            );
                         });
-
-                        user.save(
-                            report.sendResult(
-                                `User '${userName}' updated successfully`,
-                                `Error occured while saving user '${userName}'`
-                            )
-                        );
-                    });
+                    }
 
                 })
                 .catch( error => report.criticalError(`Error creating task '${newTask.title}'`, error) );
@@ -323,8 +327,6 @@ module.exports = {
 
             case 'SCHEDULE':
 
-                let postpone = new Postpone(USER_ID, report);
-
                 Task.find( {_id: { $in: TASK_LIST } }, (error, tasks)=> {
                     if(error) return report.criticalError(`Error finding task${TASK_LIST.length>1?'s':''}: '${TASK_LIST}'`, error);
                     report.logResponse(`(${TASK_LIST.length}) task${TASK_LIST.length>1?'s':''} pending update: '${TASK_LIST}'`);
@@ -341,7 +343,77 @@ module.exports = {
 
 
             case 'DELETE':
-                deleteTasks({ USER_ID, TASK_LIST }, report);
+
+                report.logResponse(`Requesting User: '${USER_ID}'`);
+                report.logResponse(`Tasks pending removal: '${TASK_LIST.join("', '")}'`);
+
+                postpone.setType('TASKS');
+
+                Promise.all([
+                    Task.find({ _id: { $in: TASK_LIST } }).exec(),
+                    User.findById(USER_ID).exec()
+                ])
+
+                .then( ([tasks, user]) => {
+                    const USER_NAME = `${user.firstName} ${user.lastName}`;
+
+                    let removed = [];
+
+                    tasks.forEach( task => {
+                        const { title, status:{scheduled} } = task;
+
+                        removed.push(`'${title}'`);
+
+                        // Update user object
+                        if(scheduled) removeTaskFromAgendaAndSchedule(user, task, report);
+                        else removeTaskFromAgenda(user, task, report);
+
+                        // Update task object and save it, or remove it from the database
+                        if(task.users.length < 2) {
+                            removeTaskFromParents({task, postpone});
+                            removeTaskFromChildren({task, postpone});
+                            removeTaskFromDatabase({task, report});
+                        }
+                        else {
+                            removeUserFromTask({user, task, report});
+
+                            task.changeLog.push({
+                                date: moment().toJSON(),
+                                user: USER_ID,
+                                display: `Removed '${USER_NAME}' from task`
+                            });
+
+                            task.save(
+                                report.sendResult(
+                                    `User '${USER_NAME}' was successfully removed from Task '${title}'`,
+                                    `Failed to save Task '${title}'`
+                                )
+                            );
+                        }
+                    });
+
+                    // Log and save changes to the user
+                    if(removed.length > 1) removed.push(`and ${removed.pop()}`);
+
+                    user.changeLog.push({
+                        date: moment().toJSON(),
+                        user: USER_ID,
+                        display: `Removed task${removed.length > 1?'s':''} ${removed.join(", ")} from your Agenda`
+                    });
+
+                    user.save(
+                        report.sendResult(
+                            `User '${USER_NAME}' was successfully modified`,
+                            `Error saving User '${USER_NAME}'`
+                        )
+                    );
+
+                    postpone.run();
+
+                })
+
+                .catch( error => report.criticalError(`Error deleting tasks '${TASK_LIST.join("', '")}'`, error) );
+
             break;
 
 
@@ -353,13 +425,37 @@ module.exports = {
 };
 
 ////////////////////////////////////////   USER   ////////////////////////////////////////
+
 //////////   ACCESSOR FUNCTIONS
 
 //////////   MUTATOR FUNCTIONS
 function addTaskToAgenda(user, task, report) {
     user.tasks.push(task._id);
-    if(report) report.logResponse(`Added task '${task.title}' to user '${user.firstName} ${user.lastName}'s agenda`);
+    if(report) report.logResponse(`Added task '${task.title}' to user ${user.firstName} ${user.lastName}'s agenda`);
 }
+
+function removeTaskFromAgenda(user, task, report) {
+    const taskIndex = user.tasks.indexOf(`${task._id}`);
+    if(taskIndex !== -1) {
+        user.tasks.splice(taskIndex, 1);
+        if(report) report.logResponse(`Removed task '${task.title}' from user ${user.firstName} ${user.lastName}'s agenda`);
+    }
+    else report.logError(`Task '${task.title}' not found on user '${user.firstName} ${user.lastName}'`);
+}
+
+
+function addTaskToAgendaAndSchedule(user, task, report) {
+    addTaskToAgenda(user, task);
+    addTaskToSchedule(user, task);
+    if(report) report.logResponse(`Added task '${task.title}' to user ${user.firstName} ${user.lastName}'s agenda and schedule`);
+}
+
+function removeTaskFromAgendaAndSchedule(user, task, report) {
+    removeTaskFromAgenda(user, task);
+    removeTaskFromSchedule(user, task);
+    if(report) report.logResponse(`Removed task '${task.title}' from user ${user.firstName} ${user.lastName}'s agenda and schedule`);
+}
+
 
 function addTaskToSchedule(user, task, report) {
     const { scheduledTime, startTime, softDeadline, hardDeadline } = task.schedule;
@@ -434,13 +530,7 @@ function addTaskToSchedule(user, task, report) {
     if(report) report.logResponse(`Added task '${task.title}' to '${user.firstName} ${user.lastName}'s schedule.`);
 }
 
-function addTaskToAgendaAndSchedule(user, task, report) {
-    addTaskToAgenda(user, task);
-    addTaskToSchedule(user, task);
-    if(report) report.logResponse(`Added task '${task.title}' to user '${user.firstName} ${user.lastName}'s agenda and schedule`);
-}
-
-function updateTaskOnSchedule({user, oldTask, newTask}, report) {
+function updateTaskOnSchedule({user, oldTask, newTask, report}) {
     removeTaskFromSchedule(user, oldTask);
     addTaskToSchedule(user, newTask);
     if(report) report.logResponse(`Updated task '${newTask.title}' on user '${user.firstName} ${user.lastName}'s schedule`);
@@ -519,6 +609,7 @@ function removeTaskFromSchedule(user, task, report) {
 
 
 ////////////////////////////////////////   TASK   ////////////////////////////////////////
+
 //////////   ACCESSOR FUNCTIONS
 function getUserList(task, preserveReference) {
     return preserveReference
@@ -552,29 +643,66 @@ function updateScheduledTime({task, operation}, report) {
     }
 }
 
+function removeUserFromTask({user, task, report}) {
+    if(task.users.length < 2) report.logError(`Insufficient USERS on task '${task.title}'. Cannot remove last USER.`);
+
+    const userIndex = task.users.findIndex( data => data.user === user._id );
+
+    if(userIndex === -1) report.logError(`Unable to locate user '${user.firstName} ${user.lastName}' on task '${task.title}'`);
+    else {
+        task.users.splice(userIndex, 1);
+        report.logResponse(`Removed user '${user.firstName} ${user.lastName}' from task '${task.title}'`);
+    }
+}
+
+function removeParentFromTask({task, parentID, title, report}) {
+    const index = task.parentTasks.findIndex( id => `${id}` === `${parentID}`);
+
+    if(index === -1) {
+        report.logError(`Unable to find parent ${title || parentID} on task ${task.title}`);
+        return false;
+    }
+
+    task.parentTasks.splice(index, 1);
+
+    if(report) report.logResponse(`Removed task '${task.title}' from project '${title || parentID}'`);
+    return `Removed task from project '${title || parentID}'`;
+}
+
+function removeChildFromTask({task, childID, title, report}) {
+    const index = task.childTasks.findIndex( id => `${id}` === `${childID}`);
+
+    if(index === -1) {
+        report.logError(`Unable to find child ${title || childID} on task ${task.title}`);
+        return false;
+    }
+
+    task.childTasks.splice(index, 1);
+
+    if(report) report.logResponse(`Removed task '${title || childID}' from project '${task.title}'`);
+    return `Removed task '${title || childID} from project'`;
+}
+
+function removeTaskFromParents({task, postpone}) {
+    task.parentTasks.forEach( taskID => postpone.method(`${taskID}`, removeChildFromTask, {childID:task._id, title:task.title}) );
+}
+
+function removeTaskFromChildren({task, postpone}) {
+    task.childTasks.forEach( taskID => postpone.method(`${taskID}`, removeParentFromTask, {parentID:task._id, title:task.title}) );
+}
+
 
 
 
 ////////////////////////////////////////   DATABASE   ////////////////////////////////////////
+
 //////////   ACCESSOR FUNCTIONS
 function getUsers(userList) {
     return User.find( {_id: { $in: userList } } ).exec();
 }
 
+
 //////////   MUTATOR FUNCTIONS
-function createNewTask(newTask) {
-    const { scheduled } = newTask.status;
-
-    newTask.changeLog = [{
-            date: moment().toJSON(),
-            user: newTask.users[0].user,
-            display: `Created${scheduled ? ' and scheduled' : ''} task`
-    }];
-
-    return Task.create(newTask);
-
-}
-
 function scheduleTask({task, operation, postpone, report}) {
 
     // Find an appropriate time to schedule this task and add it to the operation object
@@ -617,7 +745,7 @@ function scheduleTask({task, operation, postpone, report}) {
 }
 
 function addTaskToParents({task, report, USER_ID}) {
-    if(!(task && report)) return console.log('Unable to addTaskToParent(). Invalid input...');
+    if(!(task && report)) return report.logError('Unable to addTaskToParent(). Invalid input...');
 
     Task.update(
         { _id: { $in: task.parentTasks } },
@@ -640,7 +768,7 @@ function addTaskToParents({task, report, USER_ID}) {
 }
 
 function addTaskToChildren({task, report, USER_ID}) {
-    if(!(task && report)) return console.log('Unable to addTaskToChildren(). Invalid input...');
+    if(!(task && report)) return report.logError('Unable to addTaskToChildren(). Invalid input...');
 
     Task.update(
         { _id: { $in: task.childTasks } },
@@ -662,95 +790,13 @@ function addTaskToChildren({task, report, USER_ID}) {
     );
 }
 
-function deleteTasks({ USER_ID, TASK_LIST }, report) {
-    report.logResponse(`Requesting User: '${USER_ID}'`);
-    report.logResponse(`Tasks pending removal: '${TASK_LIST.join("', '")}'`);
-
-    let tasksRemovedFromAgenda = [];
-
-    // GET USER
-    User.findById(USER_ID, (error, user) => {
-        if(error) return report.criticalError(`User '${USER_ID}' could not be found`, error);
-
-        const USER_NAME = `${user.firstName} ${user.lastName}`;
-
-        // GET TASKS
-        Task.find({ _id: { $in: TASK_LIST } }, (error, tasks)=> {
-            if(error) return report.criticalError('Unable to locate tasks', error);
-
-            // For each task, perform the following operations.
-            tasks.forEach(task => {
-                const { _id, title, status:{scheduled}, schedule:{startTime, softDeadline, hardDeadline} } = task;
-                const taskID = `${_id}`;
-
-                // ----- UPDATE THE USER -----
-                    // If the task is scheduled, it will need to be removed from the User's Schedule
-                    if(scheduled) removeTaskFromSchedule(user, task);
-
-                    // Remove this task's ID from the User's Agenda as well
-                    const taskIndex = user.tasks.indexOf(taskID);
-                    if(taskIndex !== -1) {
-                        user.tasks.splice(taskIndex, 1);
-                        tasksRemovedFromAgenda.push(`'${title}'`);
-                        report.logResponse(`Removed task '${title}' from '${USER_NAME}'s ${scheduled?'schedule and ':''}agenda.`);
-                    }
-                    else return report.logError(`Task '${title}' not found on user '${USER_NAME}'`);
-
-
-                // ----- UPDATE THE TASK -----
-                    /* If the task belongs solely to the user requesting the removal
-                        then it will be removed completely from the TASK database, but
-                        it the task is shared with other users, then it will remain in
-                        the database attached to those other users and will only be
-                        removed from the USER requesting the removal.               */
-
-                    if(task.users.length > 1) {
-                        const userIndex = task.users.findIndex( data => `${data.user}` === USER_ID )
-                        if(userIndex !== -1) {
-                            task.changeLog.push({
-                                date: moment().toJSON(),
-                                user: USER_ID,
-                                display: `Removed '${USER_NAME}' from task`
-                            });
-
-                            task.save(
-                                report.sendResult(
-                                    `User '${USER_NAME}' was successfully removed from Task '${title}'`,
-                                    `Failed to save Task '${title}'`
-                                )
-                            );
-                        }
-                        else report.logError(`Unable to locate user '${USER_NAME}' on task '${title}'`);
-                    }
-                    else task.remove(
-                        report.sendResult(
-                            `!!! Task '${title}' was REMOVED from the TASK Database !!!`,
-                            `Failed to remove Task '${title}' from the TASK Database`
-                        )
-                    );
-
-            })
-
-            // Log and save changes to the user and send the updated user object back to the Client
-            const multiple = tasksRemovedFromAgenda.length > 1;
-            if(multiple) tasksRemovedFromAgenda.push(`and ${tasksRemovedFromAgenda.pop()}`);
-            user.changeLog.push({
-                date: moment().toJSON(),
-                user: USER_ID,
-                display: `Removed task${multiple?'s':''} ${tasksRemovedFromAgenda.join(", ")} from your Agenda`
-            });
-
-            user.save(
-                report.sendResult(
-                    `User '${USER_NAME}' was successfully modified`,
-                    `Error saving User '${USER_NAME}'`
-                )
-            );
-
-            user.populate('tasks', report.sendData());
-        });
-
-    });
+function removeTaskFromDatabase({task, report}) {
+    task.remove(
+        report.sendResult(
+            `!!! Task '${task.title}' was REMOVED from the TASK Database !!!`,
+            `Failed to remove Task '${task.title}' from the TASK Database`
+        )
+    );
 }
 
 
@@ -767,63 +813,80 @@ function cloneObj(obj1) {
 }
 
 class Postpone {
-    constructor(USER_ID, report) {
+    constructor({USER_ID, report, TYPE}) {
         this.USER_ID = USER_ID;
         this.report = report;
+        this.TYPE = TYPE || 'USERS';
         this.USERS = {};
+        this.TASKS = {};
     }
 
-    method(userID, method, args) {
+    setType(TYPE) {
+        this.TYPE = TYPE;
+    }
 
-        if(!this.USERS[userID]) this.USERS[userID] = [];
-        this.USERS[userID].push({ method, args });
+    method(ID, method, args) {
+        const TYPE = this.TYPE
+        if(!this[TYPE][ID]) this[TYPE][ID] = [];
+        this[TYPE][ID].push({ method, args });
 
     }
 
     run() {
+        const TYPE = this.TYPE
         const report = this.report;
-        const userList = Object.keys(this.USERS);
+        const list = Object.keys(this[TYPE]);
 
-        if(userList.length === 0) return;
+        if(list.length === 0) return;
+
+        const promise = TYPE === 'USERS'
+            ? User.find( {_id: { $in: list } } ).exec()
+            : Task.find( {_id: { $in: list } } ).exec();
 
         report.wait();
-        User.find( {_id: { $in: userList } }, (error, users) => {
-            if(error) report.logError(`Error locating users: '${userList}'`, error);
-            else {
-                report.logResponse(`Users pending update: '${userList}'`);
+        promise.then( items => {
+            report.logResponse(`${TYPE} pending update: '${list}'`);
 
-                users.forEach( user => {
-                    const userID = `${user._id}`;
-                    const userName = `${user.firstName} ${user.lastName}`;
+            items.forEach( item => {
+                const ID = `${item._id}`;
+                const name = TYPE === 'USERS'
+                    ? `${item.firstName} ${item.lastName}`
+                    : `${item.title}`;
 
-                    let log = [];
+                let log = [];
 
-                    this.USERS[userID].forEach( ({method, args}) => {
-                        args.user = user;
-                        log.push(method(args, report));
-                    });
-
-                    const display = log.join('\n');
-
-                    user.changeLog.push({
-                        date: moment().toJSON(),
-                        user: this.USER_ID,
-                        display
-                    });
-
-                    user.save(
-                        report.sendResult(
-                            `User '${userName}' was successfully updated.\n${display}`,
-                            `Unable to save changes to user '${userName}'`
-                        )
-                    );
-
+                this[TYPE][ID].forEach( ({method, args}) => {
+                    if(TYPE === 'USERS') args.user = item;
+                    else args.task = item;
+                    args.report = report;
+                    log.push(method(args));
                 });
 
-            }
+                const display = log.join('\n');
+
+                item.changeLog.push({
+                    date: moment().toJSON(),
+                    user: this.USER_ID,
+                    display
+                });
+
+                item.save(
+                    report.sendResult(
+                        `${TYPE.slice(0, -1)} '${name}' was successfully updated.\n${display}`,
+                        `Unable to save changes to ${TYPE.slice(0, -1)} '${name}'`
+                    )
+                );
+            });
+
+            report.doneWaiting();
+        })
+        .catch( error => {
+            report.logError(`Error locating ${TYPE}: '${list}'`, error);
             report.doneWaiting();
         });
+
     }
+
 }
 
 class Report {

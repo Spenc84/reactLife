@@ -43,6 +43,7 @@ export default class TaskDetails extends PureComponent {
         const completed = task.getIn(['status', 'completed']);
         const starred = task.getIn(['status', 'starred']);
 
+        console.log('RENDERED: --- TASK_DETAILS ---'); // __DEV__
         return (
             <main className={`${open?'':'hidden '}TaskDetails`}>
 
@@ -169,36 +170,57 @@ export default class TaskDetails extends PureComponent {
         const { task } = this.state;
         const { createNewTask, updateTasks } = this.props;
 
-
-        if(TYPE === 'NEW') {
-            createNewTask(task);
-            this.close();
-            return;
+        let newTask = task;
+        // Update Scheduled status
+        const startTime = newTask.getIn(['schedule', 'startTime']);
+        if(startTime !== TASK.getIn(['schedule', 'startTime'])) {
+            newTask = newTask.withMutations(
+                task => task
+                    .setIn(['status', 'scheduled'], !!startTime)
+                    .setIn(['status', 'active'], moment().isSameOrAfter(startTime))
+                    .setIn(['status', 'pending'], moment().isBefore(startTime))
+                    .setIn(['status', 'inactive'], !startTime)
+            );
         }
 
-        const operation = buildOperation(task, TASK);
+        switch(TYPE) {
 
-        const newTask = operation['$set'].hasOwnProperty('status.scheduled')
-            ?   task.withMutations( task => {
-                    task.setIn(['status', 'scheduled'], operation['$set']['status.scheduled'])
-                        .setIn(['status', 'inactive'], operation['$set']['status.inactive'])
-                        .setIn(['status', 'active'], operation['$set']['status.active'])
-                        .setIn(['status', 'pending'], operation['$set']['status.pending']);
-                })
-            :   task;
+            case 'NEW':
 
-        const ACTION = task.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
+                const wasScheduled = TASK.getIn(['status', 'scheduled']);
+                const isScheduled = newTask.getIn(['status', 'scheduled']);
 
-        const callback = this.props.modifySelected.bind(this, selectedTasks => {
-            const _id = TASK.get('_id');
-            const index = selectedTasks.findIndex( id => id === _id );
-            return index === -1 ? selectedTasks : selectedTasks.delete(index);
-        });
+                if( wasScheduled !== isScheduled ) {
+                    newTask = newTask.setIn(
+                        ['changeLog', 0, 'display'],
+                         isScheduled ? 'Created and scheduled task' : 'Created task'
+                    );
+                }
 
-        updateTasks({task: newTask, operation, callback}, ACTION);
+                createNewTask(newTask);
+                this.close();
 
-        TASK = task;
-        this.forceUpdate();
+            break;
+
+
+            default:
+
+                const ACTION = newTask.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
+                const operation = buildOperation(newTask, TASK);
+
+                const callback = this.props.modifySelected.bind(this, selectedTasks => {
+                    const _id = TASK.get('_id');
+                    const index = selectedTasks.findIndex( id => id === _id );
+                    return index === -1 ? selectedTasks : selectedTasks.remove(index);
+                });
+
+                updateTasks({task:newTask, operation, callback}, ACTION);
+
+                TASK = newTask;
+                if(newTask === task) this.forceUpdate();
+                else this.setState({task:newTask});
+        }
+
     }
 
     deleteTask() {
