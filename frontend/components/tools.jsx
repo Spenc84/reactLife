@@ -123,15 +123,30 @@ export function buildOperation(task, TASK, multi) {
 
 ////////////////////   MUTATOR FUNCTIONS   ////////////////////
 ////////// TASK //////////
-export function buildTaskList(TASKS, selectedTasks, operation) {
-    return TASKS
-        .filter( task => selectedTasks.indexOf(task.get('_id')) !== -1 )
-        .map( task => task.withMutations( task => {
-            for(let key in operation['$set']) {
-                task.setIn(key.split('.'), operation['$set'][key]);
-            }
-            task.update('changeLog', value => value.push(operation['$push']['changeLog']));
-        }));
+export function applyOperation({pendingTasks, operation, tIndx}) {
+    return list => {
+        pendingTasks.forEach( taskID => {
+
+            const index = tIndx[taskID];
+            list.set(index, list.get(index).withMutations(task => {
+                for(let key in operation['$set']) {
+                    task.setIn(key.split('.'), operation['$set'][key]);
+                }
+                for(let key in operation['$pull']) {
+                    const path = key.split('.');
+                    const i = task.getIn(path).indexOf(operation['$pull'][key]);
+                    if(i !== -1) {
+                        path.push(i);
+                        task.removeIn(path);
+                    }
+                }
+                for(let key in operation['$push']) {
+                    task.updateIn(key.split('.'), value => value.push(operation['$push'][key]));
+                }
+            }));
+
+        });
+    };
 }
 
 ////////// TASK LIST //////////
@@ -157,6 +172,20 @@ export function addTaskToChildren(list, task, tIndx) {
 
 export function updateTaskOnList(list, task, tIndx) {
     list.set( tIndx[ task.get('_id') ], task );
+}
+export function updateTaskOnParents(list, task, TASKS, tIndx) {
+    const oldTask = TASKS.get( tIndx[task.get('_id')] );
+    if( oldTask.get('parentTasks') !== task.get('parentTasks') ) {
+        removeTaskFromParents(list, oldTask, tIndx);
+        addTaskToParents(list, task, tIndx);
+    }
+}
+export function updateTaskOnChildren(list, task, TASKS, tIndx) {
+    const oldTask = TASKS.get( tIndx[task.get('_id')] );
+    if( oldTask.get('childTasks') !== task.get('childTasks') ) {
+        removeTaskFromChildren(list, oldTask, tIndx);
+        addTaskToChildren(list, task, tIndx);
+    }
 }
 
 export function removeTaskFromParents(list, task, tIndx) {

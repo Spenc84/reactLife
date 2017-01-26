@@ -7,16 +7,17 @@ var userSchema = new mongoose.Schema({
     email: {type: String, required: true, unique: true},
     role: String,
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
-    agenda: {},
-    // agenda: {
-    //     <unix>: {
-    //         date: String,
-    //         scheduled: [<taskID>],
-    //         start: [<taskID>],
-    //         soft: [<taskID>],
-    //         hard: [<taskID>]
-    //     }
-    // }
+    schedule: {},
+    /*  Schedule is built on the User object before it is sent to the client
+        schedule: {
+            <unix>: {
+                scheduled: [<taskID>],
+                start: [<taskID>],
+                soft: [<taskID>],
+                hard: [<taskID>]
+            }
+        }
+    */
     changeLog: [{
         date: String,
         user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},

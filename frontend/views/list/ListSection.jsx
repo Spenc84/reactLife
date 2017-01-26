@@ -43,6 +43,7 @@ export default class ListSection extends React.Component {
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
         this.updateSelectedProject = this.updateSelectedProject.bind(this);
+        this.removeFromProject = this.removeFromProject.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -81,7 +82,7 @@ export default class ListSection extends React.Component {
                     openScheduler={this.openScheduler}
                     openTaskDetails={openTaskDetails}
                     project={selectedProject}
-                    closeProject={this.updateSelectedProject}
+                    modifySelected={this.modifySelected}
                 />
 
                 <QueryBuilder ref="QB"
@@ -115,7 +116,7 @@ export default class ListSection extends React.Component {
 
         if( callback1 || callback2 ) {
             this.setState({
-                selectedTasks: typeof callback1 === 'function' ? callback1(selectedTasks) : selectedTasks,
+                selectedTasks: typeof callback1 === 'function' ? callback1(selectedTasks) || List() : selectedTasks,
                 selectedProject: typeof callback2 === 'function' ? callback2(selectedProject) : selectedProject
             });
         }
@@ -140,23 +141,25 @@ export default class ListSection extends React.Component {
     }
 
     updateTitle(taskID, newTitle, oldTitle) {
-        if(typeof taskID !== 'string' || taskID === '') return;
+        if(typeof taskID !== 'string' || taskID === '' || typeof newTitle !== 'string' || newTitle === '') return;
         const { api:{updateTasks}, USER } = this.props;
 
-        const selectedTasks = List([taskID]);
-
-        const action = {
-            date: moment().toJSON(),
-            user: USER.get('_id'),
-            display: `Updated tasks title from '${oldTitle}' to '${newTitle}'`
+        const updateTitleOnTask = {
+            action: 'MODIFY',
+            pendingTasks: [taskID],
+            operation: {
+                $set: { title: newTitle },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: `Updated tasks title from '${oldTitle}' to '${newTitle}'`
+                    }
+                }
+            }
         };
 
-        const operation = {
-            $set: { title: newTitle },
-            $push: { changeLog: action }
-        };
-
-        updateTasks({selectedTasks, operation});
+        updateTasks(updateTitleOnTask);
     }
 
     deleteTasks() {
@@ -170,18 +173,23 @@ export default class ListSection extends React.Component {
         const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
 
         const starred = !selectedTasks.every(ID=>tasks.get(tIndx[ID]).get('status').get('starred'));
-        const action = {
-            date: moment().toJSON(),
-            user: USER.get('_id'),
-            display: (starred) ? 'Added star to task' : 'Removed star from task'
+
+        const updateSelected = {
+            action: 'MODIFY',
+            pendingTasks: selectedTasks,
+            operation: {
+                $set: { 'status.starred': starred },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: starred ? 'Added star to task' : 'Removed star from task'
+                    }
+                }
+            }
         };
 
-        const operation = {
-            $set: { 'status.starred': starred },
-            $push: { changeLog: action }
-        };
-
-        updateTasks({selectedTasks, operation});
+        updateTasks(updateSelected);
         this.resetSelectedTasks();
     }
 
@@ -190,18 +198,69 @@ export default class ListSection extends React.Component {
         const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
 
         const completed = !selectedTasks.every(ID=>tasks.get(tIndx[ID]).get('status').get('completed'));
-        const action = {
-            date: moment().toJSON(),
-            user: USER.get('_id'),
-            display: (completed) ? 'Marked task as Completed' : 'Removed Completed status'
+
+        const updateSelected = {
+            action: 'MODIFY',
+            pendingTasks: selectedTasks,
+            operation: {
+                $set: { 'status.completed': completed },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: completed ? 'Marked task as Completed' : 'Removed Completed status'
+                    }
+                }
+            }
         };
 
-        const operation = {
-            $set: { 'status.completed': completed },
-            $push: { changeLog: action }
+        updateTasks(updateSelected);
+        this.resetSelectedTasks();
+    }
+
+    removeFromProject() {
+        const { selectedTasks, selectedProject } = this.state;
+        const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
+
+        const titles = selectedTasks.size === 1
+            ?   `'${tasks.getIn([tIndx[selectedTasks.get(0)], 'title'])}'`
+            :   selectedTasks.map( (taskID, i) => {
+                    return i === selectedTasks.size - 1
+                        ? `and '${tasks.getIn([tIndx[taskID], 'title'])}'`
+                        : `'${tasks.getIn([tIndx[taskID], 'title'])}'`
+                });
+
+        const updateSelected = {
+            action: 'MODIFY',
+            pendingTasks: selectedTasks,
+            operation: {
+                $pull: { 'parentTasks': selectedProject.get('_id') },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: `Removed task from Project '${selectedProject.get('title')}'`
+                    }
+                }
+            }
         };
 
-        updateTasks({selectedTasks, operation});
+        const updateParent = {
+            action: 'MODIFY',
+            pendingTasks: [selectedProject.get('_id')],
+            operation: {
+                $pull: { 'childTasks': { $in: selectedTasks } },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: `Removed task${selectedTasks.size>1?'s':''} ${titles.split(', ')}`
+                    }
+                }
+            }
+        };
+
+        updateTasks([updateSelected, updateParent]);
         this.resetSelectedTasks();
     }
 
@@ -217,9 +276,12 @@ export default class ListSection extends React.Component {
     selectTask(ID, selected) {
         const { selectedTasks:currentList } = this.state;
 
-        const selectedTasks = (selected)
-                ? currentList.push(ID)
-                : currentList.delete(currentList.indexOf(ID))
+        const index = currentList.indexOf(ID);
+
+        const selectedTasks
+            = selected ? currentList.push(ID)
+            : index !== -1 ? currentList.delete(index)
+            : selectedTasks;
 
         this.setState({ selectedTasks });
     }

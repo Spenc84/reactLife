@@ -39,8 +39,8 @@ var taskSchema = new mongoose.Schema({
         carryOver: {type: Boolean, default: false},
         carriedOver: {type: Number, default: 0}
     },
-    parentTasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
-    childTasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}]
+    parentTasks: [String],
+    childTasks: [String]
   // prereq: {},
   // context: {},
   // reminders: [{}],

@@ -115,9 +115,18 @@ export default class ScheduleModal extends React.PureComponent {
         const TASK = Map({schedule: SCHEDULE});
         const multiple = SCHEDULE.size === 0;
 
-        const operation = buildOperation(task, TASK, multiple);
+        const taskUpdate = {
+            action: 'MODIFY',
+            pendingTasks: TASK_IDS,
+            operation: buildOperation(task, TASK, multiple)
+        };
 
-        updateTasks({selectedTasks: TASK_IDS, operation}, 'SCHEDULE');
+        const scheduleUpdate = {
+            action: 'SCHEDULE',
+            pendingTasks: TASK_IDS
+        };
+
+        updateTasks([taskUpdate, scheduleUpdate]);
 
         if(typeof CALLBACK === 'function') CALLBACK();
         this.modal.closeModal();

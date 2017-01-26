@@ -13,6 +13,7 @@ import { getDefaultTask } from '../../defaults';
 let TYPE;           // <['NEW', 'NEW_PROJECT', null]>
 let TASK = Map();   // Original state of task
 let ON_CLOSE;       // Callback function to be executed when task is successfully closed
+let ON_SAVE;       // Callback function to be executed when task is successfully saved
 
 
 // PROPS: createNewTask, updateTasks, deleteTasks, modifySelected
@@ -113,11 +114,12 @@ export default class TaskDetails extends PureComponent {
         );
     }
 
-    open({type, task, title, onClose} = {}) {
+    open({type, task, onClose, onSave} = {}) {
 
         TYPE = type;
         TASK = type === 'NEW' ? getDefaultTask() : task;
         ON_CLOSE = onClose;
+        ON_SAVE = onSave;
 
         this.setState({
             task,
@@ -133,9 +135,10 @@ export default class TaskDetails extends PureComponent {
     }
 
     close() {
+        TYPE = null;
         TASK = Map();
         ON_CLOSE = null;
-        TYPE = null;
+        ON_SAVE = null;
 
         this.Scheduler.Accordian.reset();
 
@@ -170,8 +173,8 @@ export default class TaskDetails extends PureComponent {
         const { task } = this.state;
         const { createNewTask, updateTasks } = this.props;
 
-        let newTask = task;
         // Update Scheduled status
+        let newTask = task;
         const startTime = newTask.getIn(['schedule', 'startTime']);
         if(startTime !== TASK.getIn(['schedule', 'startTime'])) {
             newTask = newTask.withMutations(
@@ -198,29 +201,37 @@ export default class TaskDetails extends PureComponent {
                 }
 
                 createNewTask(newTask);
+                if(typeof ON_SAVE === 'function') ON_SAVE();
                 this.close();
 
             break;
 
-
             default:
 
-                const ACTION = newTask.get('schedule') !== TASK.get('schedule') ? 'SCHEDULE' : 'MODIFY';
-                const operation = buildOperation(newTask, TASK);
+                const pendingTasks = [task.get('_id')];
 
-                const callback = this.props.modifySelected.bind(this, selectedTasks => {
-                    const _id = TASK.get('_id');
-                    const index = selectedTasks.findIndex( id => id === _id );
-                    return index === -1 ? selectedTasks : selectedTasks.remove(index);
+                let ACTIONS = [{
+                    action: 'MODIFY',
+                    pendingTasks,
+                    operation: buildOperation(newTask, TASK),
+                }];
+
+                if(newTask.get('schedule') !== TASK.get('schedule')) ACTIONS.push({
+                    action: 'SCHEDULE',
+                    pendingTasks: [task.get('_id')]
                 });
 
-                updateTasks({task:newTask, operation, callback}, ACTION);
+                updateTasks(ACTIONS);
 
                 TASK = newTask;
                 if(newTask === task) this.forceUpdate();
                 else this.setState({task:newTask});
-        }
 
+                if(typeof ON_SAVE === 'function') ON_SAVE();
+
+            break;
+
+        }
     }
 
     deleteTask() {
@@ -231,7 +242,7 @@ export default class TaskDetails extends PureComponent {
                     const index = selectedTasks.findIndex( id => id === ID );
                     return index === -1 ? selectedTasks : selectedTasks.delete(index);
                 },
-                selectedProject => selectedProject.get('_id') === ID ? null : selectedProject
+                selectedProject => selectedProject && selectedProject.get('_id') === ID ? null : selectedProject
             );
             this.close();
         });

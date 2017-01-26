@@ -6,13 +6,15 @@ import { Map, List, fromJS } from 'immutable';
 import { getDefaultTask } from './defaults';
 import {
     Index,
-    buildTaskList,
+    applyOperation,
     addTaskToList,
-    updateTaskOnList,
-    removeTasksFromList,
     addTaskToParents,
-    removeTaskFromParents,
     addTaskToChildren,
+    updateTaskOnList,
+    updateTaskOnParents,
+    updateTaskOnChildren,
+    removeTasksFromList,
+    removeTaskFromParents,
     removeTaskFromChildren,
     addTaskToSchedule,
     removeTaskFromSchedule
@@ -67,12 +69,8 @@ export default class LifeApp extends React.Component {
         return SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
             incoming => {
                 console.log("incoming", incoming);
-                const { data:user, data:{ _id, tasks, agenda } } = incoming;
+                const { data:user, data:{ _id, tasks } } = incoming;
                 USER_ID = _id;
-                if(agenda) {
-                    user.schedule = agenda;
-                    delete user.agenda;
-                }
                 this.setState({
                     authenticated: true,
                     USER: fromJS(user),
@@ -93,7 +91,14 @@ export default class LifeApp extends React.Component {
         const { USER, tIndx } = this.state;
 
         this.setState({ loading: true });
-        SERVER.post("/api/tasks", {ACTION: 'CREATE', USER_ID: USER.get('_id'), DATA:newTask.toJS()}).then(
+        SERVER.post( "/api/tasks", {
+            USER_ID: USER.get('_id'),
+            ACTIONS: {
+                action: 'CREATE',
+                data: newTask.toJS()
+            }
+        })
+        .then(
             ({data, data:{data:createdTask}}) => {
                 console.log("SERVER-RESPONSE: ", data);
                 console.log("SERVER: ---Task Created---", createdTask);
@@ -133,34 +138,49 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    updateTasks({task, selectedTasks, operation, callback}, ACTION = 'MODIFY') {
+    updateTasks({ACTIONS, action, pendingTasks, operation, callback}) {
+        if(Array.isArray(arguments[0])) ACTIONS = arguments[0];
+        if(!ACTIONS) ACTIONS = [{action, pendingTasks, operation}];
+
         const { USER, tIndx } = this.state;
         const TASKS = USER.get('tasks');
 
-        const updatedTasks
-            = task ? List([task])
-            : selectedTasks ? buildTaskList(TASKS, selectedTasks, operation)
-            : undefined;
-
-        if(updatedTasks === undefined) return console.warn("UpdateTasks() called without any tasks selected.");
+        let tasksWereScheduled = false;
 
         const user = USER.withMutations( user => {
 
-            user.set('tasks', TASKS.withMutations( list => {
-                updatedTasks.forEach( task => updateTaskOnList(list, task, tIndx) );
-                updatedTasks.forEach( task => {
-                    addTaskToParents(list, task, tIndx);
-                    addTaskToChildren(list, task, tIndx);
-                });
-            }));
+            ACTIONS.forEach( ({action, pendingTasks, operation}) => {
 
-            if( ACTION === 'SCHEDULE' )
-            user.set('schedule', USER.get('schedule').withMutations( schedule =>
-                updatedTasks.forEach( task => {
-                    const oldTask = TASKS.get( tIndx[ task.get('_id') ] );
-                    if(oldTask.getIn(['status', 'scheduled'])) removeTaskFromSchedule(schedule, oldTask);
-                })
-            ));
+                switch(action) {
+
+                    case 'SCHEDULE':
+                        user.set(
+                            'schedule',
+                            user.get('schedule').withMutations(
+                                schedule => {
+                                    pendingTasks.forEach( taskID => {
+                                        const oldTask = TASKS.get( tIndx[ taskID ] );
+                                        if(oldTask.getIn(['status', 'scheduled'])) removeTaskFromSchedule(schedule, oldTask);
+                                    });
+                                }
+                            )
+                        );
+                        tasksWereScheduled = true;
+                    break;
+
+                    case 'MODIFY':
+                    default:
+                        user.set(
+                            'tasks',
+                            user.get('tasks').withMutations(
+                                applyOperation({pendingTasks, operation, tIndx})
+                            )
+                        );
+                    break;
+
+                }
+
+            });
 
         });
 
@@ -169,22 +189,17 @@ export default class LifeApp extends React.Component {
             loading: true
         });
 
-        const TASK_LIST = task ? [task.get('_id')] : selectedTasks.toJS();
+        if(typeof onSubmit === 'function') onSubmit();
 
-        SERVER.put(
-            "/api/tasks",
-            {
-                ACTION,
-                USER_ID: USER.get('_id'),
-                TASK_LIST,
-                OPERATION:operation
-            }
-        )
+        SERVER.put( "/api/tasks", {
+            USER_ID: USER.get('_id'),
+            ACTIONS: List(ACTIONS).toJS()
+        })
         .then(
             ({ data }) => {
                 console.log(`SERVER: ---(${TASK_LIST.length}) Task${TASK_LIST.length>1?'s':''} updated---`, data);
 
-                if( ACTION === 'SCHEDULE' ) {
+                if( tasksWereScheduled ) {
 
                     const taskData = fromJS(data.data);
 
@@ -205,15 +220,15 @@ export default class LifeApp extends React.Component {
                 }
                 else this.setState({ loading: false });
 
-                if(typeof callback === 'function') callback();
+                if(typeof onSuccess === 'function') onSuccess();
             },
-            // If the changes fail on the server, revert the local tasks to their original state
             rejected => {
                 console.log('Failed to update tasks: ', rejected);
                 this.setState({
                     USER,
                     loading: false
                 });
+                if(typeof onFail === 'function') onFail();
                 alert("An error has occured. Check console for details.");
             }
         );
@@ -253,10 +268,13 @@ export default class LifeApp extends React.Component {
             loading: true
         });
 
-        SERVER.put("/api/tasks", {
-            ACTION: 'DELETE',
+
+        SERVER.put( "/api/tasks", {
             USER_ID: USER.get('_id'),
-            TASK_LIST: selectedTasks.toJS()
+            ACTIONS: {
+                action: 'DELETE',
+                pendingTasks: selectedTasks.toJS()
+            }
         })
         .then(
             approved => console.log(`SERVER: ---${selectedTasks.size} Tasks deleted---`, approved.data),

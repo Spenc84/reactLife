@@ -152,8 +152,9 @@ class TaskRow extends React.PureComponent {
     }
 
     openTaskDetails() {
-        const { task, openTaskDetails } = this.props;
+        const { task, selected, selectTask, openTaskDetails } = this.props;
         openTaskDetails({task});
+        if(selected) selectTask(task.get("_id"), false);
     }
 
     openProject() {

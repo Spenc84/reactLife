@@ -7,9 +7,10 @@ export default class ListHeader extends React.PureComponent {
         super(props);
 
         this.openTaskDetails = this.openTaskDetails.bind(this);
-        this.closeProject = this.closeProject.bind(this);
+        this.modifySelected = this.modifySelected.bind(this);
         this.switchToCalendarView = this.switchToCalendarView.bind(this);
         this.createProject = this.createProject.bind(this);
+        this.removeFromProject = this.removeFromProject.bind(this);
     }
 
     render() {
@@ -25,7 +26,8 @@ export default class ListHeader extends React.PureComponent {
                     <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.25}/>
                     <div className="functional icons">
                         <Icon i={'delete'} onClick={deleteTasks} />
-                        <Icon i={'group_work'} onClick={this.createProject} />
+                        <Icon i={'group_work'} onClick={this.createProject} title={'Group selected tasks into a project'} />
+                        <Icon i={'remove_circle'} onClick={this.removeFromProject} title={'Remove selected tasks from project'} hidden={!project} />
                         <Icon i={'linear_scale'} />
                         <Icon i={'info'} />
                         <Icon i={'group_add'} />
@@ -41,7 +43,7 @@ export default class ListHeader extends React.PureComponent {
                     <div className="title">
                         <span
                             className={projectTitle?'clickable':''}
-                            onClick={projectTitle?this.closeProject:null}>
+                            onClick={projectTitle?this.modifySelected:null}>
                             Projects
                         </span>
                         <span style={projectTitle?null:{display:'none'}}>/</span>
@@ -62,16 +64,23 @@ export default class ListHeader extends React.PureComponent {
         });
     }
 
-    closeProject() {
-        this.props.closeProject(null);
+    modifySelected() {
+        this.props.modifySelected(null, ()=>null);
     }
 
     switchToCalendarView() { this.props.changeSection('CALENDAR'); }
 
     createProject() {
-        this.props.openTaskDetails({
+        const { openTaskDetails, selectedTasks, resetSelectedTasks } = this.props;
+        openTaskDetails({
             type: 'NEW',
-            task: getDefaultTask().set('childTasks', this.props.selectedTasks)
+            task: getDefaultTask().set('childTasks', selectedTasks),
+            onSave: resetSelectedTasks
         });
     }
+
+    removeFromProject() {
+
+    }
+
 }
