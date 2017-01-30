@@ -145,11 +145,13 @@ export default class LifeApp extends React.Component {
         const { USER, tIndx } = this.state;
         const TASKS = USER.get('tasks');
 
-        let tasksWereScheduled = false;
+        let taskTotal = 0;
 
         const user = USER.withMutations( user => {
 
             ACTIONS.forEach( ({action, pendingTasks, operation}) => {
+
+                if(pendingTasks) taskTotal += pendingTasks.length || pendingTasks.size;
 
                 switch(action) {
 
@@ -165,7 +167,6 @@ export default class LifeApp extends React.Component {
                                 }
                             )
                         );
-                        tasksWereScheduled = true;
                     break;
 
                     case 'MODIFY':
@@ -197,9 +198,9 @@ export default class LifeApp extends React.Component {
         })
         .then(
             ({ data }) => {
-                console.log(`SERVER: ---(${TASK_LIST.length}) Task${TASK_LIST.length>1?'s':''} updated---`, data);
+                console.log(`SERVER: ---(${taskTotal}) Task${taskTotal>1?'s':''} updated---`, data);
 
-                if( tasksWereScheduled ) {
+                if( data.data ) {
 
                     const taskData = fromJS(data.data);
 

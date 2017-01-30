@@ -206,7 +206,19 @@ module.exports = {
                 case 'SCHEDULE':
 
                     report.logResponse(`(${TASK_LIST.length}) task${TASK_LIST.length>1?'s':''} pending update: '${TASK_LIST}'`);
-                    TASK_LIST.forEach( postpone.updateScheduledTime );
+
+                    postpone.wait();
+                    Task.find({ _id: { $in: TASK_LIST }}).exec()
+
+                    .then( tasks => {
+                        tasks.forEach( postpone.updateScheduledTime );
+                        postpone.endWait();
+                    })
+
+                    .catch( error => {
+                        report.logError(`An ERROR occured while scheduling tasks '${TASK_LIST.join("', '")}'`, error);
+                        postpone.endWait();
+                    });
 
                 break;
 
@@ -246,7 +258,10 @@ module.exports = {
                         postpone.endWait();
                     })
 
-                    .catch( error => report.criticalError(`Error deleting tasks '${TASK_LIST.join("', '")}'`, error) );
+                    .catch( error => {
+                        report.logError(`Error deleting tasks '${TASK_LIST.join("', '")}'`, error);
+                        postpone.endWait();
+                    });
 
                 break;
 
@@ -606,6 +621,8 @@ function cloneObj(obj1) {
     return obj2;
 }
 
+
+///// HELPER CLASSES /////
 class Postpone {
     constructor(USER_ID, report) {
         this.USER_ID = USER_ID;
@@ -628,6 +645,8 @@ class Postpone {
         };
 
         this.count = 0;
+
+        this.updateScheduledTime = this.updateScheduledTime.bind(this);
     }
 
     method(ID, method, args) {
