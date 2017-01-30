@@ -6,41 +6,60 @@ import { getDefaultTask } from '../../../defaults';
 import { Icon } from '../../../uiComponents/ui';
 
 
-// PROPS: taskList, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask
+// PROPS: tasks, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask
 export default class ListBody extends React.PureComponent {
     render() {
-        const { tab, taskList, filter, starView, selectedTasks, selectTask,
-                updateTitle, createNewTask, openTaskDetails, projectID,
+        const { tab, tasks, tIndx, filter, starView, selectedTasks, selectTask,
+                updateTitle, createNewTask, openTaskDetails, selectedProject,
                 tasksInProject, openProject } = this.props;
+
+        const buildRow = (task, index) => {
+            const ID = task.get("_id");
+            const selected = selectedTasks.some(id=>id===ID);
+            const starred = task.get("status").get("starred");
+            const isProject = task.get("status").get("isProject");
+
+            const projectSize
+                = tab === "SEARCH" ? task.get('childTasks').size
+                : (() => {
+                    let sum = 0;
+                    task.get('childTasks').forEach( ID => { if(tasks.getIn([tIndx[ID], 'status', tab.toLowerCase()])) sum++; });
+                    return sum;
+                })();
+
+            const included
+                = ((filter.get(index) && !isProject) || (isProject && (projectSize || tab === 'SEARCH')))
+                && !(tasksInProject && tasksInProject.indexOf(ID) === -1)
+                && !(tab !== "SEARCH" && task.get('parentTasks').size && task.get('parentTasks').indexOf(selectedProject))
+                && !(starView && !starred);
+
+            return (
+                <TaskRow
+                    key={`task_${index}`}
+                    task={task}
+                    included={included}
+                    selected={selected}
+                    selectTask={selectTask}
+                    updateTitle={updateTitle}
+                    openTaskDetails={openTaskDetails}
+                    openProject={openProject}
+                    projectSize={projectSize}
+                />
+            );
+        };
+
+        // const projectList = tasks.filter( task => task.getIn(['status', 'isProject']));
+        // const taskList = tasks.filter( task => !task.getIn(['status', 'isProject']));
 
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
             <div className="List-Body">
 
-                {taskList.map( (task, index) => {
-                    const ID = task.get("_id");
-                    const selected = selectedTasks.some(id=>id===ID);
-                    const starred = task.get("status").get("starred");
-
-                    const included
-                        = filter.get(index)
-                        && !(tasksInProject.size && tasksInProject.indexOf(ID) === -1)
-                        && !(tab !== "SEARCH" && task.get('parentTasks').size && task.get('parentTasks').indexOf(projectID))
-                        && !(starView && !starred);
-
-                    return (
-                        <TaskRow
-                            key={`task_${index}`}
-                            task={task}
-                            included={included}
-                            selected={selected}
-                            selectTask={selectTask}
-                            updateTitle={updateTitle}
-                            openTaskDetails={openTaskDetails}
-                            openProject={openProject}
-                        />
-                    );
-                })}
+                {tasks.sort(
+                    (x,y) =>  x.getIn(['status', 'isProject']) === y.getIn(['status', 'isProject']) ? 0
+                            : x.getIn(['status', 'isProject']) ? -1
+                            : 1
+                ).map(buildRow)}
 
                 <NewTaskRow
                     createNewTask={createNewTask}
@@ -76,11 +95,11 @@ class TaskRow extends React.PureComponent {
 
     render() {
         const { title } = this.state;
-        const { task, included, selected } = this.props;
+        const { task, included, selected, projectSize } = this.props;
         const hidden = included ? "" : "hidden ";
         const starred = task.get("status").get("starred");
         const completed = task.get("status").get("completed");
-        const isProject = task.get('childTasks').size;
+        const isProject = task.get("status").get("isProject");
 
         const svgInnerColor = (selected) ? 'rgb(0,120,255)'
                 : (isProject) ? task.get('color')
@@ -107,7 +126,7 @@ class TaskRow extends React.PureComponent {
                         <line x1="1.92rem" x2="2.24rem" y1="2.4rem" y2="2.72rem" style={(!selected&&completed)?null:{display:"none"}} />
                         <line x1="2.24rem" x2="2.88rem" y1="2.72rem" y2="2.08rem" style={(!selected&&completed)?null:{display:"none"}} />
                     </svg>
-                    {isProject ? <span className="projectSize" style={selected?{display:'none'}:null}>{isProject}</span> : null}
+                    {isProject ? <span className="projectSize" style={selected?{display:'none'}:null}>{projectSize}</span> : null}
                 </div>
                 <div className="title column">
                     {titleColumn}
@@ -159,7 +178,7 @@ class TaskRow extends React.PureComponent {
 
     openProject() {
         const { task, openProject } = this.props;
-        openProject(task);
+        openProject(task.get('_id'));
     }
 
 }

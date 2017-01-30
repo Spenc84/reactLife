@@ -10,11 +10,11 @@ export default class ListHeader extends React.PureComponent {
         this.modifySelected = this.modifySelected.bind(this);
         this.switchToCalendarView = this.switchToCalendarView.bind(this);
         this.createProject = this.createProject.bind(this);
-        this.removeFromProject = this.removeFromProject.bind(this);
     }
 
     render() {
-        const { selectedTasks, resetSelectedTasks, toggleStarView, deleteTasks, toggleStarred, toggleCompleted, openScheduler, project } = this.props;
+        const { selectedTasks, resetSelectedTasks, toggleStarView, deleteTasks,
+                toggleStarred, toggleCompleted, openScheduler, project, removeFromProject } = this.props;
 
         const projectTitle = project ? project.get('title') : '';
 
@@ -27,7 +27,7 @@ export default class ListHeader extends React.PureComponent {
                     <div className="functional icons">
                         <Icon i={'delete'} onClick={deleteTasks} />
                         <Icon i={'group_work'} onClick={this.createProject} title={'Group selected tasks into a project'} />
-                        <Icon i={'remove_circle'} onClick={this.removeFromProject} title={'Remove selected tasks from project'} hidden={!project} />
+                        <Icon i={'remove_circle'} onClick={removeFromProject} title={'Remove selected tasks from project'} hidden={!project} />
                         <Icon i={'linear_scale'} />
                         <Icon i={'info'} />
                         <Icon i={'group_add'} />
@@ -65,7 +65,7 @@ export default class ListHeader extends React.PureComponent {
     }
 
     modifySelected() {
-        this.props.modifySelected(null, ()=>null);
+        this.props.modifySelected(null, ()=>'');
     }
 
     switchToCalendarView() { this.props.changeSection('CALENDAR'); }
@@ -74,13 +74,12 @@ export default class ListHeader extends React.PureComponent {
         const { openTaskDetails, selectedTasks, resetSelectedTasks } = this.props;
         openTaskDetails({
             type: 'NEW',
-            task: getDefaultTask().set('childTasks', selectedTasks),
+            task: getDefaultTask().withMutations( task =>
+                task.set('childTasks', selectedTasks)
+                .setIn(['status', 'isProject'], true)
+            ),
             onSave: resetSelectedTasks
         });
-    }
-
-    removeFromProject() {
-
     }
 
 }

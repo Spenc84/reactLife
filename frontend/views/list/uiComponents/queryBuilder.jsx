@@ -23,7 +23,7 @@ export default class QueryBuilder extends React.PureComponent {
     }
 
     render() {
-        const { tasksSelected, selectedFilter } = this.props;
+        const { tasksSelected, tab } = this.props;
 
         console.log('RENDERED:  --- QueryBuilder ---'); // __DEV__
         return (
@@ -31,29 +31,29 @@ export default class QueryBuilder extends React.PureComponent {
 
                 <nav className="tab Row">
 
-                    <div className={(selectedFilter === 'SEARCH')?"selected tab":"tab"} style={{flex: .6, padding: '.4rem 0'}}>
-                        <span onClick={(selectedFilter === 'SEARCH')?null:this.selectFilter.bind(this, 'SEARCH')}><Icon i={'search'} /></span>
+                    <div className={(tab === 'SEARCH')?"selected tab":"tab"} style={{flex: .6, padding: '.4rem 0'}}>
+                        <span onClick={(tab === 'SEARCH')?null:this.selectFilter.bind(this, 'SEARCH')}><Icon i={'search'} /></span>
                     </div>
 
-                    <div className={(selectedFilter === 'ACTIVE')?"selected tab":"tab"} style={{flex: .8}}>
-                        <span onClick={(selectedFilter === 'ACTIVE')?null:this.selectFilter.bind(this, 'ACTIVE')}>Active</span>
+                    <div className={(tab === 'ACTIVE')?"selected tab":"tab"} style={{flex: .8}}>
+                        <span onClick={(tab === 'ACTIVE')?null:this.selectFilter.bind(this, 'ACTIVE')}>Active</span>
                     </div>
 
-                    <div className={(selectedFilter === 'PENDING')?"selected tab":"tab"} style={{flex: 1}}>
-                        <span onClick={(selectedFilter === 'PENDING')?null:this.selectFilter.bind(this, 'PENDING')}>Pending</span>
+                    <div className={(tab === 'PENDING')?"selected tab":"tab"} style={{flex: 1}}>
+                        <span onClick={(tab === 'PENDING')?null:this.selectFilter.bind(this, 'PENDING')}>Pending</span>
                     </div>
 
-                    <div className={(selectedFilter === 'INACTIVE')?"selected tab":"tab"} style={{flex: 1}}>
-                        <span onClick={(selectedFilter === 'INACTIVE')?null:this.selectFilter.bind(this, 'INACTIVE')}>Inactive</span>
+                    <div className={(tab === 'INACTIVE')?"selected tab":"tab"} style={{flex: 1}}>
+                        <span onClick={(tab === 'INACTIVE')?null:this.selectFilter.bind(this, 'INACTIVE')}>Inactive</span>
                     </div>
 
-                    <div className={(selectedFilter === 'COMPLETED')?"selected tab":"tab"} style={{flex: 1.3}}>
-                        <span onClick={(selectedFilter === 'COMPLETED')?null:this.selectFilter.bind(this, 'COMPLETED')}>Completed</span>
+                    <div className={(tab === 'COMPLETED')?"selected tab":"tab"} style={{flex: 1.3}}>
+                        <span onClick={(tab === 'COMPLETED')?null:this.selectFilter.bind(this, 'COMPLETED')}>Completed</span>
                     </div>
 
                 </nav>
 
-                <div style={(selectedFilter === 'SEARCH')?null:{display: 'none'}}>
+                <div style={(tab === 'SEARCH')?null:{display: 'none'}}>
                     <AdvancedQuery updateQuery={this.updateQuery} />
                 </div>
 
@@ -102,14 +102,14 @@ export default class QueryBuilder extends React.PureComponent {
 
     getQuery() {
         const { query } = this.state;
-        const { selectedFilter } = this.props;
+        const { tab } = this.props;
 
-        return (selectedFilter === 'SEARCH')
+        return (tab === 'SEARCH')
             ? query
-            : (selectedFilter === 'COMPLETED')
+            : (tab === 'COMPLETED')
                 ?   {   rInclude: ['completed'] }
                 :   {
-                        rInclude: [selectedFilter.toLowerCase()],
+                        rInclude: [tab.toLowerCase()],
                         rExclude: ['completed']
                     };
     }

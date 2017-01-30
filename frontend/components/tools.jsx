@@ -134,14 +134,30 @@ export function applyOperation({pendingTasks, operation, tIndx}) {
                 }
                 for(let key in operation['$pull']) {
                     const path = key.split('.');
-                    const i = task.getIn(path).indexOf(operation['$pull'][key]);
-                    if(i !== -1) {
-                        path.push(i);
-                        task.removeIn(path);
+                    if( operation['$pull'][key]['$in'] ) {
+                        operation['$pull'][key]['$in'].forEach( item => {
+                            const i = task.getIn(path).indexOf(item);
+                            if(i !== -1) task.removeIn(path.concat(i));
+                        });
+                    }
+                    else {
+                        const i = task.getIn(path).indexOf(operation['$pull'][key]);
+                        if(i !== -1) task.removeIn(path.concat(i));
                     }
                 }
                 for(let key in operation['$push']) {
-                    task.updateIn(key.split('.'), value => value.push(operation['$push'][key]));
+                    const path = key.split('.');
+                    if( operation['$push'][key]['$in'] ) {
+                        operation['$push'][key]['$in'].forEach( item => {
+                            const i = task.getIn(path).indexOf(item);
+                            if(i === -1) task.updateIn(path, value => value.push(item));
+                        });
+                    }
+                    else {
+                        const item = operation['$push'][key];
+                        const i = task.getIn(path).indexOf(item);
+                        if(i === -1) task.updateIn(path, value => value.push(item));
+                    }
                 }
             }));
 

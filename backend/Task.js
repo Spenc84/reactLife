@@ -22,6 +22,7 @@ var taskSchema = new mongoose.Schema({
         display: String
     }],
     status: {
+        isProject: {type: Boolean, default: false},
         starred: {type: Boolean, default: false},
         active: {type: Boolean, default: false},
         pending: {type: Boolean, default: false},

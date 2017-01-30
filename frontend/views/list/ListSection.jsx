@@ -23,11 +23,11 @@ export default class ListSection extends React.Component {
         super(props);
 
         this.state = {
-            selectedFilter: "ACTIVE",
+            tab: "ACTIVE",
             filter: filterTasks(props.tasks, DEFAULT_QUERY),
             starView: false,
             selectedTasks: List(),
-            selectedProject: null
+            selectedProject: ''
         };
 
         this.modifySelected = this.modifySelected.bind(this);
@@ -42,7 +42,7 @@ export default class ListSection extends React.Component {
         this.selectTask = this.selectTask.bind(this);
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
-        this.updateSelectedProject = this.updateSelectedProject.bind(this);
+        this.openProject = this.openProject.bind(this);
         this.removeFromProject = this.removeFromProject.bind(this);
     }
 
@@ -61,11 +61,11 @@ export default class ListSection extends React.Component {
     }
 
     render() {
-        const { selectedFilter, filter, starView, selectedTasks, selectedProject } = this.state;
-        const { tasks, changeSection, openTaskDetails, api:{createNewTask} } = this.props;
+        const { tab, filter, starView, selectedTasks, selectedProject } = this.state;
+        const { tasks, tIndx, changeSection, openTaskDetails, api:{createNewTask} } = this.props;
 
-        const tasksInProject = selectedProject ? selectedProject.get('childTasks') : List();
-        const projectID = selectedProject ? selectedProject.get('_id') : '';
+        const project = tasks.get( tIndx[selectedProject] );
+        const tasksInProject = project ? project.get('childTasks') : undefined;
 
         console.log('RENDERED: --- LIST_SECTION ---'); // __DEV__
         return (
@@ -81,19 +81,21 @@ export default class ListSection extends React.Component {
                     toggleCompleted={this.toggleCompleted}
                     openScheduler={this.openScheduler}
                     openTaskDetails={openTaskDetails}
-                    project={selectedProject}
+                    project={project}
                     modifySelected={this.modifySelected}
+                    removeFromProject={this.removeFromProject}
                 />
 
                 <QueryBuilder ref="QB"
                     tasksSelected={selectedTasks.size > 0}
-                    selectedFilter={selectedFilter}
+                    tab={tab}
                     updateFilter={this.updateFilter}
                 />
 
                 <ListBody
-                    tab={selectedFilter}
-                    taskList={tasks}
+                    tab={tab}
+                    tasks={tasks}
+                    tIndx={tIndx}
                     filter={filter}
                     starView={starView}
                     selectedTasks={selectedTasks}
@@ -101,9 +103,9 @@ export default class ListSection extends React.Component {
                     updateTitle={this.updateTitle}
                     createNewTask={createNewTask}
                     openTaskDetails={openTaskDetails}
-                    projectID={projectID}
+                    selectedProject={selectedProject}
                     tasksInProject={tasksInProject}
-                    openProject={this.updateSelectedProject}
+                    openProject={this.openProject}
                 />
 
             </div>
@@ -113,6 +115,7 @@ export default class ListSection extends React.Component {
 
     modifySelected(callback1, callback2) {
         const { selectedTasks, selectedProject } = this.state;
+        const { tasks, tIndx } = this.props;
 
         if( callback1 || callback2 ) {
             this.setState({
@@ -223,7 +226,7 @@ export default class ListSection extends React.Component {
         const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
 
         const titles = selectedTasks.size === 1
-            ?   `'${tasks.getIn([tIndx[selectedTasks.get(0)], 'title'])}'`
+            ?   [`'${tasks.getIn([tIndx[selectedTasks.get(0)], 'title'])}'`]
             :   selectedTasks.map( (taskID, i) => {
                     return i === selectedTasks.size - 1
                         ? `and '${tasks.getIn([tIndx[taskID], 'title'])}'`
@@ -234,12 +237,12 @@ export default class ListSection extends React.Component {
             action: 'MODIFY',
             pendingTasks: selectedTasks,
             operation: {
-                $pull: { 'parentTasks': selectedProject.get('_id') },
+                $pull: { 'parentTasks': selectedProject },
                 $push: {
                     changeLog: {
                         date: moment().toJSON(),
                         user: USER.get('_id'),
-                        display: `Removed task from Project '${selectedProject.get('title')}'`
+                        display: `Removed task from Project '${tasks.getIn([tIndx[selectedProject], 'title'])}'`
                     }
                 }
             }
@@ -247,14 +250,14 @@ export default class ListSection extends React.Component {
 
         const updateParent = {
             action: 'MODIFY',
-            pendingTasks: [selectedProject.get('_id')],
+            pendingTasks: [selectedProject],
             operation: {
                 $pull: { 'childTasks': { $in: selectedTasks } },
                 $push: {
                     changeLog: {
                         date: moment().toJSON(),
                         user: USER.get('_id'),
-                        display: `Removed task${selectedTasks.size>1?'s':''} ${titles.split(', ')}`
+                        display: `Removed task${selectedTasks.size>1?'s':''} ${titles.join(', ')}`
                     }
                 }
             }
@@ -265,11 +268,11 @@ export default class ListSection extends React.Component {
     }
 
     updateFilter(tab, query) {
-        const { selectedFilter, selectedTasks } = this.state;
+        const { tab:oldTab, selectedTasks } = this.state;
         this.setState({
-            selectedFilter: tab,
+            tab,
             filter: filterTasks(this.props.tasks, query),
-            selectedTasks: (tab === selectedFilter) ? selectedTasks : List()
+            selectedTasks: (oldTab === tab) ? selectedTasks : List()
         });
     }
 
@@ -294,8 +297,11 @@ export default class ListSection extends React.Component {
         this.setState({ starView: !this.state.starView });
     }
 
-    updateSelectedProject(selectedProject) {
-        this.setState({selectedProject});
+    openProject(selectedProject) {
+        this.setState({
+            selectedTasks: List(),
+            selectedProject
+        });
     }
 
 }

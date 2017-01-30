@@ -242,7 +242,7 @@ export default class TaskDetails extends PureComponent {
                     const index = selectedTasks.findIndex( id => id === ID );
                     return index === -1 ? selectedTasks : selectedTasks.delete(index);
                 },
-                selectedProject => selectedProject && selectedProject.get('_id') === ID ? null : selectedProject
+                selectedProject => selectedProject === ID ? '' : selectedProject
             );
             this.close();
         });

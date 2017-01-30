@@ -81,14 +81,24 @@ function sendReport(res) {
 module.exports = {
     updateData( req, res ) {
         const report = new Report(res, "UPDATE");
+        const TASK = Task;
+        const USER = User;
 
-        User.update(
-            { _id: '575350c7b8833bf5125225a5' },
-            { $pull: {tasks:'588a7d2124403a642909a69c'}},
-            report.sendResult('done')
-        );
+        // User.update(
+        //     { _id: '575350c7b8833bf5125225a5' },
+        //     { $pull: {tasks:'588a7d2124403a642909a69c'}},
+        //     report.sendResult('done')
+        // );
 
-        // Task.findByIdAndRemove('588a7aceeb2998d81ce373f4', report.sendResult('done', 'error'));
+        // Task.update(
+        //     {},
+        //     { $set: {
+        //         parentTasks: [],
+        //         childTasks: []
+        //     } },
+        //     {multi: true},
+        //     report.sendResult('done', 'error')
+        // );
     },
     getTest( req, res ){
         console.log(req.query);
