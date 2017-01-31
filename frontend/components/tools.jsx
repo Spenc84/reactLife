@@ -29,26 +29,29 @@ export function filterTasks(list, query) {
     if(!query.exclude) query.exclude = [];
     if(!query.search) query.search = '';
 
-    return list.map(
-        task => {
-            const status = task.get('status');
-            const title = task.get('title').toLowerCase();
+    let filter = {};
 
-            return (
-                query.rInclude.every(item=>status.get(item)) &&
-                query.rExclude.every(item=>!status.get(item)) &&
-                (
-                    (query.include.length === 0 && query.exclude.length === 0) ||
-                    query.include.some(item=>status.get(item)) ||
-                    query.exclude.some(item=>!status.get(item))
-                ) &&
-                (
-                    query.search === '' ||
-                    title.indexOf(query.search.toLowerCase()) !== -1
-                )
-            );
-        }
-    );
+    list.forEach( task => {
+        const ID = task.get('_id');
+        const title = task.get('title').toLowerCase();
+        const status = task.get('status');
+
+        filter[ID] = (
+            query.rInclude.every(item=>status.get(item)) &&
+            query.rExclude.every(item=>!status.get(item)) &&
+            (
+                (query.include.length === 0 && query.exclude.length === 0) ||
+                query.include.some(item=>status.get(item)) ||
+                query.exclude.some(item=>!status.get(item))
+            ) &&
+            (
+                query.search === '' ||
+                title.indexOf(query.search.toLowerCase()) !== -1
+            )
+        );
+    });
+
+    return fromJS(filter);
 }
 
 export function buildOperation(task, TASK, multi) {

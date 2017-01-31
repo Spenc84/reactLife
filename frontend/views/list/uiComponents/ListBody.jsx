@@ -13,7 +13,7 @@ export default class ListBody extends React.PureComponent {
                 updateTitle, createNewTask, openTaskDetails, selectedProject,
                 tasksInProject, openProject } = this.props;
 
-        const buildRow = (task, index) => {
+        const buildRow = task => {
             const ID = task.get("_id");
             const selected = selectedTasks.some(id=>id===ID);
             const starred = task.get("status").get("starred");
@@ -22,20 +22,33 @@ export default class ListBody extends React.PureComponent {
             const projectSize
                 = tab === "SEARCH" ? task.get('childTasks').size
                 : (() => {
+                    const _tab = tab.toLowerCase();
                     let sum = 0;
-                    task.get('childTasks').forEach( ID => { if(tasks.getIn([tIndx[ID], 'status', tab.toLowerCase()])) sum++; });
+                    if(tab === "COMPLETED")
+                        task.get('childTasks').forEach( ID => {
+                            if(
+                                tasks.getIn([tIndx[ID], 'status', 'completed'])
+                            ) sum++;
+                        });
+                    else
+                        task.get('childTasks').forEach( ID => {
+                            if(
+                                tasks.getIn([tIndx[ID], 'status', _tab]) &&
+                                !tasks.getIn([tIndx[ID], 'status', 'completed'])
+                            ) sum++;
+                        });
                     return sum;
                 })();
 
             const included
-                = ((filter.get(index) && !isProject) || (isProject && (projectSize || tab === 'SEARCH')))
+                = ((filter.get(ID) && !isProject) || (isProject && (projectSize || tab === 'SEARCH')))
                 && !(tasksInProject && tasksInProject.indexOf(ID) === -1)
                 && !(tab !== "SEARCH" && task.get('parentTasks').size && task.get('parentTasks').indexOf(selectedProject))
                 && !(starView && !starred);
 
             return (
                 <TaskRow
-                    key={`task_${index}`}
+                    key={ID}
                     task={task}
                     included={included}
                     selected={selected}
