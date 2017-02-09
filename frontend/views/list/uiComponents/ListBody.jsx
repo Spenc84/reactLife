@@ -6,45 +6,60 @@ import { getDefaultTask } from '../../../defaults';
 import { Icon } from '../../../uiComponents/ui';
 
 
-// PROPS: tasks, filter, starView, selectedTasks, selectTask, updateTitle, createNewTask
+// PROPS: tasks, filter, search, selectedTasks, selectTask, updateTitle, createNewTask
 export default class ListBody extends React.PureComponent {
     render() {
-        const { tab, tasks, tIndx, filter, starView, selectedTasks, selectTask,
-                updateTitle, createNewTask, openTaskDetails, selectedProject,
-                tasksInProject, openProject } = this.props;
+        const { tab, tasks, tIndx, filter, search, selectedTasks, selectTask,
+                updateTitle, createNewTask, openTaskDetails, openProject,
+                handleScroll, project } = this.props;
+
+        const projectID = project ? project.get('_id') : undefined;
+        const childIDs = project ? project.get('childTasks') : undefined;
 
         const buildRow = task => {
-            const ID = task.get("_id");
+            const ID = task.get('_id');
             const selected = selectedTasks.some(id=>id===ID);
-            const starred = task.get("status").get("starred");
-            const isProject = task.get("status").get("isProject");
 
-            const projectSize
-                = tab === "SEARCH" ? task.get('childTasks').size
-                : (() => {
-                    const _tab = tab.toLowerCase();
+            const isProject = task.getIn(['is', 'project']);
+            const projectSize = !isProject ? 0
+                : (()=>{
                     let sum = 0;
-                    if(tab === "COMPLETED")
-                        task.get('childTasks').forEach( ID => {
-                            if(
-                                tasks.getIn([tIndx[ID], 'status', 'completed'])
-                            ) sum++;
-                        });
-                    else
-                        task.get('childTasks').forEach( ID => {
-                            if(
-                                tasks.getIn([tIndx[ID], 'status', _tab]) &&
-                                !tasks.getIn([tIndx[ID], 'status', 'completed'])
-                            ) sum++;
-                        });
+                    const add = ID => {
+                        const task = tasks.get( tIndx[ID] );
+                        if(task.getIn(['is', 'project'])) task.get('childTasks').forEach(add);
+                        else if(filter.get(ID)) sum++;
+                    };
+                    task.get('childTasks').forEach(add);
                     return sum;
                 })();
 
-            const included
-                = ((filter.get(ID) && !isProject) || (isProject && (projectSize || tab === 'SEARCH')))
-                && !(tasksInProject && tasksInProject.indexOf(ID) === -1)
-                && !(tab !== "SEARCH" && task.get('parentTasks').size && task.get('parentTasks').indexOf(selectedProject))
-                && !(starView && !starred);
+
+            const included = (
+
+                // If there is a project selected only include it's children
+                !(project && task.get('parentTasks').indexOf(projectID) === -1) &&
+
+                // If a project isn't selected only include orphans
+                (project || !task.get('parentTasks').size) &&
+
+                // Anything remaining must also satisfy one of the following conditions...
+                (
+                    // If there is no filter then automatically include any remaining items
+                    filter.get('filtered') === false ||
+                    // If there IS a filter then reject any tasks that don't pass it's criteria
+                    filter.get(ID) ||
+                    // Display any projects that have included tasks, or that match the search string (if there is one)
+                    (
+                        isProject &&
+                        (
+                            projectSize ||
+                            (search && task.get('title').toLowerCase().indexOf(search.toLowerCase()) !== -1)
+                        )
+                    )
+                )
+
+            );
+
 
             return (
                 <TaskRow
@@ -61,18 +76,11 @@ export default class ListBody extends React.PureComponent {
             );
         };
 
-        // const projectList = tasks.filter( task => task.getIn(['status', 'isProject']));
-        // const taskList = tasks.filter( task => !task.getIn(['status', 'isProject']));
-
         console.log('RENDERED: --- LISTBODY ---'); // __DEV__
         return (
-            <div className="List-Body">
+            <div className="List-Body" onScroll={e=>handleScroll(e.target.scrollTop)}>
 
-                {tasks.sort(
-                    (x,y) =>  x.getIn(['status', 'isProject']) === y.getIn(['status', 'isProject']) ? 0
-                            : x.getIn(['status', 'isProject']) ? -1
-                            : 1
-                ).map(buildRow)}
+                {tasks.map(buildRow)}
 
                 <NewTaskRow
                     createNewTask={createNewTask}
@@ -90,7 +98,7 @@ class TaskRow extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        this.state = { title: props.task.get("title") || "" };
+        this.state = { title: props.task.get('title') || '' };
 
         this.selectTask = this.selectTask.bind(this);
         this.updateTitle = this.updateTitle.bind(this);
@@ -102,17 +110,17 @@ class TaskRow extends React.PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if( this.props.task !== nextProps.task ) {
-            this.setState({ title: nextProps.task.get("title") });
+            this.setState({ title: nextProps.task.get('title') });
         }
     }
 
     render() {
         const { title } = this.state;
         const { task, included, selected, projectSize } = this.props;
-        const hidden = included ? "" : "hidden ";
-        const starred = task.get("status").get("starred");
-        const completed = task.get("status").get("completed");
-        const isProject = task.get("status").get("isProject");
+        const hidden = included ? '' : 'hidden ';
+        const starred = task.getIn(['is', 'starred']);
+        const completed = task.getIn(['is', 'completed']);
+        const isProject = task.getIn(['is', 'project']);
 
         const svgInnerColor = (selected) ? 'rgb(0,120,255)'
                 : (isProject) ? task.get('color')
@@ -121,7 +129,7 @@ class TaskRow extends React.PureComponent {
         const onRowClick = isProject ? this.openProject : this.openTaskDetails;
 
         const titleColumn = selected
-            ?   <input type="text"
+            ?   <input type='text'
                     value={title}
                     onChange={this.updateTitle}
                     onBlur={this.saveTitle}
@@ -276,10 +284,10 @@ class NewTaskRow extends React.PureComponent {
                 task => task
                     .set('title', this.title.value)
                     .setIn( ['schedule', 'startTime'], startTime )
-                    .setIn(['status', 'scheduled'], true)
-                    .setIn(['status', 'active'], tab === 'ACTIVE')
-                    .setIn(['status', 'pending'], tab === 'PENDING')
-                    .setIn(['status', 'inactive'], false)
+                    .setIn(['is', 'scheduled'], true)
+                    .setIn(['is', 'active'], tab === 'ACTIVE')
+                    .setIn(['is', 'pending'], tab === 'PENDING')
+                    .setIn(['is', 'inactive'], false)
                     .setIn(['changeLog', 0, 'display'], 'Created and scheduled task')
             );
 

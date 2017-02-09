@@ -336,7 +336,6 @@ div.ListSection
                 &.check_circle
                     color $completed
         div.default.Row
-            background-color $listAccent
             color $light
             div.title
                 flex 1 0 0px
@@ -361,12 +360,11 @@ div.ListSection
                 flex 1
                 justify-content center
 
-    .QueryBuilder
-        flex-direction column
-        position relative
-        background-color $listAccent
-        color $inactive
-        nav.tab.Row .tab
+    nav.tab.row
+        overflow hidden
+        padding-top .25rem
+
+        .tab
             position relative
             align-items center
             justify-content center
@@ -396,47 +394,81 @@ div.ListSection
                 font-size 1.8rem
                 color rgb(85,85,85)
                 background white
+                border-bottom-color transparent
                 box-shadow inset 0 0 .4rem #666
                 transition all .1s ease-in-out
                 cursor default
-                & i.material-icons
-                    font-size 2.8rem
-                    cursor default
-        div.query
-            z-index 5
-            flex-direction column
-            background white
-            color $inactive
-            padding .8rem
-            flex 1
-            span
-                -webkit-user-select none
+
+    .Query
+        flex-direction column
+        background-color $primaryBG
+
+        .search.row
+            flex 0 0 4.8rem
+            height 4.8rem
+            align-items center
+
+            div.count
+                flex 0 0 4.8rem
+                width 4.8rem
                 justify-content center
-                padding .4rem .8rem
-                &.included
-                    text-shadow 0 .3rem .6rem #048
-                &.excluded, &.excluded-active
-                    text-shadow 0 .3rem .6rem #f00
-                &.required-active
-                    text-shadow 0 .3rem .6rem #999
-                &.required, &.required-active, &.excluded-active
-                    color black
-            input
-                margin .8rem
-                flex 1
-        div.gradient.spacer
-            z-index 5
-            position absolute
-            top 100%
-            width 100%
-            padding .4rem
-            background linear-gradient(to bottom, white 0%, white 50%, transparent 100%)
+
+                span
+                    min-width 2.4rem
+                    height 2.4rem
+                    align-items center
+                    justify-content center
+                    border-radius .5rem
+                    padding 0 .5rem
+                    border .2rem inset
+                    color $darkTextSecondary
+
+            input[type='text']
+                flex 1 0 0px
+                border-radius .25rem
+                height 2.4rem
+                padding-left .5rem
+                margin-left 0.8rem
+
+            div.Icon
+                margin 0 1rem
+
+        // div.query
+        //     z-index 5
+        //     flex-direction column
+        //     background white
+        //     color $inactive
+        //     padding .8rem
+        //     flex 1
+        //     span
+        //         -webkit-user-select none
+        //         justify-content center
+        //         padding .4rem .8rem
+        //         &.included
+        //             text-shadow 0 .3rem .6rem #048
+        //         &.excluded, &.excluded-active
+        //             text-shadow 0 .3rem .6rem #f00
+        //         &.required-active
+        //             text-shadow 0 .3rem .6rem #999
+        //         &.required, &.required-active, &.excluded-active
+        //             color black
+        //     input
+        //         margin .8rem
+        //         flex 1
+        // div.gradient.spacer
+        //     z-index 5
+        //     position absolute
+        //     top 100%
+        //     width 100%
+        //     padding .4rem
+        //     background linear-gradient(to bottom, white 0%, white 50%, transparent 100%)
 
 
     .List-Body
         flex 1
         flex-direction column
         overflow-y auto
+        background $primaryBG
 
         div.task.row
             flex 0 0 4.8rem

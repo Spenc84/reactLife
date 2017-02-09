@@ -5,48 +5,75 @@ import { getUSER_ID } from '../lifeApp';
 
 // Takes in an Array and returns a map object with { _id: 'array index') key-value pairs
 export function Index(array) {
-    if(List.isList(array)) array = array.toJS();
     let newMap = {};
-    array.forEach((e,i)=>newMap[e._id] = i);
+    if(List.isList(array)) array.forEach((e,i)=>newMap[e.get('_id')] = i);
+    else array.forEach((e,i)=>newMap[e._id] = i);
     return newMap;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+export function buildFilter(tasks, query, search) {
+    let filter = query.length || query.size || search ? {filtered:true} : {filtered:false};
+    tasks.forEach(task => {
+        if(
+            !task.getIn(['is', 'project']) &&
+            task.get('title').toLowerCase().indexOf(search.toLowerCase()) !== -1 &&
+            query.every(item=>every(task, item))
+        ) filter[task.get('_id')] = true;
+    });
+    return Map(filter);
+}
+
+    // Children of buildFilter
+    function every(task, item) {
+        if(List.isList(item) || Array.isArray(item)) return item.some(item=>some(task, item));
+        if(Map.isMap(item) && item.has('search')) return task.get('title').indexOf(item.get('search')) !== -1;
+        return item[0] === '!'
+            ? !task.getIn(['is', item.slice(1)])
+            : task.getIn(['is', item]);
+    };
+
+    function some(task, item) {
+        if(List.isList(item) || Array.isArray(item)) return item.every(item=>every(task, item));
+        if(Map.isMap(item) && item.has('search')) return task.get('title').indexOf(item.get('search')) !== -1;
+        return item[0] === '!'
+            ? !task.getIn(['is', item.slice(1)])
+            : task.getIn(['is', item]);
+    };
+////////////////////////////////////////////////////////////////////////////////
 
 /* Takes in the entire tasks list (or a subset thereof), and filters it using
     the passed in query object in the following format...
 query = {
-    rInclude: (array:string) An array of string values representing which key names in the status object to iterate over. Each item must return true for the task to be included in the resulting List.
-    rExclude: (array:string) An array of string values representing which key names in the status object to iterate over. Each item must return false for the task to be included in the resulting List.
-    include: (array:string) An array of string values representing which key names in the status object to iterate over. Any item may return true for the task to be included in the resulting List.
-    exclude: (array:string) An array of string values representing which key names in the status object to iterate over. Any item may return false for the task to be included in the resulting List.
+    rInclude: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Each item must return true for the task to be included in the resulting List.
+    rExclude: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Each item must return false for the task to be included in the resulting List.
+    include: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Any item may return true for the task to be included in the resulting List.
+    exclude: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Any item may return false for the task to be included in the resulting List.
     search: (string) The title of an event must contain the search string for it to be included in the resulting List.
 } */
-export function filterTasks(list, query) {
-    if(!List.isList(list) || list.size === 0) return List();
-    if(typeof query !== 'object')  return List();
-    if(!query.rInclude) query.rInclude = [];
-    if(!query.rExclude) query.rExclude = [];
-    if(!query.include) query.include = [];
-    if(!query.exclude) query.exclude = [];
-    if(!query.search) query.search = '';
-
+export function filterTasks(list, tab, _query) {
+    // if(tab === 'ALL' && !query) return Map({isEmpty:true});
+    // const query
+    //     = tab === 'ALL' ? _query
+    //     : tab === 'ACTIVE' ? _query.w
     let filter = {};
 
     list.forEach( task => {
         const ID = task.get('_id');
         const title = task.get('title').toLowerCase();
-        const status = task.get('status');
+        const is = task.get('is');
 
         filter[ID] = (
-            query.rInclude.every(item=>status.get(item)) &&
-            query.rExclude.every(item=>!status.get(item)) &&
+            query.get('rInclude').every(item=>is.get(item)) &&
+            query.get('rExclude').every(item=>!is.get(item)) &&
             (
-                (query.include.length === 0 && query.exclude.length === 0) ||
-                query.include.some(item=>status.get(item)) ||
-                query.exclude.some(item=>!status.get(item))
+                (query.get('include').size === 0 && query.get('exclude').size === 0) ||
+                query.get('include').some(item=>is.get(item)) ||
+                query.get('exclude').some(item=>!is.get(item))
             ) &&
             (
-                query.search === '' ||
-                title.indexOf(query.search.toLowerCase()) !== -1
+                query.get('search') === '' ||
+                title.indexOf(query.get('search').toLowerCase()) !== -1
             )
         );
     });
@@ -67,10 +94,10 @@ export function buildOperation(task, TASK, multi) {
                         $set[`schedule.${key}`] = value;
 
                         if(key === 'startTime') {
-                            $set['status.scheduled'] = !!value;
-                            $set['status.inactive'] = !value;
-                            $set['status.active'] = moment().isSameOrAfter(value);
-                            $set['status.pending'] = moment().isBefore(value);
+                            $set['is.scheduled'] = !!value;
+                            $set['is.inactive'] = !value;
+                            $set['is.active'] = moment().isSameOrAfter(value);
+                            $set['is.pending'] = moment().isBefore(value);
                         }
 
                         // Format values into readable english for the changeLog
@@ -96,11 +123,11 @@ export function buildOperation(task, TASK, multi) {
                     }
                 });
             }
-            else if(key === 'status') {
+            else if(key === 'is') {
                 value.forEach( (value, key) => {
-                    const VALUE = TASK.getIn(['status', key]);
+                    const VALUE = TASK.getIn(['is', key]);
                     if(VALUE !== value) {
-                        $set[`status.${key}`] = value;
+                        $set[`is.${key}`] = value;
                         display.push(`Changed ${key.toUpperCase()} STATUS from '${VALUE}' to '${value}'`);
                     }
                 });

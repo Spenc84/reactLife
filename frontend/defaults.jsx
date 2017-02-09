@@ -33,7 +33,7 @@ const DEFAULT_TASK = Map({
     description: '',
     users: List(),
     schedule: DEFAULT_SCHEDULE,
-    status: Map(),
+    is: Map(),
     changeLog: List()
 });
 
@@ -53,10 +53,30 @@ function getDefaultTask() {
     );
 }
 
+
+const EMPTY_QUERY = fromJS({
+    include: [],
+    exclude: [],
+    rInclude: [],
+    rExclude: [],
+    search: ""
+});
+
+const DEFAULT_QUERY = fromJS({
+    rInclude: ['active'],
+    rExclude: ['completed'],
+    include: [],
+    exclude: [],
+    search: ''
+});
+
+
 export {
     DEFAULT_TASK_COLOR,
     DEFAULT_AVAILABILITY,
     DEFAULT_SCHEDULE,
     DEFAULT_TASK,
-    getDefaultTask
+    getDefaultTask,
+    EMPTY_QUERY,
+    DEFAULT_QUERY
 };

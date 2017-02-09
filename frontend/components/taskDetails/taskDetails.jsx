@@ -41,14 +41,15 @@ export default class TaskDetails extends PureComponent {
     render() {
         const { task, open } = this.state;
 
-        const completed = task.getIn(['status', 'completed']);
-        const starred = task.getIn(['status', 'starred']);
+        const completed = task.getIn(['is', 'completed']);
+        const starred = task.getIn(['is', 'starred']);
+        const color = task.get('color');
 
         console.log('RENDERED: --- TASK_DETAILS ---'); // __DEV__
         return (
             <main className={`${open?'':'hidden '}TaskDetails`}>
 
-                <header className="task_details">
+                <header className="task_details" style={{background:color}}>
 
                     <Icon i={"arrow_back"} onClick={this.confirmClose} size={1.25}/>
                     <div className="functional icons">
@@ -179,10 +180,10 @@ export default class TaskDetails extends PureComponent {
         if(startTime !== TASK.getIn(['schedule', 'startTime'])) {
             newTask = newTask.withMutations(
                 task => task
-                    .setIn(['status', 'scheduled'], !!startTime)
-                    .setIn(['status', 'active'], moment().isSameOrAfter(startTime))
-                    .setIn(['status', 'pending'], moment().isBefore(startTime))
-                    .setIn(['status', 'inactive'], !startTime)
+                    .setIn(['is', 'scheduled'], !!startTime)
+                    .setIn(['is', 'active'], moment().isSameOrAfter(startTime))
+                    .setIn(['is', 'pending'], moment().isBefore(startTime))
+                    .setIn(['is', 'inactive'], !startTime)
             );
         }
 
@@ -190,8 +191,8 @@ export default class TaskDetails extends PureComponent {
 
             case 'NEW':
 
-                const wasScheduled = TASK.getIn(['status', 'scheduled']);
-                const isScheduled = newTask.getIn(['status', 'scheduled']);
+                const wasScheduled = TASK.getIn(['is', 'scheduled']);
+                const isScheduled = newTask.getIn(['is', 'scheduled']);
 
                 if( wasScheduled !== isScheduled ) {
                     newTask = newTask.setIn(
@@ -250,9 +251,9 @@ export default class TaskDetails extends PureComponent {
 
     toggleStatus(key) {
         const { task } = this.state;
-        const value = !task.getIn(['status', key]);
+        const value = !task.getIn(['is', key]);
         this.setState({
-            task: task.setIn(['status', key], value)
+            task: task.setIn(['is', key], value)
         });
     }
 }

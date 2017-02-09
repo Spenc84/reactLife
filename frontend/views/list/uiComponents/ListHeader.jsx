@@ -76,7 +76,7 @@ export default class ListHeader extends React.PureComponent {
             type: 'NEW',
             task: getDefaultTask().withMutations( task =>
                 task.set('childTasks', selectedTasks)
-                .setIn(['status', 'isProject'], true)
+                .setIn(['is', 'project'], true)
             ),
             onSave: resetSelectedTasks
         });

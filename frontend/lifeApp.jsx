@@ -52,8 +52,8 @@ export default class LifeApp extends React.Component {
 
         return (
             <Main
-                tasks={ USER.get("tasks") || List()}
-                schedule={ USER.get("schedule") || List()}
+                schedule={ USER.get("schedule") || List() }
+                tasks={ USER.get("tasks") || List() }
                 api={{
                     createNewTask: this.createNewTask,
                     updateTasks: this.updateTasks,
@@ -69,15 +69,22 @@ export default class LifeApp extends React.Component {
         return SERVER.get("/api/user/575350c7b8833bf5125225a5").then(  // TEMP
             incoming => {
                 console.log("incoming", incoming);
-                const { data:user, data:{ _id, tasks } } = incoming;
+                const { data:user, data:{ _id } } = incoming;
                 USER_ID = _id;
-                this.setState({
-                    authenticated: true,
-                    USER: fromJS(user),
-                    tIndx: (tasks) ? Index(tasks) : {},
-                    loading: false
-                });
-                console.log(`User Authenticated: `, user);
+                if(USER_ID) {
+                    user.tasks.sort(
+                        (x,y) =>  x.is.project === y.is.project ? 0
+                                : x.is.project ? -1
+                                : 1
+                    );
+                    this.setState({
+                        authenticated: true,
+                        USER: fromJS(user),
+                        tIndx: Index(user.tasks),
+                        loading: false
+                    });
+                    console.log(`User Authenticated: `, user);
+                }
             },
             rejected => {
                 console.log('Failed to acquire user', rejected);
@@ -110,10 +117,14 @@ export default class LifeApp extends React.Component {
                     addTaskToParents(list, task, tIndx);
                     addTaskToChildren(list, task, tIndx);
                     addTaskToList(list, task);
-                });
+                }).sort(
+                    (x,y) =>  x.getIn(['is','project']) === y.getIn(['is','project']) ? 0
+                            : x.getIn(['is','project']) ? -1
+                            : 1
+                );
 
                 // Update schedule
-                const schedule = task.getIn(['status', 'scheduled'])
+                const schedule = task.getIn(['is', 'scheduled'])
                     ?   USER.get('schedule').withMutations(
                             schedule => addTaskToSchedule(schedule, task)
                         )
@@ -162,7 +173,7 @@ export default class LifeApp extends React.Component {
                                 schedule => {
                                     pendingTasks.forEach( taskID => {
                                         const oldTask = TASKS.get( tIndx[ taskID ] );
-                                        if(oldTask.getIn(['status', 'scheduled'])) removeTaskFromSchedule(schedule, oldTask);
+                                        if(oldTask.getIn(['is', 'scheduled'])) removeTaskFromSchedule(schedule, oldTask);
                                     });
                                 }
                             )
@@ -206,7 +217,7 @@ export default class LifeApp extends React.Component {
 
                     // Update user's schedule
                     const schedule = this.state.USER.get('schedule').withMutations( schedule => {
-                        taskData.forEach( task => { if(task.getIn(['status', 'scheduled'])) addTaskToSchedule(schedule, task) });
+                        taskData.forEach( task => { if(task.getIn(['is', 'scheduled'])) addTaskToSchedule(schedule, task) });
                     });
                     // Update task list with any new tasks returned from the server (now that scheduledTime has been set)
                     const tasks = this.state.USER.get('tasks').withMutations( list => {
@@ -256,7 +267,7 @@ export default class LifeApp extends React.Component {
 
             selectedTasks.forEach( taskID => {
                 const task = TASKS.get( tIndx[taskID] );
-                if( task.getIn(['status', 'scheduled']) ) {
+                if( task.getIn(['is', 'scheduled']) ) {
                     removeTaskFromSchedule(schedule, task);
                 }
             });

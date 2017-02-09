@@ -43,8 +43,8 @@ import User from './User';
           console.log('tasks: ', tasks.length);
           for (let i = 0; i < tasks.length; i++) {
             console.log(tasks[i].title);
-            tasks[i].status.pending = false;
-            tasks[i].status.active = true;
+            tasks[i].is.pending = false;
+            tasks[i].is.active = true;
             tasks[i].save(report);
           }
         }
@@ -99,6 +99,16 @@ module.exports = {
         //     {multi: true},
         //     report.sendResult('done', 'error')
         // );
+
+        // TASK.find({}, (err, tasks) => {
+        //     tasks.forEach(task => {
+        //         if(task.childTasks.length) {
+        //             task.is.project = true;
+        //             task.save(report.sendResult('done', 'error'));
+        //         }
+        //     });
+        // });
+
     },
     getTest( req, res ){
         console.log(req.query);
@@ -187,7 +197,7 @@ module.exports = {
 
                     let newTask = cloneObj(DATA);
                     report.logResponse(`(1) Task '${newTask.title}' pending creation`);
-                    if(newTask.status.scheduled) updateScheduledTime(newTask, report);
+                    if(newTask.is.scheduled) updateScheduledTime(newTask, report);
 
                     Task.create(newTask)
                     .then( task => {
@@ -291,7 +301,7 @@ module.exports = {
 function buildSchedule(user) {
     user.schedule = {};
     user.tasks.forEach( task => {
-        if(task.status.scheduled) addTaskToSchedule(user, task);
+        if(task.is.scheduled) addTaskToSchedule(user, task);
     });
 }
 
@@ -528,7 +538,7 @@ function addTaskToUsers({task, report, USER_ID}) {
                 changeLog: {
                     date: moment().toJSON(),
                     user: USER_ID,
-                    display: `Created task '${task.title}' and added it to your ${task.status.scheduled?'schedule':'agenda'}`
+                    display: `Created task '${task.title}' and added it to your ${task.is.scheduled?'schedule':'agenda'}`
                 }
             }
         },
