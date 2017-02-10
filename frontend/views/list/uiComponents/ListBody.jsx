@@ -83,9 +83,10 @@ export default class ListBody extends React.PureComponent {
                 {tasks.map(buildRow)}
 
                 <NewTaskRow
+                    tab={tab}
+                    project={project}
                     createNewTask={createNewTask}
                     openTaskDetails={openTaskDetails}
-                    tab={tab}
                 />
 
             </div>
@@ -268,7 +269,7 @@ class NewTaskRow extends React.PureComponent {
     }
 
     buildTask() {
-        const { tab } = this.props;
+        const { tab, project } = this.props;
 
         let task = getDefaultTask().set('title', this.title.value);
 
@@ -282,7 +283,6 @@ class NewTaskRow extends React.PureComponent {
 
             task = task.withMutations(
                 task => task
-                    .set('title', this.title.value)
                     .setIn( ['schedule', 'startTime'], startTime )
                     .setIn(['is', 'scheduled'], true)
                     .setIn(['is', 'active'], tab === 'ACTIVE')
@@ -291,6 +291,14 @@ class NewTaskRow extends React.PureComponent {
                     .setIn(['changeLog', 0, 'display'], 'Created and scheduled task')
             );
 
+        }
+
+        if(project) {
+            task = task.withMutations(
+                task => task
+                    .set('parentTasks', List([project.get('_id')]))
+                    .updateIn(['changeLog', 0, 'display'], value => value += `\nAssigned task to project '${project.get('title')}'`)
+            );
         }
 
         return task;
