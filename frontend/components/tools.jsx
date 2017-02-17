@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Map, List, fromJS } from 'immutable';
+import { Map, List, fromJS, Iterable } from 'immutable';
 import { getUSER_ID } from '../lifeApp';
 
 
@@ -41,45 +41,6 @@ export function buildFilter(tasks, query, search) {
             : task.getIn(['is', item]);
     };
 ////////////////////////////////////////////////////////////////////////////////
-
-/* Takes in the entire tasks list (or a subset thereof), and filters it using
-    the passed in query object in the following format...
-query = {
-    rInclude: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Each item must return true for the task to be included in the resulting List.
-    rExclude: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Each item must return false for the task to be included in the resulting List.
-    include: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Any item may return true for the task to be included in the resulting List.
-    exclude: (array:string) An array of string values representing which key names in the 'is' object to iterate over. Any item may return false for the task to be included in the resulting List.
-    search: (string) The title of an event must contain the search string for it to be included in the resulting List.
-} */
-export function filterTasks(list, tab, _query) {
-    // if(tab === 'ALL' && !query) return Map({isEmpty:true});
-    // const query
-    //     = tab === 'ALL' ? _query
-    //     : tab === 'ACTIVE' ? _query.w
-    let filter = {};
-
-    list.forEach( task => {
-        const ID = task.get('_id');
-        const title = task.get('title').toLowerCase();
-        const is = task.get('is');
-
-        filter[ID] = (
-            query.get('rInclude').every(item=>is.get(item)) &&
-            query.get('rExclude').every(item=>!is.get(item)) &&
-            (
-                (query.get('include').size === 0 && query.get('exclude').size === 0) ||
-                query.get('include').some(item=>is.get(item)) ||
-                query.get('exclude').some(item=>!is.get(item))
-            ) &&
-            (
-                query.get('search') === '' ||
-                title.indexOf(query.get('search').toLowerCase()) !== -1
-            )
-        );
-    });
-
-    return fromJS(filter);
-}
 
 export function buildOperation(task, TASK, multi) {
     let $set = {};
@@ -150,6 +111,24 @@ export function buildOperation(task, TASK, multi) {
     return { $set, $push };
 }
 
+export function isStatic(item) {
+    return typeof item !== 'object' || Iterable.isIterable(item) || item === null;
+}
+
+export function cloneObj(obj1) {
+    if(isStatic(obj1)) return obj1;
+    let obj = Array.isArray(obj1) ? [] : {};
+    for(let key in obj1) obj[key] = cloneObj(obj1[key]);
+    return obj;
+}
+
+export function mergeObj(obj1, obj2) {
+    if(obj2 === undefined) return cloneObj(obj1);
+    if(isStatic(obj1) || isStatic(obj2)) return cloneObj(obj2);
+    let obj = Array.isArray(obj1) ? [] : {};
+    for(let key in obj1) obj[key] = mergeObj(obj1[key], obj2[key]);
+    return obj;
+}
 
 ////////////////////   MUTATOR FUNCTIONS   ////////////////////
 ////////// TASK //////////
@@ -177,14 +156,19 @@ export function applyOperation({pendingTasks, operation, tIndx}) {
                 }
                 for(let key in operation['$push']) {
                     const path = key.split('.');
-                    if( operation['$push'][key]['$in'] ) {
-                        operation['$push'][key]['$in'].forEach( item => {
+                    if( operation['$push'][key]['$each'] ) task.mergeIn(path, operation['$push'][key]['$each']);
+                    else task.updateIn(path, value => value.push(operation['$push'][key]));
+                }
+                for(let key in operation['$addToSet']) {
+                    const path = key.split('.');
+                    if( operation['$addToSet'][key]['$each'] ) {
+                        operation['$addToSet'][key]['$each'].forEach( item => {
                             const i = task.getIn(path).indexOf(item);
                             if(i === -1) task.updateIn(path, value => value.push(item));
                         });
                     }
                     else {
-                        const item = operation['$push'][key];
+                        const item = operation['$addToSet'][key];
                         const i = task.getIn(path).indexOf(item);
                         if(i === -1) task.updateIn(path, value => value.push(item));
                     }

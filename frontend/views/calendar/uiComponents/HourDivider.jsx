@@ -51,15 +51,15 @@ export default class HourDivider extends React.Component {
         console.log('RENDERED:  *  HourDivider'); // __DEV__
         return (
             <section className="hour-divider">
-                <div className={(prior) ? "inactive Row" : "Row"} style={{flex: '0 0 4.8rem'}}>
+                <div className={(prior) ? "inactive fill" : "fill"} style={{flex: '0 0 4.8rem'}}>
                     {hourStyles}
-                    <div className="hours Column" style={{flex:'0 0 4.8rem'}}>
+                    <div className="hours fill column" style={{flex:'0 0 4.8rem'}}>
                         {HOURS}
                     </div>
                 </div>
-                <div className="events Row">
+                <div className="events fill">
                     {MINUTE_BAR}
-                    <div className="dividingLines Column">
+                    <div className="dividingLines fill column">
                         {DIVIDING_LINES}
                     </div>
                 </div>

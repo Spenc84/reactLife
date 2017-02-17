@@ -1,0 +1,29 @@
+@require '../../index'
+
+main.Picker
+    max-height 100%
+    max-width 100%
+    width 70rem
+    height 60rem
+    background $lightBackground
+    border-top-left-radius .5rem
+    border-top-right-radius .5rem
+
+    div.List
+
+        &:first-of-type
+            flex 2 0 0rem
+            header
+                background $active*.78
+
+        &:last-of-type
+            background rgb(100,100,100)
+            color white
+            header
+                border-left 1px solid black
+                background $active*.72
+
+
+@media screen and (max-width: 700px)
+    main.Picker
+        flex-direction column

@@ -149,7 +149,7 @@ export default class LifeApp extends React.Component {
         );
     }
 
-    updateTasks({ACTIONS, action, pendingTasks, operation, callback}) {
+    updateTasks({ACTIONS, action, pendingTasks, operation, onSubmit, onSuccess}) {
         if(Array.isArray(arguments[0])) ACTIONS = arguments[0];
         if(!ACTIONS) ACTIONS = [{action, pendingTasks, operation}];
 

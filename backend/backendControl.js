@@ -784,10 +784,13 @@ class Postpone {
                     ? report.addData
                     : report.sendResult;
 
+                const successString = `Task '${ID}' successfully updated` +
+                (operation.$push && operation.$push.changeLog ? `\n${operation.$push.changeLog.display}` : '');
+
                 Task.findByIdAndUpdate(ID, operation, {new: true}, callback(
-                    `Task '${ID}' successfully updated\n${operation.$push.changeLog.display}`,
+                    successString,
                     `Failed to update task '${ID}'`
-                ))
+                ));
             }
         }
 
@@ -799,8 +802,11 @@ class Postpone {
                 `Failed to remove User '${ID}' from the USER Database`
             ))
             else {
+                const successString = `Task '${ID}' successfully updated` +
+                (operation.$push && operation.$push.changeLog ? `\n${operation.$push.changeLog.display}` : '');
+
                 User.findByIdAndUpdate(ID, operation, {new: true}, report.sendResult(
-                    `User '${ID}' successfully updated\n${operation.$push.changeLog.display}`,
+                    successString,
                     `Failed to update user '${ID}'`
                 ))
             }

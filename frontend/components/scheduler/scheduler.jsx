@@ -221,7 +221,7 @@ export default class Scheduler extends React.PureComponent {
                         onChange={this.updateStartTime}
                     />
 
-                    <div className="Column" onClick={this.updateStartTime.bind(null, toggleAMPM)}>
+                    <div className="fill column" onClick={this.updateStartTime.bind(null, toggleAMPM)}>
                         <span style={PM ? {opacity: .5} : null}>AM</span>
                         <span style={PM ? null : {opacity: .5}}>PM</span>
                     </div>
@@ -238,7 +238,7 @@ export default class Scheduler extends React.PureComponent {
             children: [
                 <div key={1} className="custom row">
 
-                    <div className="Column" style={{flexGrow: 0}}>
+                    <div className="column">
                         {year}
                         {date}
                     </div>
@@ -366,7 +366,7 @@ export default class Scheduler extends React.PureComponent {
                         onChange={this.updateSoftDeadline}
                     />
 
-                    <div className="Column" onClick={this.updateSoftDeadline.bind(null, toggleAMPM)}>
+                    <div className="fill column" onClick={this.updateSoftDeadline.bind(null, toggleAMPM)}>
                         <span style={PM ? {opacity: .5} : null}>AM</span>
                         <span style={PM ? null : {opacity: .5}}>PM</span>
                     </div>
@@ -383,7 +383,7 @@ export default class Scheduler extends React.PureComponent {
             children: [
                 <div key={1} className="custom row">
 
-                    <div className="Column" style={{flexGrow: 0}}>
+                    <div className="column">
                         {year}
                         {date}
                     </div>
@@ -501,7 +501,7 @@ export default class Scheduler extends React.PureComponent {
                         onChange={this.updateHardDeadline}
                     />
 
-                    <div className="Column" onClick={this.updateHardDeadline.bind(null, toggleAMPM)}>
+                    <div className="fill column" onClick={this.updateHardDeadline.bind(null, toggleAMPM)}>
                         <span style={PM ? {opacity: .5} : null}>AM</span>
                         <span style={PM ? null : {opacity: .5}}>PM</span>
                     </div>
@@ -518,7 +518,7 @@ export default class Scheduler extends React.PureComponent {
             children: [
                 <div key={1} className="custom row">
 
-                    <div className="Column" style={{flexGrow: 0}}>
+                    <div className="column">
                         {year}
                         {date}
                     </div>

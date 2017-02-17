@@ -9,12 +9,13 @@ export default class ListHeader extends React.PureComponent {
         this.openTaskDetails = this.openTaskDetails.bind(this);
         this.modifySelected = this.modifySelected.bind(this);
         this.switchToCalendarView = this.switchToCalendarView.bind(this);
-        this.createProject = this.createProject.bind(this);
+        this.addToProject = this.addToProject.bind(this);
     }
 
     render() {
         const { selectedTasks, resetSelectedTasks, toggleStarView, deleteTasks,
-                toggleStarred, toggleCompleted, openScheduler, project, removeFromProject } = this.props;
+                toggleStarred, toggleFlatten, toggleCompleted, openScheduler,
+                project, removeFromProject } = this.props;
 
         const projectTitle = project ? project.get('title') : '';
 
@@ -22,11 +23,11 @@ export default class ListHeader extends React.PureComponent {
         return (
             <header className="list">
 
-                <div className={`${selectedTasks.size?"":"hidden "}icons Row`}>
+                <div className={`${selectedTasks.size?"":"hidden "}icons fill row`}>
                     <Icon i={"arrow_back"} onClick={resetSelectedTasks} size={1.25}/>
                     <div className="functional icons">
                         <Icon i={'delete'} onClick={deleteTasks} />
-                        <Icon i={'group_work'} onClick={this.createProject} title={'Group selected tasks into a project'} />
+                        <Icon i={'group_work'} onClick={this.addToProject} title={'Group selected tasks into a project'} />
                         <Icon i={'remove_circle'} onClick={removeFromProject} title={'Remove selected tasks from project'} hidden={!project} />
                         <Icon i={'linear_scale'} />
                         <Icon i={'info'} />
@@ -38,7 +39,7 @@ export default class ListHeader extends React.PureComponent {
                     <Icon i={'check_circle'} onClick={toggleCompleted} size={1.25} />
                 </div>
 
-                <div className={`${selectedTasks.size?"hidden ":""}default Row`}>
+                <div className={`${selectedTasks.size?"hidden ":""}default fill row`}>
                     <Icon i={'today'} onClick={this.switchToCalendarView} size={1.25} />
                     <div className="title">
                         <span
@@ -49,6 +50,7 @@ export default class ListHeader extends React.PureComponent {
                         <span style={projectTitle?null:{display:'none'}}>/</span>
                         <span style={projectTitle?null:{display:'none'}}>{projectTitle}</span>
                     </div>
+                    <Icon i={'center_focus_strong'} onClick={toggleFlatten} size={1.25} light /> {/* Could also use layers & layers_clear */}
                     <Icon i={'star'} onClick={toggleStarView} size={1.25} light />
                     <Icon i={"info_outline"} onClick={this.openTaskDetails} hidden={!projectTitle} />
                 </div>
@@ -70,16 +72,34 @@ export default class ListHeader extends React.PureComponent {
 
     switchToCalendarView() { this.props.changeSection('CALENDAR'); }
 
-    createProject() {
-        const { openTaskDetails, selectedTasks, resetSelectedTasks } = this.props;
-        openTaskDetails({
-            type: 'NEW',
-            task: getDefaultTask().withMutations( task =>
-                task.set('childTasks', selectedTasks)
-                .setIn(['is', 'project'], true)
-            ),
-            onSave: resetSelectedTasks
+    addToProject() {
+        const { openTaskDetails, selectedTasks, selectedProject, resetSelectedTasks, openPicker, tasks, tIndx, addToProject } = this.props;
+
+        // const projectList = tasks.filter(task => task.getIn(['is','project']) && task.get('_id') !== selectedProject);
+        const taskList = selectedTasks.map(taskID => tasks.get(tIndx[taskID]));
+        openPicker({
+            list1: {
+                props: {
+                    title: 'Assign',
+                    data: taskList
+                }
+            },
+            list2: {
+                props: {
+                    title: 'To'
+                }
+            },
+            action: addToProject
         });
+
+        // openTaskDetails({
+        //     type: 'NEW',
+        //     task: getDefaultTask().withMutations( task =>
+        //         task.set('childTasks', selectedTasks)
+        //         .setIn(['is', 'project'], true)
+        //     ),
+        //     onSave: resetSelectedTasks
+        // });
     }
 
 }

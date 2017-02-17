@@ -44,6 +44,7 @@ export default class ListSection extends React.Component {
             tab: 'ACTIVE',  // <ENUM> ['ALL', 'ACTIVE', 'PENDING', 'INACTIVE', 'COMPLETED']
             query: List(['!completed', 'active']),
             search: '',
+            flatten: false,
             selectedTasks: List(),
             selectedProject: '',
             bodyOffset: 0
@@ -60,8 +61,10 @@ export default class ListSection extends React.Component {
         this.updateSearch = this.updateSearch.bind(this);
         this.selectTask = this.selectTask.bind(this);
         this.resetSelectedTasks = this.resetSelectedTasks.bind(this);
+        this.toggleFlatten = this.toggleFlatten.bind(this);
         this.toggleStarView = this.toggleStarView.bind(this);
         this.openProject = this.openProject.bind(this);
+        this.addToProject = this.addToProject.bind(this);
         this.removeFromProject = this.removeFromProject.bind(this);
 
         this.handleScroll = this.handleScroll.bind(this);
@@ -73,8 +76,8 @@ export default class ListSection extends React.Component {
     }
 
     render() {
-        const { tab, query, search, selectedTasks, selectedProject, bodyOffset } = this.state;
-        const { tasks, tIndx, changeSection, openTaskDetails, api:{createNewTask} } = this.props;
+        const { tab, query, search, flatten, selectedTasks, selectedProject, bodyOffset } = this.state;
+        const { tasks, tIndx, changeSection, openPicker, openTaskDetails, api:{createNewTask, updateTasks} } = this.props;
 
         const project = tasks.get( tIndx[selectedProject] );
         const children = !project ? undefined
@@ -101,17 +104,23 @@ export default class ListSection extends React.Component {
             <div className="ListSection" style={{background: backgroundColor}}>
 
                 <ListHeader
+                    tasks={tasks}
+                    tIndx={tIndx}
                     selectedTasks={selectedTasks}
+                    selectedProject={selectedProject}
                     changeSection={changeSection}
                     resetSelectedTasks={this.resetSelectedTasks}
                     toggleStarView={this.toggleStarView}
                     deleteTasks={this.deleteTasks}
                     toggleStarred={this.toggleStarred}
+                    toggleFlatten={this.toggleFlatten}
                     toggleCompleted={this.toggleCompleted}
+                    openPicker={openPicker}
                     openScheduler={this.openScheduler}
                     openTaskDetails={openTaskDetails}
                     project={project}
                     modifySelected={this.modifySelected}
+                    addToProject={this.addToProject}
                     removeFromProject={this.removeFromProject}
                 />
 
@@ -139,6 +148,7 @@ export default class ListSection extends React.Component {
                     openProject={this.openProject}
                     handleScroll={this.handleScroll}
                     project={project}
+                    flatten={flatten}
                 />
 
             </div>
@@ -316,6 +326,111 @@ export default class ListSection extends React.Component {
         this.resetSelectedTasks();
     }
 
+    addToProject(projects) {
+        const { selectedTasks, selectedProject:selectedProjectID } = this.state;
+        const { api:{updateTasks}, tasks, tIndx, USER } = this.props;
+
+        const selectedProject = selectedProjectID && tasks.get(tIndx[selectedProjectID]);
+
+        let ACTIONS = [];
+
+        // Update Selected
+        const projectIDs = projects.map( item => item.get('_id') );
+        const projectTitles = projects.size === 1
+            ?   [`'${projects.getIn([0,'title'])}'`]
+            :   projects.map( (project, i) => {
+                    return i === projects.size - 1
+                        ? `and '${project.get('title')}'`
+                        : `'${project.get('title')}'`
+                });
+
+
+        const taskIDs = selectedTasks.filterNot( id => projectIDs.contains(id) );
+
+        ACTIONS.push({
+            action: 'MODIFY',
+            pendingTasks: taskIDs,
+            operation: {
+                $addToSet: { parentTasks: { $each: projectIDs } },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: `Added to Project${projectTitles.size>1?'s':''} ${projectTitles.join(', ')}` +
+                        (selectedProject && `\nRemoved from Project '${selectedProject.get('title')}'`)
+                    }
+                }
+            }
+        });
+
+        // Update parents
+        const taskList = taskIDs.map(id => tasks.get(tIndx[id]));
+        const taskTitles = taskList.size === 1
+            ?   [`'${taskList.getIn([0, 'title'])}'`]
+            :   taskList.map( (task, i) => {
+                    return i === taskList.size - 1
+                        ? `and '${task.get('title')}'`
+                        : `'${task.get('title')}'`
+                });
+
+        ACTIONS.push({
+            action: 'MODIFY',
+            pendingTasks: projectIDs,
+            operation: {
+                $set: { 'is.project': true },
+                $addToSet: { childTasks: { $each: taskIDs } },
+                $push: {
+                    changeLog: {
+                        date: moment().toJSON(),
+                        user: USER.get('_id'),
+                        display: `Added task${taskTitles.size>1?'s':''} ${taskTitles.join(', ')}`
+                    }
+                }
+            }
+        });
+
+
+        // If there is a project currently selected and some of the pending tasks
+        // are assigned to it, remove them        
+        let onSuccess;
+        const pendingTaskIDs = selectedProject && selectedProject.get('childTasks').filter(id => taskIDs.contains(id));
+        if(pendingTaskIDs && pendingTaskIDs.size) {
+            const pendingTasks = pendingTaskIDs.map(id => tasks.get(tIndx[id]));
+            const pendingTaskTitles = pendingTasks.size === 1
+                ?   [`'${pendingTasks.getIn([0, 'title'])}'`]
+                :   pendingTasks.map( (task, i) => {
+                        return i === pendingTasks.size - 1
+                            ? `and '${task.get('title')}'`
+                            : `'${task.get('title')}'`
+                    });
+
+            ACTIONS.push({
+                action: 'MODIFY',
+                pendingTasks: [selectedProjectID],
+                operation: {
+                    $pull: { 'childTasks': { $in: pendingTaskIDs } },
+                    $push: {
+                        changeLog: {
+                            date: moment().toJSON(),
+                            user: USER.get('_id'),
+                            display: `Removed task${pendingTaskTitles.size>1?'s':''} ${pendingTaskTitles.join(', ')}`
+                        }
+                    }
+                }
+            });
+
+            onSuccess = updateTasks.bind(null, {
+                action: 'MODIFY',
+                pendingTasks: pendingTaskIDs,
+                operation: { $pull: { parentTasks: selectedProjectID } }
+            });
+        }
+
+
+        updateTasks({ACTIONS, onSuccess});
+        this.resetSelectedTasks();
+    }
+
     updateSearch(search) {
         this.setState({ search });
     }
@@ -345,6 +460,10 @@ export default class ListSection extends React.Component {
                 ? query.push('starred')
                 : query.remove(index)
         });
+    }
+
+    toggleFlatten() {
+        this.setState({ flatten: !this.state.flatten });
     }
 
     openProject(selectedProject) {

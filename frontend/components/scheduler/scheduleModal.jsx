@@ -100,7 +100,7 @@ export default class ScheduleModal extends React.PureComponent {
         this.accordian.reset();
         this.setState({ schedule });
 
-        this.modal.openModal();
+        this.modal.open();
     }
 
     resetScheduler() {
@@ -129,7 +129,7 @@ export default class ScheduleModal extends React.PureComponent {
         updateTasks([taskUpdate, scheduleUpdate]);
 
         if(typeof CALLBACK === 'function') CALLBACK();
-        this.modal.closeModal();
+        this.modal.close();
     }
 
     getDuration() {
@@ -300,7 +300,7 @@ export default class ScheduleModal extends React.PureComponent {
                         onChange={this.updateStartTime}
                     />
 
-                    <div className="Column" onClick={this.updateStartTime.bind(null, toggleAMPM)}>
+                    <div className="fill column" onClick={this.updateStartTime.bind(null, toggleAMPM)}>
                         <span style={PM ? {opacity: .5} : null}>AM</span>
                         <span style={PM ? null : {opacity: .5}}>PM</span>
                     </div>
@@ -316,7 +316,7 @@ export default class ScheduleModal extends React.PureComponent {
             children: [
                 <div key={1} className="custom row">
 
-                    <div className="Column" style={{flexGrow: 0}}>
+                    <div className="column">
                         {year}
                         {date}
                     </div>
@@ -440,7 +440,7 @@ export default class ScheduleModal extends React.PureComponent {
                         onChange={this.updateSoftDeadline}
                     />
 
-                    <div className="Column" onClick={this.updateSoftDeadline.bind(null, toggleAMPM)}>
+                    <div className="fill column" onClick={this.updateSoftDeadline.bind(null, toggleAMPM)}>
                         <span style={PM ? {opacity: .5} : null}>AM</span>
                         <span style={PM ? null : {opacity: .5}}>PM</span>
                     </div>
@@ -457,7 +457,7 @@ export default class ScheduleModal extends React.PureComponent {
             children: [
                 <div key={1} className="custom row">
 
-                    <div className="Column" style={{flexGrow: 0}}>
+                    <div className="column">
                         {year}
                         {date}
                     </div>
@@ -573,7 +573,7 @@ export default class ScheduleModal extends React.PureComponent {
                         onChange={this.updateHardDeadline}
                     />
 
-                    <div className="Column" onClick={this.updateHardDeadline.bind(null, toggleAMPM)}>
+                    <div className="fill column" onClick={this.updateHardDeadline.bind(null, toggleAMPM)}>
                         <span style={PM ? {opacity: .5} : null}>AM</span>
                         <span style={PM ? null : {opacity: .5}}>PM</span>
                     </div>
@@ -590,7 +590,7 @@ export default class ScheduleModal extends React.PureComponent {
             children: [
                 <div key={1} className="custom row">
 
-                    <div className="Column" style={{flexGrow: 0}}>
+                    <div className="column">
                         {year}
                         {date}
                     </div>

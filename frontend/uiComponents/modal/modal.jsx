@@ -5,14 +5,26 @@ import shallowCompare from 'react-addons-shallow-compare';
 import { Icon, Button } from '../ui';
 
 // PROPS: onModalOpen, onModalClose, header, footer, locked
+/**
+ * @prop footer : An array of objects that will be turned into Buttons on the footer
+ *       : <Array:Object>
+ *       : ofShape {
+ *              type <enum>    :  ofType ['raised', 'floating', 'flat'] :  What type of button it should be
+ *              label <string> :  Display
+ *              title <string> :  Tooltip
+ *              colored <bool> :  Whether or not the display should be colored
+ *              disabled <bool>:  Optionally disables the button
+ *              onClick <func> :  Fires when button is clicked
+ *       }
+ */
 export default class Modal extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = { open: false };
 
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
+        this.open = this.open.bind(this);
+        this.close = this.close.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -32,7 +44,7 @@ export default class Modal extends React.Component {
                                 {headerContent}
                             </div>
                     }
-                    {/* <Icon i="close" onClick={this.closeModal} /> */}
+                    {/* <Icon i="close" onClick={this.close} /> */}
                 </header>
             );
 
@@ -43,6 +55,7 @@ export default class Modal extends React.Component {
                             type={action.type}
                             label={action.label}
                             title={action.title}
+                            colored={action.colored}
                             disabled={action.disabled}
                             onClick={action.onClick} />
                     ))}
@@ -53,7 +66,7 @@ export default class Modal extends React.Component {
             <div ref={ref=>this.Modal = ref}
                 className="Modal"
                 style={open ? null : {display: 'none'}}
-                onClick={locked ? null : this.closeModal}
+                onClick={locked ? null : this.close}
             >
                 <div className="inner">
                     {header}
@@ -64,12 +77,12 @@ export default class Modal extends React.Component {
         );
     }
 
-    openModal() {
+    open() {
         if(typeof this.props.onModalOpen === 'function') this.props.onModalOpen();
         this.setState({ open: true });
     }
 
-    closeModal(e) {
+    close(e) {
         /* If no header is supplied, then user should be able to close out the Modal
             by clicking on the faded background. The following statement prevents
             handler from firing when a child is clicked.     */

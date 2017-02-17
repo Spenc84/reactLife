@@ -31,12 +31,13 @@ export class Icon extends PureComponent {
 
 export class Button extends PureComponent {
     render() {
-        const { label, title, onClick, type, light, disabled, hidden } = this.props;
+        const { label, title, onClick, type, light, colored, disabled, hidden } = this.props;
         const buttonType = (type === "raised" || type === "floating") ? type : "flat";
         const buttonClass = (
             (hidden ? 'hidden ' : '') +
             (disabled ? 'disabled ' : '') +
             (light ? 'light ' : '') +
+            (colored ? 'colored ' : '') +
             `${buttonType} Button`
         );
 

@@ -1,13 +1,21 @@
 // -----   COLOR PALLETTE   -----
 _faded(alpha = .5)
     rgba(0,0,0,alpha)
-$primaryBG = rgb(255,255,255)
 $active = rgb(0, 120, 255)
 $current = rgba(0, 120, 255, .5)
 $inactive = _faded()
 $light = rgb(245,245,245)
 $gray = darkgray
 $completed = rgb(50,200,50)
+
+// shadows
+$deepShadow = 0 0 50px 0px #2d2d2d
+$shadow = 0 .1rem 1rem #515151
+$shadowAlt = 0 2px 2px 0 rgba(0, 0, 0, 0.1), 0 3px 1px -2px rgba(0, 0, 0, 0.1), 0 1px 5px 1px rgba(0, 0, 0, 0.09)
+
+// Backgrounds
+$primaryBG = rgb(255,255,255)
+$lightBackground = rgb(245,245,245)
 
 // text
 $darkText = rgba(0,0,0,.87)
@@ -31,7 +39,6 @@ $lightIconDisabled = rgba(255,255,255,.5)
 $listAccent = rgb(0, 120, 255)
 $hourDivider = _faded(.3)
 $dateDay = linear-gradient(to bottom, $primaryBG 0%, $primaryBG 75%, transparent 100%)
-$shadow = 0 .1rem 1rem #515151
 $star = rgb(241,196,15)
 
 // inputs

@@ -31,9 +31,9 @@ export default class calHeader extends React.Component {
         const dropNav = (showDropNav) ? this.getDropNav() : null;
         return (
             <header className="calendar">
-                <div className="Column">
-                    <div className="Row" style={{height: '7rem', padding: '1.6rem'}}>
-                        <div style={{flexGrow: 1}}>
+                <div className="fill column">
+                    <div className="fill" style={{height: '7rem', padding: '1.6rem'}}>
+                        <div className="fill">
                             <Icon i={'menu'} size={1.75} onClick={toggleOptionPane} faded />
                             <span style={{margin: "0 .8rem 0 2.4rem", fontSize: "3.2rem"}}>{month}</span>
                             <Icon i={dropIcon} size={1.25} onClick={this.toggleDropNav} faded fluid />
@@ -61,7 +61,7 @@ export default class calHeader extends React.Component {
             default: console.log("CALHEADER: View not recognized");
         }
         return (
-            <div className="Row" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.8rem`}}>
+            <div className="fill" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.8rem`}}>
                 <Icon i={`chevron_left`} onClick={(schedule)?null:getPrior} invisible={schedule} fluid={schedule} />
                 <nav style={{flexGrow: 1, alignItems: `center`, justifyContent: `space-around`, fontSize: `1.2rem`}}>
                     <span className={aClass} onClick={(aClass) ? null : this.switchToAgendaView}>SCHEDULE</span>

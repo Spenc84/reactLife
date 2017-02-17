@@ -48323,7 +48323,7 @@
 	                return;
 	            }
 
-	            this.modal.openModal();
+	            this.modal.open();
 	            this.setState({ selectedTaskIDs: selectedTaskIDs, schedule: schedule });
 	        }
 	    }, {
@@ -49505,8 +49505,8 @@
 
 	        _this.state = { open: false };
 
-	        _this.openModal = _this.openModal.bind(_this);
-	        _this.closeModal = _this.closeModal.bind(_this);
+	        _this.open = _this.open.bind(_this);
+	        _this.close = _this.close.bind(_this);
 	        return _this;
 	    }
 
@@ -49563,7 +49563,7 @@
 	                    },
 	                    className: 'Modal',
 	                    style: open ? null : { display: 'none' },
-	                    onClick: locked ? null : this.closeModal
+	                    onClick: locked ? null : this.close
 	                },
 	                _react2.default.createElement(
 	                    'div',
@@ -49575,14 +49575,14 @@
 	            );
 	        }
 	    }, {
-	        key: 'openModal',
-	        value: function openModal() {
+	        key: 'open',
+	        value: function open() {
 	            if (typeof this.props.onModalOpen === 'function') this.props.onModalOpen();
 	            this.setState({ open: true });
 	        }
 	    }, {
-	        key: 'closeModal',
-	        value: function closeModal(e) {
+	        key: 'close',
+	        value: function close(e) {
 	            /* If no header is supplied, then user should be able to close out the Modal
 	                by clicking on the faded background. The following statement prevents
 	                handler from firing when a child is clicked.     */

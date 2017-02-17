@@ -11,7 +11,7 @@ export default class ListBody extends React.PureComponent {
     render() {
         const { tab, tasks, tIndx, filter, search, selectedTasks, selectTask,
                 updateTitle, createNewTask, openTaskDetails, openProject,
-                handleScroll, project } = this.props;
+                handleScroll, project, flatten } = this.props;
 
         const projectID = project ? project.get('_id') : undefined;
         const childIDs = project ? project.get('childTasks') : undefined;
@@ -34,8 +34,8 @@ export default class ListBody extends React.PureComponent {
                 })();
 
 
-            const included = (
-
+            const included = flatten ? filter.get(ID)
+            : (
                 // If there is a project selected only include it's children
                 !(project && task.get('parentTasks').indexOf(projectID) === -1) &&
 
@@ -57,7 +57,6 @@ export default class ListBody extends React.PureComponent {
                         )
                     )
                 )
-
             );
 
 

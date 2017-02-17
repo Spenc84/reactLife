@@ -28,7 +28,7 @@ export default class Month extends React.Component {
             for (let d = 0; d < 7; d++) {
                 ////// BUILD DAY //////
                 let currentDay = false;
-                let dayClasses = (day.month() === currentMonth) ? "day Column" : "faded day Column";
+                let dayClasses = (day.month() === currentMonth) ? "day fill column" : "faded day fill column";
                 if(day.isSame(activeDate, 'day')) {
                     dayClasses = "active " + dayClasses;
                     currentDay = true;
@@ -61,7 +61,7 @@ export default class Month extends React.Component {
                 day.add(1, 'day');
                 // END OF DAY -
             }
-            month.push(<div key={`week_${w}`} className="week Row">{week}</div>);
+            month.push(<div key={`week_${w}`} className="week fill">{week}</div>);
             // END OF WEEK --
         }
         // END OF MONTH ---
@@ -73,7 +73,7 @@ export default class Month extends React.Component {
                 <div className="weekday title row">
                     {WEEKDAY_TITLES}
                 </div>
-                <div className="month Column">
+                <div className="month fill column">
                     {month}
                 </div>
             </div>

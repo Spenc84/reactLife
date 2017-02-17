@@ -4,6 +4,7 @@ import SplashSection from './views/splash/SplashSection';
 import CalendarSection from './views/calendar/CalendarSection';
 import ListSection from './views/list/ListSection';
 
+import Picker from './components/picker/picker';
 import ScheduleModal from './components/scheduler/scheduleModal';
 import TaskDetails from './components/taskDetails/taskDetails';
 
@@ -16,6 +17,7 @@ export default class Main extends React.Component {
         };
 
         this.changeSection = this.changeSection.bind(this);
+        this.openPicker = this.openPicker.bind(this);
         this.openScheduler = this.openScheduler.bind(this);
         this.openTaskDetails = this.openTaskDetails.bind(this);
         this.modifySelected = this.modifySelected.bind(this);
@@ -50,10 +52,13 @@ export default class Main extends React.Component {
                     <ListSection ref={ref => this.ListSection = ref}
                         active={(activeSection === "LIST")}
                         changeSection={this.changeSection}
+                        openPicker={this.openPicker}
                         openScheduler={this.openScheduler}
                         openTaskDetails={this.openTaskDetails}
                         {...this.props} />
                 </section>
+
+                <Picker ref={ ref => this.Picker = ref } />
 
                 <ScheduleModal ref={ ref => this.ScheduleModal = ref }
                     updateTasks={this.props.api.updateTasks} />
@@ -74,6 +79,10 @@ export default class Main extends React.Component {
 
     modifySelected(callback1, callback2) {
         this.ListSection.modifySelected(callback1, callback2);
+    }
+
+    openPicker(save, available, existing) {
+        this.Picker.open(save, available, existing);
     }
 
     openScheduler(selectedTasks, schedule) {

@@ -1,4 +1,4 @@
-@require 'style'
+@require 'index'
 
 // RESET
 html, body
@@ -36,10 +36,10 @@ body *
     box-sizing border-box
 
 ////////// UI //////////
-.Column
+.column
     flex-direction column
-    flex-grow 1
-.Row
+
+.fill
     flex-grow 1
 
 .Button
@@ -327,7 +327,7 @@ div.ListSection
 
     header.list
         flex-direction column
-        & > div.Row
+        & > div.row
             height 6rem
             div.Icon
                 flex 0 1 4.8rem
@@ -335,7 +335,7 @@ div.ListSection
                 justify-content center
                 &.check_circle
                     color $completed
-        div.default.Row
+        div.default.row
             color $light
             div.title
                 flex 1 0 0px
@@ -354,7 +354,7 @@ div.ListSection
                         &:hover
                             border-bottom 1px solid white
 
-        div.icons.Row
+        div.icons.row
             justify-content space-between
             div.icons
                 flex 1
@@ -476,6 +476,7 @@ div.ListSection
             padding-right .5rem
             & > div.column
                 align-items center
+                justify-content center
             div.checkbox.column
                 position relative
                 width 4.8rem
@@ -506,6 +507,7 @@ div.ListSection
                     stroke-width .15rem
                     stroke rgb(100,100,100)
             div.title.column
+                align-items flex-start
                 flex-grow 1
                 padding .8rem
                 span
