@@ -295,6 +295,7 @@ class NewTaskRow extends React.PureComponent {
         if(project) {
             task = task.withMutations(
                 task => task
+                    .set('color', project.get('color'))
                     .set('parentTasks', List([project.get('_id')]))
                     .updateIn(['changeLog', 0, 'display'], value => value += `\nAssigned task to project '${project.get('title')}'`)
             );
