@@ -1,3 +1,4 @@
+import './filter.styl';
 import React from 'react';
 import { Map, List, fromJS } from 'immutable';
 
@@ -80,37 +81,87 @@ export default class Filter extends React.PureComponent {
         }
     }
 
-    static getDefaultFilter() {
-
+    /*
+        QUERY EXAMPLE:
+        {
+            search: "",
+            status: fromJS([
+                '!completed',
+                [
+                    ['pending', 'highPriority'],
+                    'active'
+                ],
+                'starred'
+            ]),
+            options: Map({
+                caseSensitive: false
+            })
+        }
+     */
+    static buildFilter(query) {
+        if(!query) return ()=>true;
+        // return item => item.getIn(['is', 'project']) ? Filter.projects(query, item) : Filter.tasks(query, item);
     }
 
-    static data(filter, data) {
-        return data;
-        // let filter = query.length || query.size || search ? {filtered:true} : {filtered:false};
-        // tasks.forEach(task => {
-        //     if(
-        //         !task.getIn(['is', 'project']) &&
-        //         task.get('title').toLowerCase().indexOf(search.toLowerCase()) !== -1 &&
-        //         query.every(item=>every(task, item))
-        //     ) filter[task.get('_id')] = true;
-        // });
-        // return Map(filter);
-        //
-        // // Children of buildFilter
-        // function every(task, item) {
-        //     if(List.isList(item) || Array.isArray(item)) return item.some(item=>some(task, item));
-        //     if(Map.isMap(item) && item.has('search')) return task.get('title').indexOf(item.get('search')) !== -1;
-        //     return item[0] === '!'
-        //         ? !task.getIn(['is', item.slice(1)])
-        //         : task.getIn(['is', item]);
-        // };
-        //
-        // function some(task, item) {
-        //     if(List.isList(item) || Array.isArray(item)) return item.every(item=>every(task, item));
-        //     if(Map.isMap(item) && item.has('search')) return task.get('title').indexOf(item.get('search')) !== -1;
-        //     return item[0] === '!'
-        //         ? !task.getIn(['is', item.slice(1)])
-        //         : task.getIn(['is', item]);
-        // };
-    }
+    // static projects({search, status, options} = {}, item) {
+    //     if(!(item && (search || status || options)) return true;
+    //
+    //     const caseSensitive = options.get('caseSensitive');
+    //     const str = options.get('caseSensitive') ? search : search.toLowerCase();
+    //
+    //     return item => {
+    //         const title = caseSensitive ? item.get('title') : item.get('title').toLowerCase();
+    //         return (
+    //             !item.getIn(['is', 'project']) &&
+    //             title.indexOf(search) !== -1 &&
+    //             query.shift().every(b=>every(item, b))
+    //         );
+    //     };
+    // }
+    //
+    // static tasks({search, status, options} = {}, item) {
+    //     if(!(item && (search || status || options)) return true;
+    //
+    //     const str = options.get('caseSensitive') ? search : search.toLowerCase();
+    //
+    //     return item => {
+    //         const title = options.get('caseSensitive') ? item.get('title') : item.get('title').toLowerCase();
+    //         return (
+    //             !item.getIn(['is', 'project']) &&
+    //             title.indexOf(search) !== -1 &&
+    //             query.shift().every(b=>every(item, b))
+    //         );
+    //     };
+    //
+    // }
+
+    // static data(filter, data) {
+    //     return data;
+    //     let filter = query.length || query.size || search ? {filtered:true} : {filtered:false};
+    //     tasks.forEach(task => {
+    //         if(
+    //             !task.getIn(['is', 'project']) &&
+    //             task.get('title').toLowerCase().indexOf(search.toLowerCase()) !== -1 &&
+    //             query.every(item=>every(task, item))
+    //         ) filter[task.get('_id')] = true;
+    //     });
+    //     return Map(filter);
+    //
+    //     // Children of buildFilter
+    //     function every(task, item) {
+    //         if(List.isList(item)) return item.some(item=>some(task, item));
+    //         if(Map.isMap(item) && item.has('search')) return task.get('title').indexOf(item.get('search')) !== -1;
+    //         return item[0] === '!'
+    //             ? !task.getIn(['is', item.slice(1)])
+    //             : task.getIn(['is', item]);
+    //     };
+    //
+    //     function some(task, item) {
+    //         if(List.isList(item) || Array.isArray(item)) return item.every(item=>every(task, item));
+    //         if(Map.isMap(item) && item.has('search')) return task.get('title').indexOf(item.get('search')) !== -1;
+    //         return item[0] === '!'
+    //             ? !task.getIn(['is', item.slice(1)])
+    //             : task.getIn(['is', item]);
+    //     };
+    // }
 }

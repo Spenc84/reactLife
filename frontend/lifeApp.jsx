@@ -6,6 +6,7 @@ import { Map, List, fromJS } from 'immutable';
 import { getDefaultTask } from './defaults';
 import {
     Index,
+    sort,
     applyOperation,
     addTaskToList,
     addTaskToParents,
@@ -72,11 +73,7 @@ export default class LifeApp extends React.Component {
                 const { data:user, data:{ _id } } = incoming;
                 USER_ID = _id;
                 if(USER_ID) {
-                    user.tasks.sort(
-                        (x,y) =>  x.is.project === y.is.project ? 0
-                                : x.is.project ? -1
-                                : 1
-                    );
+                    user.tasks = sort(user.tasks);
                     this.setState({
                         authenticated: true,
                         USER: fromJS(user),

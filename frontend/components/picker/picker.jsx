@@ -2,7 +2,7 @@ import './picker.styl';
 import React, {PureComponent, PropTypes} from 'react';
 import { Map, List, fromJS } from 'immutable';
 
-import ListComponent from '../list/list';
+import { FilteredList, FixedList } from '../lists/lists';
 import Modal from '../../uiComponents/modal/modal';
 import { Icon } from '../../uiComponents/ui';
 import { mergeObj } from '../tools';
@@ -11,19 +11,17 @@ import { mergeObj } from '../tools';
 // DEFAULT
 const DEFAULT = {
     list1: {
-        component: ListComponent,
+        title: 'Available',
+        component: FilteredList,
         props: {
-            title: 'Available',
-            data: List(),
-            includeFilter: true
+            data: List()
         }
     },
     list2: {
-        component: ListComponent,
+        title: 'Selected',
+        component: FixedList,
         props: {
-            title: 'Selected',
-            data: List(),
-            includeFilter: false
+            data: List()
         }
     },
     action: {
@@ -42,8 +40,7 @@ export default class Picker extends PureComponent {
         super(props);
 
         this.state = {
-            available: List(),
-            selected: List()
+            toData: List()
         };
 
         // External API
@@ -57,10 +54,11 @@ export default class Picker extends PureComponent {
     }
 
     render() {
-        const { available, selected } = this.state;
+        const { toData } = this.state;
+
         const {
-            list1:{ component:FromList, props:fromProps },
-            list2:{ component:ToList, props:toProps },
+            list1:{ title:fromTitle, component:FromList, props:fromProps },
+            list2:{ title:toTitle, component:ToList, props:toProps },
             action:{
                 label:actionLabel,
                 title:actionTitle,
@@ -68,8 +66,6 @@ export default class Picker extends PureComponent {
                 onClick:actionClick
             }
         } = PROPS;
-
-        // const filtered = AVAILABLE.filterNot(a=>selected.some(b=>b.get('_id') === a.get('_id')));
 
         const actions = [
             {
@@ -80,80 +76,61 @@ export default class Picker extends PureComponent {
                 label: actionLabel,
                 title: actionTitle,
                 colored: actionColor,
-                disabled: selected.equals(toProps.data),
+                disabled: toData.equals(toProps.data),
                 onClick: actionClick ? this.save : null
             }
         ];
 
+        const fromData = fromProps.data.filterNot(a => toData.some(b => b.get('_id') === a.get('_id')));
+
+        console.log('RENDERED:  --- PICKER ---'); // __DEV__
         return (
             <Modal ref={ref=>this.Modal=ref}
-                footer={actions}
-            >
+                footer={actions} >
+
                 <main className="Picker">
 
-                    <FromList {...fromProps}
-                        data={available}
-                        onRowClick={this.select}
-                    />
-                    {/* <div className="available column">
-                        <header> Available </header>
+                    <section className="from">
 
-                        <div className="expanded column">
-                            <div className="filter">
-                                <div className="count">
-                                    <span>{available.size}</span>
-                                </div>
-                                <input type='text' placeholder="Search..." />
-                                <Icon i={'arrow_drop_down'} />
-                            </div>
-                            {available.map((item, i)=>(
-                                <div key={i}
-                                    data-index={i}
-                                    className="available item"
-                                    onClick={this.select}
-                                >
-                                    <Icon i={item.getIn(['is','project']) ? 'group_work' : 'fiber_manual_record'} />
-                                    <span>{item.get('title')}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div> */}
+                        { fromTitle
+                            ? <header> {fromTitle} </header>
+                            : null
+                        }
 
-                    <ToList {...toProps}
-                        data={selected}
-                        onRowClick={this.deselect}
-                    />
-                    {/* <div className="selected column">
-                        <header> Selected </header>
+                        <FromList {...fromProps}
+                            data={fromData}
+                            onRowClick={this.select}
+                        />
 
-                        <div className="expanded column">
-                            {selected.map((item, i)=>(
-                                <div key={i}
-                                    data-index={i}
-                                    className="selected item"
-                                    onClick={this.deselect}
-                                >
-                                    <Icon i={item.getIn(['is','project']) ? 'group_work' : 'fiber_manual_record'} />
-                                    <span>{item.get('title')}</span>
-                                </div>
-                            )).toJS()}
-                        </div>
-                    </div> */}
+                    </section>
+
+                    <section className="to">
+
+                        { toTitle
+                            ? <header> {toTitle} </header>
+                            : null
+                        }
+
+                        <ToList {...toProps}
+                            data={toData}
+                            onRowClick={this.deselect}
+                        />
+
+                    </section>
 
                 </main>
+
             </Modal>
         );
     }
-
-
 
     open(props) {
         if( !Picker.validateInput(props) ) return;
         PROPS = mergeObj(DEFAULT, props);
 
-        this.setState({
-            available: PROPS.list1.props.data,
-            selected: PROPS.list2.props.data
+        if(PROPS.list2.props.data === this.state.toData) this.forceUpdate();
+        else this.setState({
+            toData: PROPS.list2.props.data
         });
 
         this.Modal.open();
@@ -166,25 +143,30 @@ export default class Picker extends PureComponent {
 
 
     select(e) {
-        const { available, selected } = this.state;
-        const i = findIndex(e.target);
-        if(i !== -1) this.setState({
-            available: available.remove(i),
-            selected: selected.push(available.get(i))
+        const { toData } = this.state;
+        const fromData = PROPS.list1.props.data;
+
+        const ID = findID(e.target);
+        const item = fromData.find(x => x.get('_id') === ID);
+
+        if(item) this.setState({
+            toData: toData.push(item)
         });
     }
 
     deselect(e) {
-        const { available, selected } = this.state;
-        const i = findIndex(e.target);
+        const { toData } = this.state;
+
+        const ID = findID(e.target);
+        const i = toData.findIndex(x => x.get('_id') === ID);
+
         if(i !== -1) this.setState({
-            available: available.push(selected.get(i)),
-            selected: selected.remove(i)
+            toData: toData.remove(i)
         });
     }
 
     save() {
-        PROPS.action.onClick(this.state.selected);
+        PROPS.action.onClick(this.state.toData);
         this.close();
     }
 
@@ -197,7 +179,7 @@ export default class Picker extends PureComponent {
     }
 }
 
-export function findIndex(elem) {
-    if(elem.dataset.index === undefined) return elem.parentElement ? findIndex(elem.parentElement) : -1;
-    return elem.dataset.index;
+export function findID(elem) {
+    if(elem.dataset.id === undefined) return elem.parentElement ? findID(elem.parentElement) : -1;
+    return elem.dataset.id;
 }

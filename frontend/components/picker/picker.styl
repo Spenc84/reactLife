@@ -9,19 +9,31 @@ main.Picker
     border-top-left-radius .5rem
     border-top-right-radius .5rem
 
-    div.List
+    section
+        flex-direction column
 
-        &:first-of-type
+        &.from
             flex 2 0 0rem
+            width 60%
             header
                 background $active*.78
 
-        &:last-of-type
+        &.to
+            flex 1 0 0rem
             background rgb(100,100,100)
             color white
+            width 40%
             header
                 border-left 1px solid black
                 background $active*.72
+
+        header
+            flex 0 0 5rem
+            align-items: center;
+            font-size 2rem
+            color $lightText
+            padding 0 1.5rem
+
 
 
 @media screen and (max-width: 700px)

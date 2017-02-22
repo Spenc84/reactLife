@@ -1,6 +1,7 @@
 import React from 'react';
 import { getDefaultTask } from '../../../defaults';
 import { Icon } from '../../../uiComponents/ui';
+import { byTasks } from '../../../components/tools';
 
 export default class ListHeader extends React.PureComponent {
     constructor(props) {
@@ -75,19 +76,16 @@ export default class ListHeader extends React.PureComponent {
     addToProject() {
         const { openTaskDetails, selectedTasks, selectedProject, resetSelectedTasks, openPicker, tasks, tIndx, addToProject } = this.props;
 
-        // const projectList = tasks.filter(task => task.getIn(['is','project']) && task.get('_id') !== selectedProject);
-        const taskList = selectedTasks.map(taskID => tasks.get(tIndx[taskID]));
+        const taskList = selectedTasks.map(taskID => tasks.get(tIndx[taskID])).sort(byTasks);
         openPicker({
             list1: {
+                title: 'Assign',
                 props: {
-                    title: 'Assign',
                     data: taskList
                 }
             },
             list2: {
-                props: {
-                    title: 'To'
-                }
+                title: 'To'
             },
             action: addToProject
         });

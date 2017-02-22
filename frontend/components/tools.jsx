@@ -130,6 +130,19 @@ export function mergeObj(obj1, obj2) {
     return obj;
 }
 
+export function sort(list, method = byTasks) {
+    list = Array.isArray(list) ? fromJS(list) : list;
+    return list.sort(method);
+}
+export function byTasks(x,y) {
+    return x.getIn(['is','project']) && y.getIn(['is','project']) ? 0
+            : x.getIn(['is','project']) ? -1
+            : y.getIn(['is','project']) ? 1
+            : x.getIn(['is','completed']) === y.getIn(['is','completed']) ? 0
+            : x.getIn(['is','completed']) ? 1
+            : -1;
+}
+
 ////////////////////   MUTATOR FUNCTIONS   ////////////////////
 ////////// TASK //////////
 export function applyOperation({pendingTasks, operation, tIndx}) {

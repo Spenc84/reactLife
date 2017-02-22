@@ -1,0 +1,35 @@
+@require '../../index'
+
+div.Filter
+    flex-direction column
+
+    div.search.row
+        flex 0 0 4.8rem
+        height 4.8rem
+        align-items center
+
+    div.count
+        flex 0 0 4.8rem
+        width 4.8rem
+        justify-content center
+
+        span
+            min-width 2.4rem
+            height 2.4rem
+            align-items center
+            justify-content center
+            border-radius .5rem
+            padding 0 .5rem
+            border .2rem inset
+            color $darkTextSecondary
+
+    input[type='text']
+        background $lightBackground
+        flex 1 0 0px
+        border-radius .25rem
+        height 2.4rem
+        padding-left .5rem
+        margin-left 0.8rem
+
+    div.Icon
+        margin 0 1rem

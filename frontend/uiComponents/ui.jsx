@@ -3,7 +3,8 @@ import React, { PureComponent } from 'react';
 
 export class Icon extends PureComponent {
     render() {
-        const { title, style, className, light, hidden, invisible, faded, size, onClick, disabled } = this.props;
+        const { title, style, className, light, hidden, invisible, faded, size,
+                onClick, disabled, silent } = this.props;
         let _className = `${this.props.i} Icon` +
             (className ? ` ${className}` : '') +
             (hidden ? ' hidden' : '') +
@@ -14,7 +15,7 @@ export class Icon extends PureComponent {
 
         const _style = (size) ? {fontSize: `${size*2.4}rem`} : null;
 
-        console.log(`RENDERED: ${this.props.i} Icon`); // __DEV__
+        if(!silent) console.log(`RENDERED: ${this.props.i} Icon`); // __DEV__
         return (
             <div className={_className}
                 onClick={disabled ? null : onClick}
