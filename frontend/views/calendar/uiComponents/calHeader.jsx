@@ -36,7 +36,7 @@ export default class calHeader extends React.Component {
                         <div className="fill">
                             <Icon i={'menu'} size={1.75} onClick={toggleOptionPane} faded />
                             <span style={{margin: "0 .8rem 0 2.4rem", fontSize: "3.2rem"}}>{month}</span>
-                            <Icon i={dropIcon} size={1.25} onClick={this.toggleDropNav} faded fluid />
+                            <Icon i={dropIcon} size={1.25} onClick={this.toggleDropNav} faded />
                         </div>
                         <div style={{alignItems: 'center'}}>
                             <Icon i={'today'} onClick={getToday} style={{borderRight: '.2rem solid black', paddingRight: '.8rem'}} faded />

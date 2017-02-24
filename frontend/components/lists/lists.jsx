@@ -11,26 +11,28 @@ export class FilteredList extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            filter: Filter.buildFilter()
+            query: Map()
         };
-        this.updateFilter = this.updateFilter.bind(this);
+        this.updateQuery = this.updateQuery.bind(this);
     }
 
     render() {
-        const { filter } = this.state;
+        const { query } = this.state;
         const { ListComponent = FixedList, data, ...props } = this.props;
 
-        // const filteredData = Filter.data(filter, data);
-        const filteredData = data.filter(filter);
+        // projectSizes will be mutated by Filter.filterItems and will contain the sizes of each project
+        let projectSizes = {};
+        const filteredData = Filter.filterItems({list:data, query, projectSizes});
+        // const filteredData = data.filter(query);
 
         console.log('RENDERED:  --- FILTERED LIST ---'); // __DEV__
         return (
             <div className="Filtered List">
 
                 <Filter
+                    query={query}
+                    updateQuery={this.updateQuery}
                     count={filteredData.size}
-                    filter={filter}
-                    updateFilter={this.updateSearch}
                 />
 
                 { data.size
@@ -42,8 +44,8 @@ export class FilteredList extends PureComponent {
         );
     }
 
-    updateFilter(filter) {
-        this.setState({ filter });
+    updateQuery(query) {
+        this.setState({ query });
     }
 }
 
@@ -52,8 +54,7 @@ FilteredList.defaultProps = {
 }
 
 FilteredList.propTypes = {
-    data: PropTypes.instanceOf(List),
-    title: PropTypes.string
+    data: PropTypes.instanceOf(List)
 }
 
 

@@ -3,12 +3,20 @@ import { Map, List, fromJS, Iterable } from 'immutable';
 import { getUSER_ID } from '../lifeApp';
 
 
-// Takes in an Array and returns a map object with { _id: 'array index') key-value pairs
-export function Index(array) {
+// Takes in an Array or List and returns an index object with { _id: 'array index') key-value pairs
+export function Index(list) {
     let newMap = {};
-    if(List.isList(array)) array.forEach((e,i)=>newMap[e.get('_id')] = i);
-    else array.forEach((e,i)=>newMap[e._id] = i);
+    if(List.isList(list)) list.forEach((e,i)=>newMap[e.get('_id')] = i);
+    else list.forEach((e,i)=>newMap[e._id] = i);
     return newMap;
+}
+
+export function buildTaskList(IDs, tasks, tIndx) {
+    return IDs.map( ID => tasks.get(tIndx[ID]) );
+}
+
+export function buildIdList(tasks) {
+    return tasks.map( task => task.get('_id') );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

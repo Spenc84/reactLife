@@ -51,7 +51,6 @@ export default class ListHeader extends React.PureComponent {
                         <span style={projectTitle?null:{display:'none'}}>/</span>
                         <span style={projectTitle?null:{display:'none'}}>{projectTitle}</span>
                     </div>
-                    <Icon i={'center_focus_strong'} onClick={toggleFlatten} size={1.25} light /> {/* Could also use layers & layers_clear */}
                     <Icon i={'star'} onClick={toggleStarView} size={1.25} light />
                     <Icon i={"info_outline"} onClick={this.openTaskDetails} hidden={!projectTitle} />
                 </div>

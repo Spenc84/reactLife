@@ -3,8 +3,8 @@ import React, { PureComponent } from 'react';
 
 export class Icon extends PureComponent {
     render() {
-        const { title, style, className, light, hidden, invisible, faded, size,
-                onClick, disabled, silent } = this.props;
+        const { className, light, hidden, invisible, faded, size,
+                onClick, disabled, silent, i:icon, ...other } = this.props;
         let _className = `${this.props.i} Icon` +
             (className ? ` ${className}` : '') +
             (hidden ? ' hidden' : '') +
@@ -13,17 +13,16 @@ export class Icon extends PureComponent {
             (light ? ' light' : '') +
             (disabled ? ' disabled' : '');
 
-        const _style = (size) ? {fontSize: `${size*2.4}rem`} : null;
+        const _style = size ? {fontSize: `${size*2.4}rem`} : null;
 
         if(!silent) console.log(`RENDERED: ${this.props.i} Icon`); // __DEV__
         return (
             <div className={_className}
                 onClick={disabled ? null : onClick}
-                style={style}
-                title={title}>
+                {...other}>
                 <i className="material-icons"
                     style={_style}>
-                    {this.props.i}
+                    {icon}
                 </i>
             </div>
         );
@@ -66,6 +65,10 @@ export function Text(props) {
 }
 
 export class TextArea extends PureComponent {
+    constructor(props) {
+        super(props);
+        this.handleEscape = this.handleEscape.bind(this);
+    }
 
     componentDidUpdate() {
         const rows = Math.floor(this.spacer.scrollHeight/18);
@@ -85,12 +88,21 @@ export class TextArea extends PureComponent {
                 </div>
 
                 <textarea ref={ref=>this.textarea=ref}
-                    className={readOnly?'hidden':''}
                     {...this.props}
+                    className={readOnly?'hidden':''}
+                    onKeyDown={this.handleEscape}
                 />
 
             </div>
         )
+    }
+
+    handleEscape(e) {
+        if(e.keyCode === 27) {
+            e.target.value = "";
+            e.target.blur();
+        }
+        if(typeof this.props.onKeyDown === 'function') this.props.onKeyDown(e);
     }
 
 }

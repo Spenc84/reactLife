@@ -54,21 +54,13 @@ function getDefaultTask() {
 }
 
 
-const EMPTY_QUERY = fromJS({
-    include: [],
-    exclude: [],
-    rInclude: [],
-    rExclude: [],
-    search: ""
+const QUERY = Map({
+    search: '',
+    status: List(),
+    options: Map()
 });
 
-const DEFAULT_QUERY = fromJS({
-    rInclude: ['active'],
-    rExclude: ['completed'],
-    include: [],
-    exclude: [],
-    search: ''
-});
+const STATUS_TAGS = ['Active', 'Pending', 'Inactive', 'Completed', 'Scheduled', 'Project', 'Starred'];
 
 
 export {
@@ -77,6 +69,6 @@ export {
     DEFAULT_SCHEDULE,
     DEFAULT_TASK,
     getDefaultTask,
-    EMPTY_QUERY,
-    DEFAULT_QUERY
+    QUERY,
+    STATUS_TAGS
 };
