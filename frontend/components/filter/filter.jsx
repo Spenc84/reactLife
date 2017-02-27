@@ -230,7 +230,7 @@ export default class Filter extends PureComponent {
             item.getIn(['is', 'project']) &&
             checkParents(item) &&
             (
-                checkSize(project) ||
+                checkSize(item) ||
                 (query.get('search') && checkSearch(item)) ||
                 !(query.get('status') && query.get('status').size)
             )
@@ -263,7 +263,7 @@ export default class Filter extends PureComponent {
      */
     static bySize({list, projectSizes} = {}) {
         return project => {
-            const size = project.getDescendants({project, list}).size;
+            const size = Filter.getDescendants({project, list}).size;
             if(typeof projectSizes === 'object') projectSizes[project.get('_id')] = size;
             return size;
         };
