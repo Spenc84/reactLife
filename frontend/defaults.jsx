@@ -60,7 +60,7 @@ const QUERY = Map({
     options: Map()
 });
 
-const STATUS_TAGS = ['Active', 'Pending', 'Inactive', 'Completed', 'Scheduled', 'Project', 'Starred'];
+const STATUS_TAGS = ['active', 'pending', 'inactive', 'completed', 'scheduled', 'project', 'starred'];
 
 
 export {

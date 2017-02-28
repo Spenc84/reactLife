@@ -12,11 +12,17 @@ export function Index(list) {
 }
 
 export function buildTaskList(IDs, tasks, tIndx) {
+    tIndx = tIndx || Index(tasks);
     return IDs.map( ID => tasks.get(tIndx[ID]) );
 }
 
 export function buildIdList(tasks) {
     return tasks.map( task => task.get('_id') );
+}
+
+export function findData(elem, key) {
+    if(elem.dataset[key] === undefined) return elem.parentElement ? findData(elem.parentElement, key) : -1;
+    return elem.dataset[key];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

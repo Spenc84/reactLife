@@ -89,9 +89,12 @@ body *
 .TextArea
     position relative
     textarea, input
-        border 1px solid $borderColor
+        flex 1 0 0rem
         padding .5rem
+        border 1px solid $borderColor
         border-radius .3rem
+        font-size 1.4rem
+        font-family 'Roboto medium', 'Roboto', sans-serif
         transition border-color 400ms, box-shadow 400ms
         &:hover, &:focus
             border-color $hoverBorder
@@ -99,9 +102,11 @@ body *
     .spacer
         z-index -1
         position absolute
-        white-space pre-wrap
         padding .5rem
         border 1px solid transparent
+        white-space pre-wrap
+        font-size 1.4rem
+        font-family 'Roboto medium', 'Roboto', sans-serif
 
 div.Text
     padding .5rem 1rem

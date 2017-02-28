@@ -7,29 +7,65 @@ div.Filter
         flex 0 0 4.8rem
         height 4.8rem
         align-items center
+        padding-right 1rem
 
-    div.count
-        flex 0 0 4.8rem
-        width 4.8rem
-        justify-content center
-
-        span
-            min-width 2.4rem
-            height 2.4rem
-            align-items center
+        div.count
+            flex 0 0 4.8rem
+            width 4.8rem
             justify-content center
-            border-radius .5rem
-            padding 0 .5rem
-            border .2rem inset
-            color $darkTextSecondary
 
-    input[type='text']
-        background $lightBackground
-        flex 1 0 0px
-        border-radius .25rem
-        height 2.4rem
-        padding-left .5rem
-        margin-left 0.8rem
+            span
+                min-width 2.4rem
+                height 2.4rem
+                align-items center
+                justify-content center
+                border-radius .5rem
+                padding 0 .5rem
+                border .2rem inset
+                color $darkTextSecondary
 
-    div.Icon
-        margin 0 1rem
+        .TextArea
+            background $lightBackground
+            flex 1 0 0px
+
+        div.Icon
+            margin-left 1rem
+
+    div.query
+        flex-direction column
+        padding 0 1rem
+
+        .tags
+            .not
+                margin-right 1rem
+                align-items center
+                &.active
+                    color red
+            .options
+                flex-wrap wrap
+                padding-right 1rem
+                .tag
+                    padding .5rem
+
+        .status
+            align-items center
+            .tag.excluded
+                color red
+                &::before
+                    content 'not'
+                    padding-right .35rem
+            .row > .column
+                background rgba(0,0,0,.1)
+                margin .5rem
+                padding .5rem
+
+        .row, .column
+            align-items center
+
+
+@media screen and (max-width: 1000px)
+    div.Filter div.query
+        .context
+            display none
+        .status .tag.excluded::before
+            content none

@@ -3,7 +3,7 @@ import React, { PureComponent, PropTypes } from 'react';
 import { Map, List, fromJS } from 'immutable';
 
 import { Icon, TextArea } from '../../uiComponents/ui';
-import { Index, mergeObj } from '../tools';
+import { Index, mergeObj, findData } from '../tools';
 
 import { QUERY, STATUS_TAGS } from '../../defaults';
 
@@ -16,8 +16,7 @@ export default class Filter extends PureComponent {
         this.state = {
             expanded: false,
             not: false,
-            or: false,
-            pointer: [0]
+            pointer: ''
         };
 
         this.updateSearch = this.updateSearch.bind(this);
@@ -26,12 +25,11 @@ export default class Filter extends PureComponent {
         this.toggleNot = this.toggleNot.bind(this);
         this.addStatus = this.addStatus.bind(this);
         this.removeStatus = this.removeStatus.bind(this);
-        this.setPathAnd = this.setPathAnd.bind(this);
-        this.setPathOr = this.setPathOr.bind(this);
+        this.setPointer = this.setPointer.bind(this);
     }
 
     render() {
-        const { expanded, not, or, pointer } = this.state;
+        const { expanded, not, pointer } = this.state;
         const { count:xCount, query = QUERY, statusTags = STATUS_TAGS } = this.props;
 
         const search = query.get('search') || '';
@@ -39,34 +37,41 @@ export default class Filter extends PureComponent {
         const options = query.get('options') || Map();
         const count = options.get('flatten') ? 0 : xCount || 0;
 
-        const add = (tag, path, some) => {
+        const add = (tag, path, list, some) => {
             const display
                 = List.isList(tag) ? undefined
                 : tag[0] === '!' ? tag[1].toUpperCase() + tag.slice(2)
                 : tag[0].toUpperCase() + tag.slice(1);
             return (
-                <div key={path}
-                    className={some ? 'column' : 'row'}>
+                <div key={path} className={some ? 'column' : 'row'}>
                     <div className={some ? 'row' : 'column'}>
-                        {List.isList(tag)
-                            ? tag.map((tag,i)=>add(tag, `${path},${i}`, !some))
-                            : <div className={`${tag[0] === '!' ? 'excluded ':''}tag`}
-                                data-path={path}
-                                onClick={this.removeStatus}>
-                                {display}
+                    {
+                        List.isList(tag)
+
+                        ?   tag.map((tag,i,list)=>add(tag, [...path, i], list, !some))
+
+                        :   <div className={some ? 'column' : 'row'}>
+                                <div className={`${tag[0] === '!' ? 'excluded ':''}tag`}
+                                    data-path={path}
+                                    onClick={this.removeStatus}>
+                                    {display}
+                                </div>
                             </div>
-                        }
+                    }
+                    { path.length > 3 ? null :
                         <Icon i={'add'}
-                            onClick={this.setPathAnd}
-                            data-path={path}
-                            className={`${path === pointer && !or ? 'active ' : ''}and`}
+                            onClick={this.setPointer}
+                            data-pointer={path}
+                            className={`${path}` === pointer ? 'active' : ''}
+                            size={1-path.length*.2}
                         />
+                    }
                     </div>
-                    <Icon i={'add'}
-                        onClick={this.setPathOr}
-                        data-path={path}
-                        className={`${path === pointer && or ? 'active ' : ''}or`}
-                    />
+                    { path[path.length-1] === list.size-1 ? null :
+                        some
+                        ? <span className="context">or</span>
+                        : <span className="context">and</span>
+                    }
                 </div>
             );
         };
@@ -85,25 +90,27 @@ export default class Filter extends PureComponent {
                     <div className="count">
                         <span>{count}</span>
                     </div>
-                    <TextArea value={search} onChange={this.updateSearch} placeholder="Search..." />
+                    <TextArea value={search} onChange={this.updateSearch} placeholder="Search..." rows={1} />
                     <Icon i={'center_focus_strong'} onClick={this.toggleFlatten} /> {/* Could also use layers & layers_clear */}
                     <Icon i={expanded ? 'arrow_drop_up' : 'arrow_drop_down'} onClick={this.toggleExpanded} />
                 </div>
 
                 { !expanded ? null :
-                <div className="query row">
+                <div className="query">
 
                     <div className="tags">
 
-                        <div className={`${not?'active ':''}not tag`} onClick={this.toggleNot}>Not</div>
+                        <div className={`${not?'active ':''}not`} onClick={this.toggleNot}>Not</div>
 
-                        { statusTags.map(tag => (
-                        <div key={tag}
-                            className="tag"
-                            data-value={not?`!${tag}`:tag}
-                            onClick={this.addStatus}>
-                            {tag[0].toUpperCase() + tag.slice(1)}
-                        </div> ))}
+                        <div className="options">
+                            { statusTags.map(tag => (
+                            <div key={tag}
+                                className="tag"
+                                data-value={not?`!${tag}`:tag}
+                                onClick={this.addStatus}>
+                                {tag[0].toUpperCase() + tag.slice(1)}
+                            </div> ))}
+                        </div>
 
                     </div>
 
@@ -111,9 +118,15 @@ export default class Filter extends PureComponent {
 
                         <span className="label">Include if:</span>
 
-                        <div className="every">
+                        <div className="row">
 
-                            {status.map((tag, i)=>add(tag, i))}
+                            {status.map((tag, i, list)=>add(tag, [i], list))}
+
+                            <Icon i={'add'}
+                                onClick={this.setPointer}
+                                data-pointer={''}
+                                className={pointer ? '' : 'active'}
+                            />
 
                         </div>
 
@@ -146,37 +159,51 @@ export default class Filter extends PureComponent {
     }
 
     addStatus(e) {
+        const { pointer } = this.state;
+        const { query, updateQuery } = this.props;
 
+        const newQuery = query.get('status') === undefined
+            ? query.set('status', List())
+            : query;
+        const value = e.target.dataset.value;
+        const path = pointer ? pointer.split(',') : [];
+
+        updateQuery(newQuery.update('status', status => {
+            return List.isList( status.getIn(path) )
+                ? status.updateIn(path, v=>v.push(value))
+                : status.updateIn(path, v=>List([v, value]));
+        }));
     }
 
     removeStatus(e) {
         const { query, updateQuery } = this.props;
-        let path = e.target.dataSet.path.split(',');
+        let path = e.target.dataset.path.split(',');
 
         updateQuery(query.update('status', status => {
             const newStatus = status.removeIn(path);
             path.pop();
-            if(path.length && newStatus.getIn(path).size === 1) return newStatus.setIn(path, newStatus.getIn([...path, 0]));
+            if(path.length && newStatus.getIn(path).size === 1) {
+                const item = newStatus.getIn([...path, 0]);
+                if(!List.isList(item)) return newStatus.updateIn(path, v=>item);
+                const index = path.pop();
+                return newStatus.updateIn(path, v=>v.splice(index, 1, ...item))
+            }
             return newStatus;
         }));
+
+        this.setState({ pointer: '' });
     }
 
-    setPathAnd(e) {
-        this.setState({
-            or: false
-        });
-    }
-
-    setPathOr(e) {
-        this.setState({
-            or: true
-        });
+    setPointer(e) {
+        const pointer = findData(e.target, 'pointer');
+        if(pointer !== -1) this.setState({ pointer });
     }
 
     //////////   STATIC FUNCTIONS   //////////
 
     static filterItems({list:unfilteredList, tIndx, query, projectSizes} = {}) {
-        if(!(unfilteredList && query)) return List();
+        if(!List.isList(unfilteredList) || unfilteredList.size === 0) return List();
+        if(!Map.isMap(query)) return unfilteredList;
         tIndx = tIndx || Index(unfilteredList);
 
         const projectID = query.get('projectID');
@@ -255,7 +282,7 @@ export default class Filter extends PureComponent {
     /**   bySize
      * Returns a filter that will reduce a number of projects down to only those with
      * one of more descendants in the provided list.
-     * @param  {List} list - A list of tasks after being filtered by query and search
+     * @param  {List} list - A list of tasks after being filtered by status and search
      * but prior to being filtered by parent.
      * @param {object} projectSizes - An optional object that will be mutated to record
      * the size of each project in {<id>:<size>} key/value pairs.

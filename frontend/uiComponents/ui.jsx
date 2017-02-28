@@ -71,7 +71,7 @@ export class TextArea extends PureComponent {
     }
 
     componentDidUpdate() {
-        const rows = Math.floor(this.spacer.scrollHeight/18);
+        const rows = Math.floor(this.spacer.scrollHeight/18) || 1;
         if(rows !== this.textarea.getAttribute('rows'))
             this.textarea.setAttribute('rows', rows);
     }
@@ -101,6 +101,7 @@ export class TextArea extends PureComponent {
         if(e.keyCode === 27) {
             e.target.value = "";
             e.target.blur();
+            if(typeof this.props.onChange === 'function') this.props.onChange(e);
         }
         if(typeof this.props.onKeyDown === 'function') this.props.onKeyDown(e);
     }
