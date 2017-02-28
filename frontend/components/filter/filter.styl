@@ -33,31 +33,48 @@ div.Filter
 
     div.query
         flex-direction column
-        padding 0 1rem
-
         .tags
             .not
-                margin-right 1rem
+                flex 0 0 4.8rem
+                justify-content center
                 align-items center
+                cursor pointer
                 &.active
                     color red
             .options
                 flex-wrap wrap
                 padding-right 1rem
                 .tag
+                    cursor pointer
                     padding .5rem
 
         .status
-            align-items center
-            .tag.excluded
-                color red
-                &::before
-                    content 'not'
-                    padding-right .35rem
+            flex-direction column
+            padding 1rem
+
+            .tag
+                cursor pointer
+                &.excluded
+                    color red
+                    &::before
+                        content 'not'
+                        padding-right .35rem
+
             .row > .column
                 background rgba(0,0,0,.1)
                 margin .5rem
                 padding .5rem
+
+            .column > div.Icon:hover, .column > div.Icon.active, .row > div.Icon:hover, .row > div.Icon.active
+                i
+                    opacity 0
+                &::before
+                    position absolute
+            .column > div.Icon:hover::before, .column > div.Icon.active::before
+                content 'or'
+            .row > div.Icon:hover::before, .row > div.Icon.active::before
+                content 'and'
+
 
         .row, .column
             align-items center

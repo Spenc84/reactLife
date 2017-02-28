@@ -13,12 +13,14 @@ export class Icon extends PureComponent {
             (light ? ' light' : '') +
             (disabled ? ' disabled' : '');
 
+        const style = size ? {fontSize: `${size*1.6}rem`} : null;
         const _style = size ? {fontSize: `${size*2.4}rem`} : null;
 
         if(!silent) console.log(`RENDERED: ${this.props.i} Icon`); // __DEV__
         return (
             <div className={_className}
                 onClick={disabled ? null : onClick}
+                style={style}
                 {...other}>
                 <i className="material-icons"
                     style={_style}>

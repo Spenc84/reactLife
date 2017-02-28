@@ -30,12 +30,11 @@ export default class Filter extends PureComponent {
 
     render() {
         const { expanded, not, pointer } = this.state;
-        const { count:xCount, query = QUERY, statusTags = STATUS_TAGS } = this.props;
+        const { count, query = QUERY, statusTags = STATUS_TAGS } = this.props;
 
         const search = query.get('search') || '';
         const status = query.get('status') || List();
         const options = query.get('options') || Map();
-        const count = options.get('flatten') ? 0 : xCount || 0;
 
         const add = (tag, path, list, some) => {
             const display
@@ -118,7 +117,7 @@ export default class Filter extends PureComponent {
 
                         <span className="label">Include if:</span>
 
-                        <div className="row">
+                        <div className={status.size ? 'row' : 'icon'}>
 
                             {status.map((tag, i, list)=>add(tag, [i], list))}
 
@@ -213,6 +212,8 @@ export default class Filter extends PureComponent {
 
         const tasksBySearchAndStatus = Filter.byTask(query.remove('projectID'));
         const queriedTasks = list.filter(tasksBySearchAndStatus);
+
+        projectSizes.count = queriedTasks.size;
 
         const projectFilter = Filter.byProject({query, list:queriedTasks, projectSizes});
         const filteredProjects = list.filter(projectFilter);
