@@ -7,9 +7,15 @@ div.List
     position relative
 
     &.Fixed
-        .data.column
+
+        .data.column, .top.shadow, .bottom.shadow
             position absolute
             width 100%
+
+        .top.shadow, .bottom.shadow
+            flex 0 0 .1rem
+            box-shadow 0rem 0rem .5rem rgb(175,175,175)
+            background rgba(200,200,200,.5)
 
         .sizer
             flex 0 0 auto

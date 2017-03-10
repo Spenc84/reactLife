@@ -2,7 +2,7 @@ import './filter.styl';
 import React, { PureComponent, PropTypes } from 'react';
 import { Map, List, fromJS } from 'immutable';
 
-import { Icon, TextArea } from '../../uiComponents/ui';
+import { Icon, Text } from '../../uiComponents/ui';
 import { Index, mergeObj, findData } from '../tools';
 
 import { QUERY, STATUS_TAGS } from '../../defaults';
@@ -89,7 +89,7 @@ export default class Filter extends PureComponent {
                     <div className="count">
                         <span>{count}</span>
                     </div>
-                    <TextArea value={search} onChange={this.updateSearch} placeholder="Search..." rows={1} />
+                    <Text value={search} onChange={this.updateSearch} placeholder="Search..." />
                     <Icon i={'center_focus_strong'} onClick={this.toggleFlatten} /> {/* Could also use layers & layers_clear */}
                     <Icon i={expanded ? 'arrow_drop_up' : 'arrow_drop_down'} onClick={this.toggleExpanded} />
                 </div>

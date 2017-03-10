@@ -58,7 +58,7 @@ export default class Schedule extends React.Component {
                 );
             }
         });
-        taskList.push(<div key={activeDate-1} ref={activeDate} />);
+        taskList.push(<div key={activeDate-2} ref={activeDate} />);
         taskList.sort((a,b)=>a.key-b.key);
 
         console.log('RENDERED:  --- SCHEDULE VIEW ---'); // __DEV__

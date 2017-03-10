@@ -1,0 +1,26 @@
+.GooeyButtonContainer {
+    display: flex;
+    border-radius: .25rem;
+    overflow: hidden;
+    box-shadow: 0 0 1px 1.5px #196ea2;
+}
+
+.button.icon {
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    height: 2rem;
+    width: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1f8aca;
+    color: #fff;
+    transition: background-color .3s ease-out;
+
+    &:hover, &:focus, &:active
+        background-color: #196ea2;
+
+    &:focus, &:active
+        outline -webkit-focus-ring-color auto 5px
+}

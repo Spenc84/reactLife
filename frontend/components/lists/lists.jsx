@@ -96,7 +96,9 @@ export class FixedList extends PureComponent {
         return (
             <div className="Fixed List" ref={ref=>this.container=ref} onScroll={handleScroll} data-height={`${data.size*48}px`}>
                 <div className="data column" ref={ref=>this.list=ref}>
+                    <div className="top shadow" ref={ref=>this.topShadow=ref} />
                     {list.map((item, i)=><RowComponent key={i} id={item.get('_id')} onClick={onRowClick} item={item} />)}
+                    <div className="bottom shadow" ref={ref=>this.bottomShadow=ref} />
                 </div>
                 <div className="sizer" style={{height: `${data.size*48}px`}} />
             </div>
@@ -110,6 +112,10 @@ export class FixedList extends PureComponent {
 
     handleScroll(e) {
         this.list.style.top = `${e.target.scrollTop - e.target.scrollTop % 48}px`;
+        this.topShadow.style.display = e.target.scrollTop ? 'flex' : 'none';
+        this.topShadow.style.top = e.target.scrollTop;
+        // this.bottomShadow.style.display = e.target.scrollTop ===  ? 'flex' : 'none';
+        console.log(`scroll: ${e.target.scrollTop}, scrollHeight: ${e.target.scrollHeight}, height: ${e.target.clientHeight}`);
         this.setState({ index: Math.floor(e.target.scrollTop/48) });
     }
 }

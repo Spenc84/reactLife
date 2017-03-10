@@ -13,6 +13,7 @@ body
     font-size 1.6rem
 
 
+
 // STYLES
 .faded
     opacity .5
@@ -34,6 +35,9 @@ body
 body *
     display flex
     box-sizing border-box
+
+textarea
+    font-family -apple-system,".SFNSText-Regular","San Francisco",Roboto,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif
 
 ////////// UI //////////
 .column
@@ -88,36 +92,13 @@ body *
         cursor default
         cursor inherit
 
-.TextArea
-    position relative
-    textarea, input
-        flex 1 0 0rem
-        padding .5rem
-        border 1px solid $borderColor
-        border-radius .3rem
-        font-size 1.4rem
-        font-family 'Roboto medium', 'Roboto', sans-serif
-        transition border-color 400ms, box-shadow 400ms
-        &:hover, &:focus
-            border-color $hoverBorder
-            transition border-color 900ms 100ms, box-shadow 400ms
-    .spacer
-        z-index -1
-        position absolute
-        padding .5rem
-        border 1px solid transparent
-        white-space pre-wrap
-        font-size 1.4rem
-        font-family 'Roboto medium', 'Roboto', sans-serif
-
-div.Text
+div.Text, input.Text
     padding .5rem 1rem
+    border-radius .3rem
+div.Text.flat
     border 1px solid transparent
-    border-radius .3rem
-input.Text
-    padding .5rem 1rem
+input.Text.flat
     border 1px solid $borderColor
-    border-radius .3rem
     transition border-color 400ms, box-shadow 400ms
     &:hover, &:focus
         border-color $hoverBorder

@@ -1,34 +1,31 @@
 import '../main.styl';
 import React, { PureComponent } from 'react';
 
-export class Icon extends PureComponent {
-    render() {
-        const { className, light, hidden, invisible, faded, size,
-                onClick, disabled, silent, i:icon, ...other } = this.props;
-        let _className = `${this.props.i} Icon` +
-            (className ? ` ${className}` : '') +
-            (hidden ? ' hidden' : '') +
-            (invisible ? ' invisible' : '') +
-            (faded ? ' faded' : '') +
-            (light ? ' light' : '') +
-            (disabled ? ' disabled' : '');
+export function Icon(props) {
+    const { className, light, hidden, invisible, faded, size,
+            onClick, disabled, i:icon, ...otherProps } = props;
+    let _className = `${icon} Icon` +
+        (className ? ` ${className}` : '') +
+        (hidden ? ' hidden' : '') +
+        (invisible ? ' invisible' : '') +
+        (faded ? ' faded' : '') +
+        (light ? ' light' : '') +
+        (disabled ? ' disabled' : '');
 
-        const style = size ? {fontSize: `${size*1.6}rem`} : null;
-        const _style = size ? {fontSize: `${size*2.4}rem`} : null;
+    const _style = size ? {fontSize: `${size*2.4}rem`} : null;
 
-        if(!silent) console.log(`RENDERED: ${this.props.i} Icon`); // __DEV__
-        return (
-            <div className={_className}
-                onClick={disabled ? null : onClick}
-                style={style}
-                {...other}>
-                <i className="material-icons"
-                    style={_style}>
-                    {icon}
-                </i>
-            </div>
-        );
-    }
+    return (
+        <div
+            {...otherProps}
+            className={_className}
+            onClick={disabled ? null : onClick}
+        >
+            <i className="material-icons"
+                style={_style}>
+                {icon}
+            </i>
+        </div>
+    );
 }
 
 export class Button extends PureComponent {
@@ -53,50 +50,23 @@ export class Button extends PureComponent {
     }
 }
 
-export function Text(props) {
-    return props.readOnly
-        ?   <div className="Text">
-                {props.value}
-            </div>
-
-        :   <input
-                type="text"
-                className="Text"
-                {...props}
-            />
-}
-
-export class TextArea extends PureComponent {
+export class Text extends PureComponent {
     constructor(props) {
         super(props);
         this.handleEscape = this.handleEscape.bind(this);
     }
 
-    componentDidUpdate() {
-        const rows = Math.floor(this.spacer.scrollHeight/18) || 1;
-        if(rows !== this.textarea.getAttribute('rows'))
-            this.textarea.setAttribute('rows', rows);
-    }
-
     render() {
-        const { value, readOnly } = this.props;
-
-        return (
-            <div className="TextArea">
-
-                <div ref={ref=>this.spacer=ref}
-                    className={`${readOnly?'':'invisible '}spacer`}>
-                    {value}
+        return this.props.readOnly
+            ?   <div className="Text">
+                    {this.props.value}
                 </div>
 
-                <textarea ref={ref=>this.textarea=ref}
+            :   <input
+                    type="text"
+                    className="Text"
                     {...this.props}
-                    className={readOnly?'hidden':''}
-                    onKeyDown={this.handleEscape}
-                />
-
-            </div>
-        )
+                />;
     }
 
     handleEscape(e) {
@@ -107,5 +77,8 @@ export class TextArea extends PureComponent {
         }
         if(typeof this.props.onKeyDown === 'function') this.props.onKeyDown(e);
     }
-
 }
+
+import TextBox from './textBox/textBox';
+import TextArea from './textArea/textArea';
+export { TextBox, TextArea };

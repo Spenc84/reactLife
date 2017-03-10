@@ -36,6 +36,7 @@ export default class TaskDetails extends PureComponent {
         this.deleteTask = this.deleteTask.bind(this);
         this.toggleStarred = this.toggleStatus.bind(this, 'starred');
         this.toggleCompleted = this.toggleStatus.bind(this, 'completed');
+        this.handleEscape = this.handleEscape.bind(this);
     }
 
     render() {
@@ -44,6 +45,7 @@ export default class TaskDetails extends PureComponent {
         const completed = task.getIn(['is', 'completed']);
         const starred = task.getIn(['is', 'starred']);
         const color = task.get('color');
+        const title = task.get('title');
 
         console.log('RENDERED: --- TASK_DETAILS ---'); // __DEV__
         return (
@@ -67,7 +69,7 @@ export default class TaskDetails extends PureComponent {
                         label={'SAVE'}
                         title={'Save changes'}
                         onClick={this.saveChanges}
-                        disabled={TASK === task}
+                        disabled={!title || TASK.equals(task)}
                     />
 
                 </header>
@@ -78,8 +80,10 @@ export default class TaskDetails extends PureComponent {
                         <span className="label">Title:</span>
                         <TextArea
                             data-content="title"
-                            value={task.get('title') || ""}
+                            value={title || ''}
                             onChange={this.handleFormChange}
+                            onKeyDown={this.handleEscape}
+                            minRows={1}
                         />
                     </div>
 
@@ -89,6 +93,7 @@ export default class TaskDetails extends PureComponent {
                             data-content="description"
                             value={task.get('description') || ""}
                             onChange={this.handleFormChange}
+                            onKeyDown={this.handleEscape}
                         />
                     </div>
 
@@ -131,7 +136,7 @@ export default class TaskDetails extends PureComponent {
 
     confirmClose() {
         const { task } = this.state;
-        if( task === TASK ) this.close();
+        if( task.equals(TASK) ) this.close();
         else if( confirm("Discard changes?") ) this.close();
     }
 
@@ -255,5 +260,15 @@ export default class TaskDetails extends PureComponent {
         this.setState({
             task: task.setIn(['is', key], value)
         });
+    }
+
+    handleEscape(e) {
+        if(e.keyCode === 27 /* Escape */) {
+        const { task } = this.state;
+        const path = e.target.dataset.content.split('.');
+        const value = TASK.getIn(path);
+        this.setState({ task: task.setIn(path, value) });
+        e.target.blur();
+        }
     }
 }

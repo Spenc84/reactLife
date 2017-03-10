@@ -62,14 +62,14 @@ export default class calHeader extends React.Component {
         }
         return (
             <div className="fill" key={1} id="dropNav" style={{justifyContent: `space-between`, paddingBottom: `.8rem`}}>
-                <Icon i={`chevron_left`} onClick={(schedule)?null:getPrior} invisible={schedule} fluid={schedule} />
+                <Icon i={`chevron_left`} onClick={(schedule)?null:getPrior} invisible={schedule} />
                 <nav style={{flexGrow: 1, alignItems: `center`, justifyContent: `space-around`, fontSize: `1.2rem`}}>
                     <span className={aClass} onClick={(aClass) ? null : this.switchToAgendaView}>SCHEDULE</span>
                     <span className={dClass} onClick={(dClass) ? null : this.switchToDayView}>DAY</span>
                     <span className={wClass} onClick={(wClass) ? null : this.switchToWeekView}>WEEK</span>
                     <span className={mClass} onClick={(mClass) ? null : this.switchToMonthView}>MONTH</span>
                 </nav>
-                <Icon i={`chevron_right`} onClick={(schedule)?null:getNext} invisible={schedule} fluid={schedule} />
+                <Icon i={`chevron_right`} onClick={(schedule)?null:getNext} invisible={schedule} />
             </div>
         );
     }
